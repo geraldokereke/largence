@@ -125,6 +125,35 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Largence - Enterprise Legal Intelligence for Africa",
   description: "Automate contract drafting, ensure regulatory compliance, and streamline governance for African enterprises.",
+  icons: {
+    icon: [
+      { url: '/logo.png' },
+      { url: '/logo.png', sizes: '32x32', type: 'image/png' },
+    ],
+    apple: '/logo.png',
+  },
+  openGraph: {
+    title: "Largence - Enterprise Legal Intelligence for Africa",
+    description: "Automate contract drafting, ensure regulatory compliance, and streamline governance for African enterprises.",
+    url: 'https://largence.com',
+    siteName: 'Largence',
+    images: [
+      {
+        url: '/logo.png',
+        width: 1200,
+        height: 630,
+        alt: 'Largence Logo',
+      },
+    ],
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: "Largence - Enterprise Legal Intelligence for Africa",
+    description: "Automate contract drafting, ensure regulatory compliance, and streamline governance for African enterprises.",
+    images: ['/logo.png'],
+  },
 };
 
 export default function RootLayout({

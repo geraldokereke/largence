@@ -1,7 +1,9 @@
 "use client";
 
 import * as React from "react";
-import { usePathname } from "next/navigation";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { useOrganization, useOrganizationList } from "@clerk/nextjs";
 import {
   Home,
   FileText,
@@ -14,6 +16,7 @@ import {
   ChevronsUpDown,
   Check,
   Plug2Icon,
+  Building2,
 } from "lucide-react";
 
 import { NavMain } from "@largence/components/nav-main";
@@ -35,20 +38,6 @@ import {
 import { Button } from "@largence/components/ui/button";
 
 const data = {
-  workspaces: [
-    {
-      name: "Enterprise Corp",
-      plan: "Enterprise",
-    },
-    {
-      name: "Acme Inc",
-      plan: "Pro",
-    },
-    {
-      name: "Personal",
-      plan: "Free",
-    },
-  ],
   navMain: [
     {
       title: "Home",
@@ -96,8 +85,73 @@ const data = {
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const [activeWorkspace, setActiveWorkspace] = React.useState(data.workspaces[0]);
   const pathname = usePathname();
+  const router = useRouter();
+  const { organization } = useOrganization();
+  const { userMemberships, setActive } = useOrganizationList({
+    userMemberships: {
+      infinite: true,
+    },
+  });
+
+  // Persist sidebar state using cookies for SSR compatibility
+  const [isClient, setIsClient] = React.useState(false);
+
+  React.useEffect(() => {
+    setIsClient(true);
+    
+    // Restore sidebar state from localStorage
+    const savedState = localStorage.getItem('sidebar:state');
+    if (savedState) {
+      const sidebar = document.querySelector('[data-sidebar="sidebar"]');
+      if (sidebar) {
+        const newState = savedState === 'expanded' ? 'expanded' : 'collapsed';
+        sidebar.setAttribute('data-state', newState);
+      }
+    }
+
+    // Save state on change
+    const handleStateChange = (mutations: MutationRecord[]) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'data-state') {
+          const state = (mutation.target as Element).getAttribute('data-state');
+          if (state) {
+            localStorage.setItem('sidebar:state', state);
+            // Also save to cookie for SSR
+            document.cookie = `sidebar:state=${state};path=/;max-age=31536000;samesite=lax`;
+          }
+        }
+      });
+    };
+
+    const observer = new MutationObserver(handleStateChange);
+    const sidebar = document.querySelector('[data-sidebar="sidebar"]');
+    
+    if (sidebar) {
+      observer.observe(sidebar, { 
+        attributes: true, 
+        attributeFilter: ['data-state'] 
+      });
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
+  const handleSwitchOrganization = async (orgId: string) => {
+    if (!setActive) return;
+    
+    try {
+      await setActive({ organization: orgId });
+      // Use router.refresh() for smoother transition
+      router.refresh();
+    } catch (error) {
+      console.error("Failed to switch organization:", error);
+    }
+  };
+
+  const handleNewDocument = () => {
+    router.push('/create');
+  };
 
   return (
     <Sidebar
@@ -115,9 +169,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuItem>
             <SidebarMenuButton
               asChild
-              className="h-10 rounded-sm hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors group-data-[collapsible=icon]:justify-center"
+              className="h-10 rounded-md hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors group-data-[collapsible=icon]:justify-center"
             >
-              <button className="flex items-center gap-3 w-full">
+              <button onClick={handleNewDocument} className="flex items-center gap-3 w-full">
                 <Plus className="h-5 w-5 shrink-0" />
                 <span className="font-medium text-sm group-data-[collapsible=icon]:hidden">New Document</span>
               </button>
@@ -128,52 +182,70 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <SidebarMenuButton
-                  className="h-10 rounded-sm data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors group-data-[collapsible=icon]:justify-center"
+                  className="h-10 rounded-md data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors group-data-[collapsible=icon]:justify-center"
                 >
-                  <div className="bg-primary text-primary-foreground flex aspect-square h-5 w-5 items-center justify-center rounded-sm shrink-0">
-                    <span className="text-[10px] font-semibold">
-                      {activeWorkspace.name.charAt(0)}
-                    </span>
+                  <div className="bg-primary text-primary-foreground flex aspect-square h-5 w-5 items-center justify-center rounded-md shrink-0">
+                    {organization?.imageUrl ? (
+                      <img 
+                        src={organization.imageUrl} 
+                        alt={organization.name}
+                        className="h-full w-full rounded-md object-cover"
+                      />
+                    ) : (
+                      <Building2 className="h-3 w-3" />
+                    )}
                   </div>
                   <div className="flex flex-1 flex-col items-start text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
                     <span className="truncate font-medium">
-                      {activeWorkspace.name}
+                      {organization?.name || "No Organization"}
                     </span>
                     <span className="truncate text-xs text-muted-foreground">
-                      {activeWorkspace.plan}
+                      {organization?.membersCount || 0} members
                     </span>
                   </div>
                   <ChevronsUpDown className="ml-auto size-4 shrink-0 opacity-50 group-data-[collapsible=icon]:hidden" />
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
               <DropdownMenuContent
-                className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-sm"
+                className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-md"
                 align="start"
                 side="top"
                 sideOffset={4}
               >
-                {data.workspaces.map((workspace, index) => (
+                {userMemberships?.data?.map((membership) => (
                   <DropdownMenuItem
-                    key={workspace.name}
-                    onClick={() => setActiveWorkspace(workspace)}
-                    className="gap-2 p-2 rounded-sm cursor-pointer"
+                    key={membership.organization.id}
+                    onClick={() => handleSwitchOrganization(membership.organization.id)}
+                    className="gap-2 p-2 rounded-md cursor-pointer"
                   >
-                    <div className="flex size-6 items-center justify-center rounded-sm border bg-background">
-                      <span className="text-xs font-medium">
-                        {workspace.name.charAt(0)}
-                      </span>
+                    <div className="flex size-6 items-center justify-center rounded-md border bg-background">
+                      {membership.organization.imageUrl ? (
+                        <img 
+                          src={membership.organization.imageUrl} 
+                          alt={membership.organization.name}
+                          className="h-full w-full rounded-md object-cover"
+                        />
+                      ) : (
+                        <Building2 className="h-4 w-4" />
+                      )}
                     </div>
                     <div className="flex flex-col gap-0.5">
-                      <span className="font-medium text-sm">{workspace.name}</span>
+                      <span className="font-medium text-sm">{membership.organization.name}</span>
                       <span className="text-xs text-muted-foreground">
-                        {workspace.plan}
+                        {membership.organization.membersCount} {membership.organization.membersCount === 1 ? 'member' : 'members'}
                       </span>
                     </div>
-                    {activeWorkspace.name === workspace.name && (
+                    {organization?.id === membership.organization.id && (
                       <Check className="ml-auto size-4" />
                     )}
                   </DropdownMenuItem>
                 ))}
+                
+                {userMemberships?.data && userMemberships.data.length === 0 && (
+                  <div className="px-2 py-3 text-sm text-muted-foreground text-center">
+                    No organizations found
+                  </div>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           </SidebarMenuItem>

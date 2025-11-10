@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@largence/components/theme-provider";
+import { RouteLoading } from "@largence/components/route-loading";
 import "./globals.css";
+import { ClerkProvider } from "@clerk/nextjs";
 
 const generalSans = localFont({
   src: [
@@ -33,6 +35,53 @@ const generalSans = localFont({
     },
   ],
   variable: "--font-general-sans",
+  display: "swap",
+});
+
+const polySans = localFont({
+  src: [
+    {
+      path: "../../public/fonts/polysanstrial-slim.otf",
+      weight: "300",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/polysanstrial-neutral.otf",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/polysanstrial-median.otf",
+      weight: "500",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/polysanstrial-bulky.otf",
+      weight: "700",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/polysansitalictrial-slimitalic.otf",
+      weight: "300",
+      style: "italic",
+    },
+    {
+      path: "../../public/fonts/polysansitalictrial-neutralitalic.otf",
+      weight: "400",
+      style: "italic",
+    },
+    {
+      path: "../../public/fonts/polysansitalictrial-medianitalic.otf",
+      weight: "500",
+      style: "italic",
+    },
+    {
+      path: "../../public/fonts/polysansitalictrial-bulkyitalic.otf",
+      weight: "700",
+      style: "italic",
+    },
+  ],
+  variable: "--font-poly-sans",
   display: "swap",
 });
 
@@ -85,18 +134,21 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <ClerkProvider>
       <body
-        className={`${generalSans.variable} ${satoshi.variable} ${geistMono.variable} font-sans antialiased`}
+        className={`${generalSans.variable} ${polySans.variable} ${satoshi.variable} ${geistMono.variable} font-sans antialiased`}
       >
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
-          disableTransitionOnChange
+          disableTransitionOnChange={false}
         >
+          <RouteLoading />
           {children}
         </ThemeProvider>
       </body>
+      </ClerkProvider>
     </html>
   );
 }

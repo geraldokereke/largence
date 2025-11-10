@@ -4,6 +4,7 @@ import * as React from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
+import { useClerk, useUser } from "@clerk/nextjs";
 import { Bell, Plus, Settings, User, CreditCard, LogOut, HelpCircle, Shield, Palette, Globe, Keyboard, Sun, Moon, Monitor, Check, Search, Command as CommandIcon, FileText, Brain, ShieldCheck, Folder, Users as UsersIcon, FileStack, Plug2Icon, Home, Command, CheckCheck, Clock, AlertCircle, X } from "lucide-react";
 
 import { Button } from "@largence/components/ui/button";
@@ -79,8 +80,15 @@ const commands = [
 export function SiteHeader() {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
+  const { signOut } = useClerk();
+  const { user } = useUser();
   const [commandOpen, setCommandOpen] = React.useState(false);
   const [notificationOpen, setNotificationOpen] = React.useState(false);
+
+  const handleLogout = async () => {
+    await signOut();
+    router.push("/login");
+  };
 
   // Keyboard shortcuts
   React.useEffect(() => {
@@ -412,7 +420,10 @@ export function SiteHeader() {
               <DropdownMenuLabel>Settings</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuGroup>
-                <DropdownMenuItem className="cursor-pointer">
+                <DropdownMenuItem 
+                  className="cursor-pointer"
+                  onClick={() => router.push("/account?tab=profile")}
+                >
                   <User className="mr-2 h-4 w-4" />
                   <span>Account</span>
                   <DropdownMenuShortcut>⌘A</DropdownMenuShortcut>
@@ -475,7 +486,10 @@ export function SiteHeader() {
                     </div>
                   </DropdownMenuSubContent>
                 </DropdownMenuSub>
-                <DropdownMenuItem className="cursor-pointer">
+                <DropdownMenuItem 
+                  className="cursor-pointer"
+                  onClick={() => router.push("/account?tab=language")}
+                >
                   <Globe className="mr-2 h-4 w-4" />
                   <span>Language & Region</span>
                 </DropdownMenuItem>
@@ -490,17 +504,26 @@ export function SiteHeader() {
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
               <DropdownMenuGroup>
-                <DropdownMenuItem className="cursor-pointer">
+                <DropdownMenuItem 
+                  className="cursor-pointer"
+                  onClick={() => router.push("/account?tab=privacy")}
+                >
                   <Shield className="mr-2 h-4 w-4" />
                   <span>Privacy & Security</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem className="cursor-pointer">
+                <DropdownMenuItem 
+                  className="cursor-pointer"
+                  onClick={() => router.push("/account?tab=billing")}
+                >
                   <CreditCard className="mr-2 h-4 w-4" />
                   <span>Billing</span>
                 </DropdownMenuItem>
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="cursor-pointer">
+              <DropdownMenuItem 
+                className="cursor-pointer"
+                onClick={() => router.push("/help")}
+              >
                 <HelpCircle className="mr-2 h-4 w-4" />
                 <span>Help & Support</span>
               </DropdownMenuItem>
@@ -511,39 +534,53 @@ export function SiteHeader() {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="h-9 w-9 rounded-full p-0 cursor-pointer">
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src="/avatar.png" alt="User" />
-                  <AvatarFallback>JD</AvatarFallback>
+                  <AvatarImage src={user?.imageUrl} alt={user?.fullName || "User"} />
+                  <AvatarFallback>
+                    {user?.firstName?.[0]}{user?.lastName?.[0]}
+                  </AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56 rounded-sm">
               <DropdownMenuLabel>
                 <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">John Doe</p>
+                  <p className="text-sm font-medium leading-none">{user?.fullName}</p>
                   <p className="text-xs leading-none text-muted-foreground">
-                    john.doe@company.com
+                    {user?.emailAddresses[0]?.emailAddress}
                   </p>
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuGroup>
-                <DropdownMenuItem className="cursor-pointer">
+                <DropdownMenuItem 
+                  className="cursor-pointer"
+                  onClick={() => router.push("/account?tab=profile")}
+                >
                   <User className="mr-2 h-4 w-4" />
                   <span>Profile</span>
                   <DropdownMenuShortcut>⌘P</DropdownMenuShortcut>
                 </DropdownMenuItem>
-                <DropdownMenuItem className="cursor-pointer">
+                <DropdownMenuItem 
+                  className="cursor-pointer"
+                  onClick={() => router.push("/account?tab=preferences")}
+                >
                   <Settings className="mr-2 h-4 w-4" />
                   <span>Settings</span>
                   <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
                 </DropdownMenuItem>
-                <DropdownMenuItem className="cursor-pointer">
+                <DropdownMenuItem 
+                  className="cursor-pointer"
+                  onClick={() => router.push("/account?tab=billing")}
+                >
                   <CreditCard className="mr-2 h-4 w-4" />
                   <span>Billing</span>
                 </DropdownMenuItem>
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="cursor-pointer text-destructive focus:text-destructive">
+              <DropdownMenuItem 
+                className="cursor-pointer text-destructive focus:text-destructive"
+                onClick={handleLogout}
+              >
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>Log out</span>
                 <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>

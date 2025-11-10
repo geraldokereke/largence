@@ -59,7 +59,7 @@ export function EmptyState({
           </div>
 
           <div className="max-w-2xl mb-8">
-            <h2 className="text-3xl font-semibold mb-3 font-(family-name:--font-general-sans) tracking-tight">
+            <h2 className="text-3xl font-semibold mb-3 font-display tracking-tight">
               {title}
             </h2>
             <p className="text-muted-foreground">{description}</p>
@@ -84,7 +84,7 @@ export function EmptyState({
         <div className="p-8">
           <div className="max-w-4xl mx-auto">
             <div className="mb-6">
-              <h3 className="text-lg font-semibold mb-1 font-(family-name:--font-general-sans)">
+              <h3 className="text-lg font-semibold mb-1 font-heading">
                 Popular Templates
               </h3>
               <p className="text-sm text-muted-foreground">

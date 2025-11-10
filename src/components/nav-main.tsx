@@ -1,5 +1,6 @@
 "use client"
 
+import { useRouter, usePathname } from "next/navigation"
 import { ChevronRight, type LucideIcon } from "lucide-react"
 
 import {
@@ -35,29 +36,42 @@ export function NavMain({
   }[]
   currentPath?: string
 }) {
+  const router = useRouter()
+  const pathname = usePathname()
+
+  const handleNavigation = (url: string) => {
+    router.push(url)
+  }
+
   return (
     <SidebarGroup>
-      <SidebarMenu className="gap-1 px-0">
-        {items.map((item) => {
-          const isActive = currentPath === item.url;
+      <SidebarMenu className="gap-1 px-0 relative">
+        
+        {items.map((item, index) => {
+          const isActive = pathname === item.url
           return (
           <Collapsible key={item.title} asChild defaultOpen={isActive}>
             <SidebarMenuItem>
               <SidebarMenuButton 
-                asChild 
                 tooltip={item.title}
                 isActive={isActive}
-                className="h-10 rounded-sm data-[active=true]:bg-primary data-[active=true]:text-primary-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors group-data-[collapsible=icon]:h-10 group-data-[collapsible=icon]:w-10 group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:justify-center"
+                onClick={(e) => {
+                  e.preventDefault()
+                  handleNavigation(item.url)
+                }}
+                className="h-10 rounded-md data-[active=true]:bg-primary/10 data-[active=true]:text-primary data-[active=true]:shadow-sm data-[active=true]:shadow-primary/5 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-all duration-200 group-data-[collapsible=icon]:h-10 group-data-[collapsible=icon]:w-10 group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:justify-center cursor-pointer"
               >
-                <a href={item.url} className="flex items-center gap-3 w-full">
+                <div className="flex items-center gap-3 w-full">
                   <item.icon className="h-5 w-5 shrink-0" />
                   <span className="font-medium text-sm group-data-[collapsible=icon]:hidden">{item.title}</span>
                   {item.badge && (
-                    <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-sm bg-primary/10 px-1.5 text-xs font-medium text-primary group-data-[collapsible=icon]:hidden">
+                    <span className={`ml-auto flex h-5 min-w-5 items-center justify-center rounded-md px-1.5 text-xs font-medium group-data-[collapsible=icon]:hidden ${
+                      isActive ? 'bg-primary/20 text-primary' : 'bg-primary/10 text-primary'
+                    }`}>
                       {item.badge}
                     </span>
                   )}
-                </a>
+                </div>
               </SidebarMenuButton>
               {item.items?.length ? (
                 <>
@@ -71,10 +85,14 @@ export function NavMain({
                     <SidebarMenuSub>
                       {item.items?.map((subItem) => (
                         <SidebarMenuSubItem key={subItem.title}>
-                          <SidebarMenuSubButton asChild className="h-9">
-                            <a href={subItem.url}>
-                              <span>{subItem.title}</span>
-                            </a>
+                          <SidebarMenuSubButton 
+                            onClick={(e) => {
+                              e.preventDefault()
+                              router.push(subItem.url)
+                            }}
+                            className="h-9 cursor-pointer"
+                          >
+                            <span>{subItem.title}</span>
                           </SidebarMenuSubButton>
                         </SidebarMenuSubItem>
                       ))}

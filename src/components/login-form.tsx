@@ -5,44 +5,47 @@ import { Button } from "@largence/components/ui/button";
 import { Input } from "@largence/components/ui/input";
 import { Label } from "@largence/components/ui/label";
 import { Spinner } from "@largence/components/ui/spinner";
-import { Eye, EyeOff, ShieldCheck, Key, Cloud } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import { FaGoogle, FaMicrosoft } from "react-icons/fa";
 import { useLoginForm } from "@largence/hooks/use-login-form";
+import { useSignIn } from "@clerk/nextjs";
+import Link from "next/link";
 
 interface LoginFormProps {
   className?: string;
   title?: string;
   description?: string;
-  forgotPasswordUrl?: string;
-  signUpUrl?: string;
   onSubmit?: (email: string, password: string) => Promise<void>;
-  onGoogleLogin?: () => void;
-  onMicrosoftLogin?: () => void;
-  onAzureADLogin?: () => void;
-  onSAMLLogin?: () => void;
-  onSSLLogin?: () => void;
 }
 
 export function LoginForm({
   className,
   title = "Welcome Back",
-  description = "Sign in to your Largence account to continue",
-  forgotPasswordUrl = "#",
-  signUpUrl = "#",
+  description = "Sign in to your Largence workspace to continue",
   onSubmit,
-  onGoogleLogin,
-  onMicrosoftLogin,
-  onAzureADLogin,
-  onSAMLLogin,
-  onSSLLogin,
 }: LoginFormProps) {
-  const { showPassword, isLoading, togglePasswordVisibility, handleSubmit } =
+  const { showPassword, isLoading, error, togglePasswordVisibility, handleSubmit } =
     useLoginForm();
+  const { signIn } = useSignIn();
+
+  const handleOAuthSignIn = (provider: "oauth_google" | "oauth_microsoft") => async () => {
+    if (!signIn) return;
+    
+    try {
+      await signIn.authenticateWithRedirect({
+        strategy: provider,
+        redirectUrl: "/sso-callback",
+        redirectUrlComplete: "/onboarding",
+      });
+    } catch (err) {
+      console.error("OAuth error:", err);
+    }
+  };
 
   return (
     <div className={cn("w-full", className)}>
       <div className="mb-8">
-        <h1 className="text-3xl font-semibold mb-2 font-(family-name:--font-general-sans)">
+        <h1 className="text-3xl font-semibold mb-2 font-display">
           {title}
         </h1>
         <p className="text-muted-foreground">
@@ -51,6 +54,12 @@ export function LoginForm({
       </div>
 
       <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
+        {error && (
+          <div className="p-3 rounded-sm bg-destructive/10 border border-destructive/20 text-destructive text-sm">
+            {error}
+          </div>
+        )}
+
         <div className="space-y-2">
           <Label htmlFor="email">Work Email</Label>
           <Input
@@ -68,12 +77,12 @@ export function LoginForm({
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <Label htmlFor="password">Password</Label>
-            <a
-              href={forgotPasswordUrl}
+            <Link
+              href="/auth/forgot-password"
               className="text-xs text-primary hover:underline font-medium"
             >
               Forgot password?
-            </a>
+            </Link>
           </div>
           <div className="relative">
             <Input
@@ -132,7 +141,7 @@ export function LoginForm({
           <Button
             variant="outline"
             type="button"
-            onClick={onGoogleLogin}
+            onClick={handleOAuthSignIn("oauth_google")}
             disabled={isLoading}
             className="w-full h-10 rounded-sm"
           >
@@ -143,7 +152,7 @@ export function LoginForm({
           <Button
             variant="outline"
             type="button"
-            onClick={onMicrosoftLogin}
+            onClick={handleOAuthSignIn("oauth_microsoft")}
             disabled={isLoading}
             className="w-full h-10 rounded-sm"
           >
@@ -152,49 +161,14 @@ export function LoginForm({
           </Button>
         </div>
 
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t" />
-          </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-background px-2 text-muted-foreground">
-              Enterprise SSO
-            </span>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-3">
-          <Button
-            variant="outline"
-            type="button"
-            onClick={onSAMLLogin}
-            disabled={isLoading}
-            className="h-10 rounded-sm"
-          >
-            <ShieldCheck className="h-4 w-4" />
-            SAML 2.0
-          </Button>
-
-          <Button
-            variant="outline"
-            type="button"
-            onClick={onSSLLogin}
-            disabled={isLoading}
-            className="h-10 rounded-sm"
-          >
-            <Key className="h-4 w-4" />
-            SSL Certificate
-          </Button>
-        </div>
-
         <p className="text-center text-sm text-muted-foreground">
           New to our platform?{" "}
-          <a
-            href={signUpUrl}
+          <Link
+            href="/auth/signup"
             className="text-primary hover:underline font-medium"
           >
-            Request access
-          </a>
+            Create an account
+          </Link>
         </p>
       </form>
     </div>

@@ -1,8 +1,8 @@
 "use client"
-import { LoginForm } from "@largence/components/login-form";
-import { motion } from "framer-motion";
-import Image from "next/image";
 
+import { LoginForm } from "@largence/components/login-form";
+import Image from "next/image";
+import { useState, useEffect } from "react";
 
 const features = [
   {
@@ -10,68 +10,37 @@ const features = [
     title: "AI Document Drafting",
     description: "Generate contracts, NDAs, employment agreements, and policies with AI. Customize by jurisdiction, add clauses, and export as PDF or DOCX.",
     features: ["Multi-country templates", "Smart clause suggestions"],
-    animationClass: "animate-text-fade-1",
-    opacity: "opacity-100"
   },
   {
     icon: "M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z",
     title: "Compliance Auditing",
     description: "AI audits documents for compliance gaps, missing clauses, and regulatory alignment across NDPR, GDPR, CCPA, and African data protection laws.",
     features: ["Compliance scoring", "Risk flagging"],
-    animationClass: "animate-text-fade-2",
-    opacity: "opacity-0"
   },
   {
     icon: "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4",
     title: "Enterprise Governance",
     description: "Manage document lifecycle with approval workflows, role-based access, audit trails, and e-signature integration. Full accountability.",
     features: ["Approval workflows", "Audit trails"],
-    animationClass: "animate-text-fade-3",
-    opacity: "opacity-0"
   },
   {
     icon: "M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10",
     title: "Multi-Country Templates",
     description: "Access legally-reviewed templates for Nigeria, Ghana, Kenya, and South Africa. Localized for employment acts, data laws, and compliance frameworks.",
     features: ["Region-specific", "Pre-vetted clauses"],
-    animationClass: "animate-text-fade-4",
-    opacity: "opacity-0"
   }
 ];
 
-const CheckIcon = () => (
-  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
-  </svg>
-);
-
-const FeatureSlide = ({ feature, index }: { feature: typeof features[0], index: number }) => (
-  <div className={`absolute inset-0 ${feature.opacity} transition-opacity duration-500 ${feature.animationClass}`}>
-    <div className="bg-white/5 backdrop-blur-sm rounded-sm p-8 border border-white/10 h-full flex flex-col justify-between shadow-xl">
-      <div>
-        <div className="flex items-center space-x-4 mb-5">
-          <div className="w-12 h-12 bg-emerald-500/20 rounded-sm flex items-center justify-center shadow-lg">
-            <svg className="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={feature.icon} />
-            </svg>
-          </div>
-          <h3 className="text-white text-2xl font-semibold tracking-tight font-(family-name:--font-general-sans)">{feature.title}</h3>
-        </div>
-        <p className="text-slate-300 leading-relaxed text-base">{feature.description}</p>
-      </div>
-      <div className="flex items-center gap-6 text-sm text-slate-400 mt-6 pt-4 border-t border-white/5">
-        {feature.features.map((item, idx) => (
-          <span key={idx} className="flex items-center gap-2">
-            <CheckIcon />
-            {item}
-          </span>
-        ))}
-      </div>
-    </div>
-  </div>
-);
-
 export default function LoginPage() {
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % features.length);
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, []);
   return (
     <div className="grid min-h-svh lg:grid-cols-2">
       <div className="flex flex-col gap-4 p-6 md:p-10">
@@ -84,7 +53,7 @@ export default function LoginPage() {
               height={32}
               className="shrink-0"
             />
-            <span className="text-xl font-semibold tracking-tight font-(family-name:--font-general-sans)">Largence</span>
+            <span className="text-xl font-semibold tracking-tight font-heading">Largence</span>
           </a>
         </div>
         <div className="flex flex-1 items-center justify-center">
@@ -94,70 +63,161 @@ export default function LoginPage() {
         </div>
       </div>
 
-      <div className="bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 relative hidden lg:block overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <div
-            className="h-full w-full"
-            style={{
-              backgroundImage: `
-                linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px)
-              `,
-              backgroundSize: '50px 50px'
-            }}
-          />
-        </div>
+      {/* Right side - Marketing/Feature Content */}
+      <div className="hidden lg:flex bg-muted relative overflow-hidden">
+        <div className="absolute inset-0 bg-linear-to-br from-primary/5 via-transparent to-primary/10" />
+        
+        {/* Decorative SVG Background */}
+        <svg
+          className="absolute inset-0 w-full h-full opacity-[0.03]"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <defs>
+            <pattern
+              id="grid-pattern-login"
+              width="60"
+              height="60"
+              patternUnits="userSpaceOnUse"
+            >
+              <path
+                d="M 60 0 L 0 0 0 60"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1"
+              />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#grid-pattern-login)" />
+        </svg>
 
-        <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-emerald-600/10 rounded-full blur-3xl"></div>
+        {/* Floating shapes */}
+        <div className="absolute top-20 right-20 w-72 h-72 bg-primary/5 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-20 left-20 w-96 h-96 bg-primary/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+        
+        <div className="relative z-10 flex flex-col justify-center p-12 max-w-2xl">
+          <div className="mb-8">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-4">
+              <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+              Built for African legal teams
+            </div>
+            <h2 className="text-5xl font-bold mb-4 font-display leading-tight">
+              Sign back into Largence
+            </h2>
+            <p className="text-lg text-muted-foreground leading-relaxed">
+              Continue transforming your legal operations with AI-powered document generation, 
+              compliance auditing, and enterprise governance tools.
+            </p>
+          </div>
+          
+          {/* Carousel Container */}
+          <div className="relative h-80 mb-8">
+            {features.map((feature, index) => (
+              <div
+                key={index}
+                className={`absolute inset-0 transition-all duration-700 ${
+                  index === currentSlide
+                    ? "opacity-100 translate-x-0"
+                    : index < currentSlide
+                    ? "opacity-0 -translate-x-full"
+                    : "opacity-0 translate-x-full"
+                }`}
+              >
+                <div className="bg-card/50 backdrop-blur-sm rounded-lg p-8 border border-border/50 h-full flex flex-col">
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="h-14 w-14 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                      <svg
+                        className="h-7 w-7 text-primary"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d={feature.icon}
+                        />
+                      </svg>
+                    </div>
+                    <h3 className="text-2xl font-semibold font-display">
+                      {feature.title}
+                    </h3>
+                  </div>
+                  <p className="text-muted-foreground leading-relaxed mb-6 flex-1">
+                    {feature.description}
+                  </p>
+                  <div className="flex gap-3 flex-wrap">
+                    {feature.features.map((item, idx) => (
+                      <span
+                        key={idx}
+                        className="px-3 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium"
+                      >
+                        {item}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
 
-        <div className="absolute inset-0 flex flex-col p-12 lg:p-16">
-          <div className="flex-1 flex flex-col justify-center max-w-xl">
+          {/* Carousel Indicators */}
+          <div className="flex justify-center gap-2 mb-8">
+            {features.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentSlide(index)}
+                className={`h-2 rounded-full transition-all ${
+                  index === currentSlide
+                    ? "w-8 bg-primary"
+                    : "w-2 bg-muted-foreground/30 hover:bg-muted-foreground/50"
+                }`}
+                aria-label={`Go to slide ${index + 1}`}
+              />
+            ))}
+          </div>
+
+          <div className="pt-8 border-t border-border/40">
+            <div className="grid grid-cols-3 gap-8 mb-8">
+              <div className="text-center">
+                <p className="text-3xl font-bold text-primary font-display mb-1">4</p>
+                <p className="text-sm text-muted-foreground">Countries supported</p>
+              </div>
+              <div className="text-center">
+                <p className="text-3xl font-bold text-primary font-display mb-1">AI</p>
+                <p className="text-sm text-muted-foreground">Powered drafting</p>
+              </div>
+              <div className="text-center">
+                <p className="text-3xl font-bold text-primary font-display mb-1">24/7</p>
+                <p className="text-sm text-muted-foreground">Platform access</p>
+              </div>
+            </div>
             
-            <motion.h2
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, ease: "easeOut" }}
-              className="text-5xl lg:text-6xl font-semibold text-white mb-6 leading-tight tracking-tight font-(family-name:--font-general-sans)"
-            >
-              Enterprise Legal Intelligence Platform
-            </motion.h2>
-            
-            <motion.p 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
-              className="text-xl text-slate-300 leading-relaxed mb-12"
-            >
-              Transform your legal operations with <span className="font-semibold">AI powered</span> contract generation, 
-              <span className="font-semibold"> intelligent</span> compliance monitoring, and 
-              <span className="font-semibold"> automated</span> governance workflows. Built for 
-              <span className="font-semibold"> global enterprises</span> managing 
-              complex regulatory requirements across <span className="font-semibold">multiple jurisdictions</span>.
-            </motion.p>
-
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
-              className="relative h-72 mb-8 overflow-hidden"
-            >
-              {features.map((feature, index) => (
-                <FeatureSlide key={index} feature={feature} index={index} />
-              ))}
-            </motion.div>
-
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.6, delay: 0.6 }}
-              className="flex justify-center gap-2"
-            >
-              <div className="w-12 h-1 rounded-full bg-emerald-400/60 animate-progress-1"></div>
-              <div className="w-12 h-1 rounded-full bg-white/10 animate-progress-2"></div>
-              <div className="w-12 h-1 rounded-full bg-white/10 animate-progress-3"></div>
-              <div className="w-12 h-1 rounded-full bg-white/10 animate-progress-4"></div>
-            </motion.div>
+            <div className="flex items-start gap-3 p-4 rounded-lg bg-primary/5 border border-primary/10">
+              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                <svg
+                  className="h-5 w-5 text-primary"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                  />
+                </svg>
+              </div>
+              <div>
+                <p className="text-sm font-medium mb-1">Start generating compliant documents today</p>
+                <p className="text-xs text-muted-foreground">
+                  30-day money-back guarantee • Dedicated support • Regular updates
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </div>

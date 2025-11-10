@@ -1,5 +1,6 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { clerkClient } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
 
 // Define public routes that don't require authentication
 const isPublicRoute = createRouteMatcher([
@@ -8,6 +9,7 @@ const isPublicRoute = createRouteMatcher([
   "/",
   "/auth/signup(.*)",
   "/auth/forgot-password(.*)",
+  "/sso-callback(.*)",
 ]);
 
 // Define routes that should redirect to onboarding if org is not set
@@ -63,15 +65,23 @@ export default clerkMiddleware(async (auth, req) => {
   const hostname = req.headers.get('host') || '';
   const subdomain = getSubdomain(hostname);
 
-  if (!userId && !isPublicRoute(req)) {
+  // Allow public routes without authentication
+  if (isPublicRoute(req)) {
+    return NextResponse.next();
+  }
+
+  // Redirect unauthenticated users to sign-in
+  if (!userId) {
     return redirectToSignIn({ returnBackUrl: req.url });
   }
 
+  // Redirect authenticated users away from login
   if (userId && req.nextUrl.pathname === "/login") {
     const url = new URL("/", req.url);
-    return Response.redirect(url);
+    return NextResponse.redirect(url);
   }
 
+  // Handle subdomain organization switching
   if (subdomain && userId) {
     if (orgSlug !== subdomain) {
       const targetOrg = await getOrgBySlug(subdomain);
@@ -87,27 +97,31 @@ export default clerkMiddleware(async (auth, req) => {
         if (isMember) {
           const url = new URL(req.url);
           url.searchParams.set('__clerk_org_switch', targetOrg.id);
-          return Response.redirect(url);
+          return NextResponse.redirect(url);
         } else {
           const url = new URL('/unauthorized', req.url);
-          return Response.redirect(url);
+          return NextResponse.redirect(url);
         }
       } else {
         const url = new URL('/not-found', req.url);
-        return Response.redirect(url);
+        return NextResponse.redirect(url);
       }
     }
   }
 
+  // Redirect to onboarding if no organization is set for protected routes
   if (userId && !orgId && requiresOrgRoute(req)) {
     const url = new URL("/onboarding", req.url);
-    return Response.redirect(url);
+    return NextResponse.redirect(url);
   }
 
+  // Redirect away from onboarding if user already has organization
   if (userId && orgId && req.nextUrl.pathname === "/onboarding") {
     const url = new URL("/", req.url);
-    return Response.redirect(url);
+    return NextResponse.redirect(url);
   }
+
+  return NextResponse.next();
 });
 
 export const config = {

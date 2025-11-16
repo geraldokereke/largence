@@ -18,7 +18,7 @@ export function WelcomeCTA() {
       
       <div className="max-w-4xl relative z-10">
         <h1 className="text-3xl font-semibold mb-2 font-display">
-          Hi, {user?.firstName || user?.username || 'there'}. Welcome to Largence
+          {`Hi ${user?.lastName || 'there'}, Welcome to Largence`}
         </h1>
         <p className="text-lg text-white/70 mb-6">
           Get started with AI-powered legal document generation and team collaboration.

@@ -3,6 +3,7 @@
 import { useUser, useOrganization, useOrganizationList } from "@clerk/nextjs";
 import { Button } from "@largence/components/ui/button";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export default function DebugAuthPage() {
   const { user, isLoaded: userLoaded, isSignedIn } = useUser();
@@ -18,11 +19,17 @@ export default function DebugAuthPage() {
     if (!setActive) return;
     try {
       await setActive({ organization: orgId });
-      alert("Organization set as active! Refreshing...");
-      window.location.href = "/";
+      toast.success("Organization activated", {
+        description: "Redirecting to dashboard..."
+      });
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 500);
     } catch (error) {
       console.error("Error setting active org:", error);
-      alert("Error: " + error);
+      toast.error("Failed to activate organization", {
+        description: String(error)
+      });
     }
   };
 

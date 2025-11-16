@@ -94,7 +94,7 @@ export default function OnboardingPage() {
   if (!isClient) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <Spinner size="lg" />
+        <Spinner size="sm" />
       </div>
     )
   }

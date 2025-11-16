@@ -28,13 +28,26 @@ export function SignupForm({ className }: SignupFormProps) {
   const [error, setError] = useState<string | null>(null);
   const [pendingVerification, setPendingVerification] = useState(false);
   const [code, setCode] = useState("");
+  const [oauthLoading, setOauthLoading] = useState<"google" | "microsoft" | null>(null);
+  const [password, setPassword] = useState("");
   const { signUp, setActive } = useSignUp();
   const router = useRouter();
+
+  // Password validation
+  const validatePassword = (pass: string) => {
+    const hasMinLength = pass.length >= 8;
+    const hasNumber = /\d/.test(pass);
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(pass);
+    return { hasMinLength, hasNumber, hasSpecialChar, isValid: hasMinLength && hasNumber && hasSpecialChar };
+  };
+
+  const passwordValidation = validatePassword(password);
 
   const handleOAuthSignUp = (provider: "oauth_google" | "oauth_microsoft") => async () => {
     if (!signUp) return;
     
     try {
+      setOauthLoading(provider === "oauth_google" ? "google" : "microsoft");
       await signUp.authenticateWithRedirect({
         strategy: provider,
         redirectUrl: "/sso-callback",
@@ -42,6 +55,7 @@ export function SignupForm({ className }: SignupFormProps) {
       });
     } catch (err) {
       console.error("OAuth error:", err);
+      setOauthLoading(null);
     }
   };
 
@@ -56,6 +70,14 @@ export function SignupForm({ className }: SignupFormProps) {
       const password = formData.get("password") as string;
       const firstName = formData.get("firstName") as string;
       const lastName = formData.get("lastName") as string;
+
+      // Validate password
+      const validation = validatePassword(password);
+      if (!validation.isValid) {
+        setError("Password must be at least 8 characters and contain a number and special character");
+        setIsLoading(false);
+        return;
+      }
 
       if (!signUp) {
         throw new Error("SignUp is not available");
@@ -249,7 +271,8 @@ export function SignupForm({ className }: SignupFormProps) {
               disabled={isLoading}
               autoComplete="new-password"
               className="h-10 rounded-sm pr-10"
-              minLength={8}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
             />
             <button
               type="button"
@@ -265,9 +288,32 @@ export function SignupForm({ className }: SignupFormProps) {
               )}
             </button>
           </div>
-          <p className="text-xs text-muted-foreground">
-            Must be at least 8 characters
-          </p>
+          <div className="space-y-1">
+            <div className="flex items-center gap-2 text-xs">
+              <div className={`h-1.5 w-1.5 rounded-full ${
+                passwordValidation.hasMinLength ? 'bg-green-500' : 'bg-muted-foreground/30'
+              }`} />
+              <span className={passwordValidation.hasMinLength ? 'text-green-500' : 'text-muted-foreground'}>
+                At least 8 characters
+              </span>
+            </div>
+            <div className="flex items-center gap-2 text-xs">
+              <div className={`h-1.5 w-1.5 rounded-full ${
+                passwordValidation.hasNumber ? 'bg-green-500' : 'bg-muted-foreground/30'
+              }`} />
+              <span className={passwordValidation.hasNumber ? 'text-green-500' : 'text-muted-foreground'}>
+                Contains a number
+              </span>
+            </div>
+            <div className="flex items-center gap-2 text-xs">
+              <div className={`h-1.5 w-1.5 rounded-full ${
+                passwordValidation.hasSpecialChar ? 'bg-green-500' : 'bg-muted-foreground/30'
+              }`} />
+              <span className={passwordValidation.hasSpecialChar ? 'text-green-500' : 'text-muted-foreground'}>
+                Contains a special character
+              </span>
+            </div>
+          </div>
         </div>
 
         <Button
@@ -301,22 +347,40 @@ export function SignupForm({ className }: SignupFormProps) {
             variant="outline"
             type="button"
             onClick={handleOAuthSignUp("oauth_google")}
-            disabled={isLoading}
+            disabled={isLoading || oauthLoading !== null}
             className="w-full h-10 rounded-sm"
           >
-            <FaGoogle className="h-4 w-4" />
-            Continue with Google
+            {oauthLoading === "google" ? (
+              <span className="flex items-center gap-2">
+                <Spinner size="sm" />
+                Connecting...
+              </span>
+            ) : (
+              <>
+                <FaGoogle className="h-4 w-4" />
+                Continue with Google
+              </>
+            )}
           </Button>
           
           <Button
             variant="outline"
             type="button"
             onClick={handleOAuthSignUp("oauth_microsoft")}
-            disabled={isLoading}
+            disabled={isLoading || oauthLoading !== null}
             className="w-full h-10 rounded-sm"
           >
-            <FaMicrosoft className="h-4 w-4" />
-            Continue with Microsoft
+            {oauthLoading === "microsoft" ? (
+              <span className="flex items-center gap-2">
+                <Spinner size="sm" />
+                Connecting...
+              </span>
+            ) : (
+              <>
+                <FaMicrosoft className="h-4 w-4" />
+                Continue with Microsoft
+              </>
+            )}
           </Button>
         </div>
 

@@ -1,0 +1,47 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Document {
+  id             String   @id @default(cuid())
+  title          String
+  content        String   @db.Text
+  status         DocumentStatus @default(DRAFT)
+  
+  // User and Organization from Clerk
+  userId         String
+  organizationId String
+  
+  // Document metadata
+  documentType   String   // e.g., "Contract", "NDA", "Employment Agreement"
+  jurisdiction   String?  // e.g., "Nigeria", "Ghana", "Kenya", "South Africa"
+  category       String?  // e.g., "Employment", "Corporate", "Commercial"
+  
+  // AI Generation metadata
+  aiPrompt       String?  @db.Text
+  aiModel        String?  // e.g., "gpt-4", "gpt-3.5-turbo"
+  generatedAt    DateTime?
+  
+  // Timestamps
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  
+  @@index([userId])
+  @@index([organizationId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+enum DocumentStatus {
+  DRAFT
+  FINAL
+  ARCHIVED
+}

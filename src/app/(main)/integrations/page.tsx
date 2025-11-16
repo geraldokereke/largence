@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@largence/components/ui/button";
 import { Input } from "@largence/components/ui/input";
 import {
@@ -224,7 +226,7 @@ export default function IntegrationsPage() {
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
           <div>
-            <h1 className="text-2xl font-semibold font-(family-name:--font-general-sans)">
+            <h1 className="text-2xl font-semibold font-heading">
               Integrations
             </h1>
             <p className="text-sm text-muted-foreground mt-1">
@@ -285,7 +287,7 @@ export default function IntegrationsPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <h3 className="text-lg font-semibold font-(family-name:--font-general-sans)">
+                    <h3 className="text-lg font-semibold font-heading">
                       {integration.name}
                     </h3>
                     {isConnected && (

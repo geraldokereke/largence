@@ -1,4 +1,7 @@
+"use client";
+
 import { Button } from "@largence/components/ui/button";
+import { useRouter } from "next/navigation";
 import {
   FileText,
   Upload,
@@ -14,14 +17,26 @@ const templates = [
     name: "Employment Contract",
     icon: FileText,
     description: "Hire with confidence",
+    type: "employment",
   },
-  { name: "NDA Agreement", icon: Shield, description: "Protect your IP" },
+  { 
+    name: "NDA Agreement", 
+    icon: Shield, 
+    description: "Protect your IP",
+    type: "nda",
+  },
   {
     name: "Service Agreement",
     icon: BookOpen,
     description: "Client contracts",
+    type: "service",
   },
-  { name: "Privacy Policy", icon: Shield, description: "GDPR compliant" },
+  { 
+    name: "Privacy Policy", 
+    icon: Shield, 
+    description: "GDPR compliant",
+    type: "privacy",
+  },
 ];
 
 interface EmptyStateProps {
@@ -47,6 +62,30 @@ export function EmptyState({
   secondaryAction = { label: "Upload Document" },
   showTemplates = true,
 }: EmptyStateProps = {}) {
+  const router = useRouter();
+
+  const handleGenerateClick = () => {
+    if (primaryAction.onClick) {
+      primaryAction.onClick();
+    } else {
+      router.push("/create");
+    }
+  };
+
+  const handleUploadClick = () => {
+    if (secondaryAction?.onClick) {
+      secondaryAction.onClick();
+    } else {
+      // TODO: Implement upload functionality
+      console.log("Upload document");
+    }
+  };
+
+  const handleTemplateClick = (templateType: string) => {
+    // Navigate to create page with the template type as a query parameter
+    router.push(`/create?type=${templateType}`);
+  };
+
   return (
     <div className="rounded-sm border bg-card overflow-hidden">
       <div className="relative overflow-hidden border-b bg-card">
@@ -66,12 +105,12 @@ export function EmptyState({
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3 w-full max-w-md">
-            <Button className="flex-1 h-10 rounded-sm" onClick={primaryAction.onClick}>
+            <Button className="flex-1 h-10 rounded-sm cursor-pointer" onClick={handleGenerateClick}>
               <Sparkles className="h-5 w-5" />
               {primaryAction.label}
             </Button>
             {secondaryAction && (
-              <Button variant="outline" className="flex-1 h-10 rounded-sm" onClick={secondaryAction.onClick}>
+              <Button variant="outline" className="flex-1 h-10 rounded-sm cursor-pointer" onClick={handleUploadClick}>
                 <Upload className="h-5 w-5" />
                 {secondaryAction.label}
               </Button>
@@ -98,7 +137,8 @@ export function EmptyState({
                 return (
                   <button
                     key={template.name}
-                    className="group p-4 rounded-sm border bg-card hover:bg-accent/5 hover:border-primary/50 transition-all text-left flex items-start gap-4"
+                    onClick={() => handleTemplateClick(template.type)}
+                    className="group p-4 rounded-sm border bg-card hover:bg-accent/5 hover:border-primary/50 transition-all text-left flex items-start gap-4 cursor-pointer"
                   >
                     <div className="p-2.5 rounded-sm bg-primary/10 group-hover:bg-primary/20 transition-colors shrink-0">
                       <TemplateIcon className="h-5 w-5 text-primary" />

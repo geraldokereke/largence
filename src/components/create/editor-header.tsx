@@ -35,7 +35,7 @@ export function EditorHeader({ documentName, documentType, jurisdiction }: Edito
               className="shrink-0"
             />
             <div>
-              <h1 className="text-base font-semibold font-(family-name:--font-general-sans)">
+              <h1 className="text-base font-semibold font-heading">
                 {documentName || "Untitled Document"}
               </h1>
               <div className="flex items-center gap-2 text-xs text-muted-foreground">

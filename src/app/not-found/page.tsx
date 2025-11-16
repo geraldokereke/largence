@@ -11,7 +11,7 @@ export default function NotFoundPage() {
             <Building2 className="h-12 w-12 text-muted-foreground" />
           </div>
         </div>
-        
+
         <div className="space-y-2">
           <h1 className="text-3xl font-bold tracking-tight">Organization Not Found</h1>
           <p className="text-muted-foreground">
@@ -23,7 +23,7 @@ export default function NotFoundPage() {
           <p className="text-sm text-muted-foreground">
             Please check the URL or contact support if you need assistance.
           </p>
-          
+
           <Button asChild className="w-full">
             <Link href="/">Go to Main Site</Link>
           </Button>

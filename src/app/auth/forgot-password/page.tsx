@@ -1,7 +1,26 @@
+"use client"
+
 import { ForgotPasswordForm } from "@largence/components/forgot-password-form";
 import Image from "next/image";
+import { useAuth } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function ForgotPasswordPage() {
+  const { isSignedIn, isLoaded } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (isLoaded && isSignedIn) {
+      router.push("/");
+    }
+  }, [isLoaded, isSignedIn, router]);
+
+  // Don't render the forgot password page if user is already signed in
+  if (!isLoaded || isSignedIn) {
+    return null;
+  }
+
   return (
     <div className="min-h-screen grid lg:grid-cols-2">
       {/* Left side - Forgot Password Form */}

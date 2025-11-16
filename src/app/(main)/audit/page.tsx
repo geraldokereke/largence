@@ -1,3 +1,5 @@
+"use client"
+
 import { Button } from "@largence/components/ui/button"
 import { Input } from "@largence/components/ui/input"
 import { 
@@ -189,7 +191,7 @@ export default function AuditPage() {
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
           <div>
-            <h1 className="text-2xl font-semibold font-(family-name:--font-general-sans)">
+            <h1 className="text-2xl font-semibold font-heading">
               Audit Trail
             </h1>
             <p className="text-sm text-muted-foreground mt-1">
@@ -220,7 +222,7 @@ export default function AuditPage() {
                       </div>
                       <div className="space-y-1">
                         <p className="text-sm text-muted-foreground">{stat.label}</p>
-                        <p className="text-3xl font-semibold font-(family-name:--font-general-sans)">
+                        <p className="text-3xl font-semibold font-heading">
                           {stat.value}
                         </p>
                         <p className="text-xs text-emerald-600">{stat.change}</p>

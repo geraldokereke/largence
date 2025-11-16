@@ -105,6 +105,27 @@ export function useOnboarding() {
       // Immediately set as active
       await setActive({ organization: organization.id });
 
+      // Upload logo if provided
+      let uploadedLogoUrl = formData.logoUrl;
+      if (formData.logoFile) {
+        try {
+          const logoFormData = new FormData();
+          logoFormData.append("file", formData.logoFile);
+          
+          const logoResponse = await fetch(`/api/organizations/${organization.id}/logo`, {
+            method: "POST",
+            body: logoFormData,
+          });
+          
+          if (logoResponse.ok) {
+            const logoData = await logoResponse.json();
+            uploadedLogoUrl = logoData.imageUrl;
+          }
+        } catch (logoErr) {
+          console.warn("Failed to upload logo:", logoErr);
+        }
+      }
+
       // Update organization metadata
       try {
         await fetch(`/api/organizations/${organization.id}/metadata`, {
@@ -118,7 +139,7 @@ export function useOnboarding() {
             website: formData.website,
             billingEmail: formData.billingEmail,
             phone: formData.phone,
-            logoUrl: formData.logoUrl,
+            logoUrl: uploadedLogoUrl,
             useCase: formData.useCase,
             integrations: formData.integrations,
             onboardedAt: new Date().toISOString(),

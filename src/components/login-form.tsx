@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { cn } from "@largence/lib/utils";
 import { Button } from "@largence/components/ui/button";
 import { Input } from "@largence/components/ui/input";
@@ -27,11 +28,13 @@ export function LoginForm({
   const { showPassword, isLoading, error, togglePasswordVisibility, handleSubmit } =
     useLoginForm();
   const { signIn } = useSignIn();
+  const [oauthLoading, setOauthLoading] = useState<"google" | "microsoft" | null>(null);
 
   const handleOAuthSignIn = (provider: "oauth_google" | "oauth_microsoft") => async () => {
     if (!signIn) return;
     
     try {
+      setOauthLoading(provider === "oauth_google" ? "google" : "microsoft");
       await signIn.authenticateWithRedirect({
         strategy: provider,
         redirectUrl: "/sso-callback",
@@ -39,6 +42,7 @@ export function LoginForm({
       });
     } catch (err) {
       console.error("OAuth error:", err);
+      setOauthLoading(null);
     }
   };
 
@@ -142,22 +146,40 @@ export function LoginForm({
             variant="outline"
             type="button"
             onClick={handleOAuthSignIn("oauth_google")}
-            disabled={isLoading}
+            disabled={isLoading || oauthLoading !== null}
             className="w-full h-10 rounded-sm"
           >
-            <FaGoogle className="h-4 w-4" />
-            Continue with Google
+            {oauthLoading === "google" ? (
+              <span className="flex items-center gap-2">
+                <Spinner size="sm" />
+                Connecting...
+              </span>
+            ) : (
+              <>
+                <FaGoogle className="h-4 w-4" />
+                Continue with Google
+              </>
+            )}
           </Button>
           
           <Button
             variant="outline"
             type="button"
             onClick={handleOAuthSignIn("oauth_microsoft")}
-            disabled={isLoading}
+            disabled={isLoading || oauthLoading !== null}
             className="w-full h-10 rounded-sm"
           >
-            <FaMicrosoft className="h-4 w-4" />
-            Continue with Microsoft
+            {oauthLoading === "microsoft" ? (
+              <span className="flex items-center gap-2">
+                <Spinner size="sm" />
+                Connecting...
+              </span>
+            ) : (
+              <>
+                <FaMicrosoft className="h-4 w-4" />
+                Continue with Microsoft
+              </>
+            )}
           </Button>
         </div>
 

@@ -1,5 +1,8 @@
+"use client";
+
 import { Button } from "@largence/components/ui/button"
 import { Input } from "@largence/components/ui/input"
+import { useRouter } from "next/navigation"
 import { 
   Shield, 
   Users, 
@@ -29,6 +32,7 @@ const templates = [
     id: 1,
     name: "Employment Contract",
     category: "Employment",
+    type: "employment",
     description: "Comprehensive employment agreement with terms, compensation, and benefits",
     icon: Users,
     jurisdictions: ["Nigeria", "Ghana", "Kenya", "South Africa"],
@@ -41,6 +45,7 @@ const templates = [
     id: 2,
     name: "Non-Disclosure Agreement (NDA)",
     category: "Contracts",
+    type: "nda",
     description: "Protect confidential information with mutual or one-way NDA",
     icon: Shield,
     jurisdictions: ["Multi-jurisdiction"],
@@ -53,6 +58,7 @@ const templates = [
     id: 3,
     name: "Service Agreement",
     category: "Contracts",
+    type: "service",
     description: "Professional services contract with scope, deliverables, and payment terms",
     icon: Briefcase,
     jurisdictions: ["Nigeria", "Ghana", "Kenya"],
@@ -65,6 +71,7 @@ const templates = [
     id: 4,
     name: "Privacy Policy",
     category: "Compliance",
+    type: "privacy",
     description: "GDPR and NDPR compliant privacy policy for data protection",
     icon: Shield,
     jurisdictions: ["EU", "Nigeria"],
@@ -77,6 +84,7 @@ const templates = [
     id: 5,
     name: "Board Resolution",
     category: "Corporate",
+    type: "board",
     description: "Document board decisions and corporate governance actions",
     icon: Building2,
     jurisdictions: ["Nigeria", "Ghana"],
@@ -89,6 +97,7 @@ const templates = [
     id: 6,
     name: "Consulting Agreement",
     category: "Contracts",
+    type: "consulting",
     description: "Independent contractor agreement with IP and confidentiality clauses",
     icon: Briefcase,
     jurisdictions: ["Multi-jurisdiction"],
@@ -101,6 +110,7 @@ const templates = [
     id: 7,
     name: "Terms of Service",
     category: "Compliance",
+    type: "terms",
     description: "Website or app terms of service with user obligations and limitations",
     icon: FileCheck,
     jurisdictions: ["Multi-jurisdiction"],
@@ -113,6 +123,7 @@ const templates = [
     id: 8,
     name: "Cross-Border Agreement",
     category: "International",
+    type: "crossborder",
     description: "International trade agreement with jurisdiction and dispute resolution",
     icon: Globe,
     jurisdictions: ["Multi-jurisdiction"],
@@ -124,11 +135,17 @@ const templates = [
 ]
 
 export default function TemplatesPage() {
+  const router = useRouter();
+
+  const handleUseTemplate = (templateType: string) => {
+    router.push(`/create?type=${templateType}`);
+  };
+
   return (
     <div className="flex flex-1 flex-col p-4">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-semibold mb-2 font-(family-name:--font-general-sans)">
+        <h1 className="text-2xl font-semibold mb-2 font-heading">
           Template Library
         </h1>
         <p className="text-sm text-muted-foreground">
@@ -196,7 +213,7 @@ export default function TemplatesPage() {
 
                       {/* Content - grows to fill space */}
                       <div className="flex-1 flex flex-col">
-                        <h3 className="text-lg font-semibold mb-2 font-(family-name:--font-general-sans)">
+                        <h3 className="text-lg font-semibold mb-2 font-heading">
                           {template.name}
                         </h3>
                         <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
@@ -234,10 +251,13 @@ export default function TemplatesPage() {
 
                       {/* Actions - always at bottom */}
                       <div className="flex gap-2">
-                        <Button className="flex-1 h-9 rounded-sm text-sm">
+                        <Button 
+                          className="flex-1 h-9 rounded-sm text-sm cursor-pointer"
+                          onClick={() => handleUseTemplate(template.type)}
+                        >
                           Use Template
                         </Button>
-                        <Button variant="outline" size="icon" className="h-9 w-9 rounded-sm">
+                        <Button variant="outline" size="icon" className="h-9 w-9 rounded-sm cursor-pointer">
                           <Eye className="h-4 w-4" />
                         </Button>
                       </div>

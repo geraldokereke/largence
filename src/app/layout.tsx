@@ -3,6 +3,8 @@ import localFont from "next/font/local";
 import { Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@largence/components/theme-provider";
 import { RouteLoading } from "@largence/components/route-loading";
+import { Toaster } from "@largence/components/ui/sonner";
+import { QueryProvider } from "@largence/components/query-provider";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 
@@ -173,8 +175,11 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange={false}
         >
-          <RouteLoading />
-          {children}
+          <QueryProvider>
+            <RouteLoading />
+            {children}
+            <Toaster position="top-right" expand={false} richColors closeButton />
+          </QueryProvider>
         </ThemeProvider>
       </body>
       </ClerkProvider>

@@ -4,6 +4,7 @@ import { motion } from "framer-motion"
 import { Input } from "@largence/components/ui/input"
 import { Label } from "@largence/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@largence/components/ui/select"
+import { CountryCombobox } from "@largence/components/ui/country-combobox"
 import { Globe } from "lucide-react"
 import type { OnboardingFormData } from "@largence/hooks/use-onboarding"
 
@@ -11,20 +12,6 @@ interface CompanyDetailsStepProps {
   formData: OnboardingFormData
   updateFormData: (data: Partial<OnboardingFormData>) => void
 }
-
-const countries = [
-  "Nigeria",
-  "Ghana",
-  "Kenya",
-  "South Africa",
-  "Egypt",
-  "Tanzania",
-  "United Kingdom",
-  "Uganda",
-  "Rwanda",
-  "Ethiopia",
-  "Côte d'Ivoire",
-]
 
 const companySizes = [
   "1-10 employees",
@@ -61,18 +48,14 @@ export function CompanyDetailsStep({ formData, updateFormData }: CompanyDetailsS
 
       <div className="space-y-2">
         <Label htmlFor="country">Primary Country *</Label>
-        <Select value={formData.country} onValueChange={(value) => updateFormData({ country: value })}>
-          <SelectTrigger className="h-10 rounded-sm">
-            <SelectValue placeholder="Select your country" />
-          </SelectTrigger>
-          <SelectContent>
-            {countries.map((country) => (
-              <SelectItem key={country} value={country}>
-                {country}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <CountryCombobox
+          value={formData.country?.toLowerCase().replace(/ /g, '-')}
+          onValueChange={(value) => {
+            const country = value.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
+            updateFormData({ country })
+          }}
+          placeholder="Select your country"
+        />
       </div>
 
       <div className="space-y-2">

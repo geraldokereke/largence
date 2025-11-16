@@ -3,7 +3,7 @@ import { Spinner } from "@largence/components/ui/spinner";
 export default function Loading() {
   return (
     <div className="flex min-h-screen items-center justify-center">
-      <Spinner size="lg" />
+      <Spinner size="sm" />
     </div>
   );
 }

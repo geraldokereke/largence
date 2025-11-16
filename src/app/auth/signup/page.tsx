@@ -3,6 +3,8 @@
 import { SignupForm } from "@largence/components/signup-form";
 import Image from "next/image";
 import { useState, useEffect } from "react";
+import { useAuth } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 
 const features = [
   {
@@ -33,6 +35,14 @@ const features = [
 
 export default function SignupPage() {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const { isSignedIn, isLoaded } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (isLoaded && isSignedIn) {
+      router.push("/");
+    }
+  }, [isLoaded, isSignedIn, router]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -41,6 +51,11 @@ export default function SignupPage() {
 
     return () => clearInterval(interval);
   }, []);
+
+  // Don't render the signup page if user is already signed in
+  if (!isLoaded || isSignedIn) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen grid lg:grid-cols-2">

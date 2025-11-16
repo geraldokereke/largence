@@ -55,7 +55,7 @@ export function MetricsCards() {
                 {metric.title}
               </p>
               <div className="flex items-baseline gap-2">
-                <h3 className="text-3xl font-semibold tracking-tight font-(family-name:--font-general-sans)">
+                <h3 className="text-3xl font-semibold tracking-tight font-heading">
                   {metric.value}
                 </h3>
                 <span className="text-sm text-muted-foreground">

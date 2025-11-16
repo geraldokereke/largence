@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useClerk, useUser } from "@clerk/nextjs";
 import { Bell, Plus, Settings, User, CreditCard, LogOut, HelpCircle, Shield, Palette, Globe, Keyboard, Sun, Moon, Monitor, Check, Search, Command as CommandIcon, FileText, Brain, ShieldCheck, Folder, Users as UsersIcon, FileStack, Plug2Icon, Home, Command, CheckCheck, Clock, AlertCircle, X } from "lucide-react";
+import { Spinner } from "@largence/components/ui/spinner";
 
 import { Button } from "@largence/components/ui/button";
 import { SidebarTrigger } from "@largence/components/ui/sidebar";
@@ -81,13 +82,22 @@ export function SiteHeader() {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
   const { signOut } = useClerk();
-  const { user } = useUser();
+  const { user, isLoaded } = useUser();
   const [commandOpen, setCommandOpen] = React.useState(false);
   const [notificationOpen, setNotificationOpen] = React.useState(false);
+  const [logoutDialogOpen, setLogoutDialogOpen] = React.useState(false);
+  const [showBanner, setShowBanner] = React.useState(true);
+  const [isLoggingOut, setIsLoggingOut] = React.useState(false);
 
   const handleLogout = async () => {
+    setLogoutDialogOpen(true);
+  };
+
+  const confirmLogout = async () => {
+    setIsLoggingOut(true);
     await signOut();
     router.push("/login");
+    setIsLoggingOut(false);
   };
 
   // Keyboard shortcuts
@@ -203,6 +213,48 @@ export function SiteHeader() {
         </CommandList>
       </CommandDialog>
 
+      {/* Logout Confirmation Dialog */}
+      <CommandDialog open={logoutDialogOpen} onOpenChange={setLogoutDialogOpen}>
+        <div className="p-6">
+          <div className="flex flex-col items-center text-center space-y-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
+              <LogOut className="h-6 w-6 text-destructive" />
+            </div>
+            <div className="space-y-2">
+              <h2 className="text-lg font-semibold">Log out of Largence?</h2>
+              <p className="text-sm text-muted-foreground">
+                Are you sure you want to log out? You'll need to sign in again to access your account.
+              </p>
+            </div>
+            <div className="flex gap-3 w-full pt-2">
+              <Button
+                variant="outline"
+                className="flex-1 h-10 rounded-sm"
+                onClick={() => setLogoutDialogOpen(false)}
+                disabled={isLoggingOut}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                className="flex-1 h-10 rounded-sm flex items-center justify-center gap-2"
+                onClick={confirmLogout}
+                disabled={isLoggingOut}
+              >
+                {isLoggingOut ? (
+                  <>
+                    <Spinner size="sm" variant="white" />
+                    Logging Out...
+                  </>
+                ) : (
+                  "Log out"
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      </CommandDialog>
+
       <header className="bg-background sticky top-0 z-50 flex w-full items-center border-b">
       <div className="flex h-14 w-full items-center px-4 gap-4">
         <div className="flex items-center gap-3 shrink-0">
@@ -215,7 +267,7 @@ export function SiteHeader() {
               height={28}
               className="shrink-0"
             />
-            <span className="text-xl font-semibold tracking-tight font-(family-name:--font-general-sans)">
+            <span className="text-xl font-semibold tracking-tight font-heading">
               Largence
             </span>
           </div>
@@ -235,7 +287,7 @@ export function SiteHeader() {
           <Button
             variant="default"
             size="sm"
-            className="h-9 rounded-sm gap-2 shrink-0"
+            className="h-9 rounded-sm gap-2 shrink-0 cursor-pointer"
             onClick={() => router.push("/create")}
           >
             <span className="hidden sm:inline">Create</span>
@@ -422,7 +474,7 @@ export function SiteHeader() {
               <DropdownMenuGroup>
                 <DropdownMenuItem 
                   className="cursor-pointer"
-                  onClick={() => router.push("/account?tab=profile")}
+                  onClick={() => window.open("/account?tab=profile", "_blank")}
                 >
                   <User className="mr-2 h-4 w-4" />
                   <span>Account</span>
@@ -488,7 +540,7 @@ export function SiteHeader() {
                 </DropdownMenuSub>
                 <DropdownMenuItem 
                   className="cursor-pointer"
-                  onClick={() => router.push("/account?tab=language")}
+                  onClick={() => window.open("/account?tab=language", "_blank")}
                 >
                   <Globe className="mr-2 h-4 w-4" />
                   <span>Language & Region</span>
@@ -506,14 +558,14 @@ export function SiteHeader() {
               <DropdownMenuGroup>
                 <DropdownMenuItem 
                   className="cursor-pointer"
-                  onClick={() => router.push("/account?tab=privacy")}
+                  onClick={() => window.open("/account?tab=privacy", "_blank")}
                 >
                   <Shield className="mr-2 h-4 w-4" />
                   <span>Privacy & Security</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem 
                   className="cursor-pointer"
-                  onClick={() => router.push("/account?tab=billing")}
+                  onClick={() => window.open("/account?tab=billing", "_blank")}
                 >
                   <CreditCard className="mr-2 h-4 w-4" />
                   <span>Billing</span>
@@ -531,8 +583,12 @@ export function SiteHeader() {
           </DropdownMenu>
 
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-9 w-9 rounded-full p-0 cursor-pointer">
+            <DropdownMenuTrigger asChild disabled={!isLoaded}>
+              <Button 
+                variant="ghost" 
+                className="h-9 w-9 rounded-full p-0 cursor-pointer" 
+                disabled={!isLoaded}
+              >
                 <Avatar className="h-8 w-8">
                   <AvatarImage src={user?.imageUrl} alt={user?.fullName || "User"} />
                   <AvatarFallback>
@@ -554,7 +610,7 @@ export function SiteHeader() {
               <DropdownMenuGroup>
                 <DropdownMenuItem 
                   className="cursor-pointer"
-                  onClick={() => router.push("/account?tab=profile")}
+                  onClick={() => window.open("/account?tab=profile", "_blank")}
                 >
                   <User className="mr-2 h-4 w-4" />
                   <span>Profile</span>
@@ -562,7 +618,7 @@ export function SiteHeader() {
                 </DropdownMenuItem>
                 <DropdownMenuItem 
                   className="cursor-pointer"
-                  onClick={() => router.push("/account?tab=preferences")}
+                  onClick={() => window.open("/account?tab=preferences", "_blank")}
                 >
                   <Settings className="mr-2 h-4 w-4" />
                   <span>Settings</span>
@@ -570,7 +626,7 @@ export function SiteHeader() {
                 </DropdownMenuItem>
                 <DropdownMenuItem 
                   className="cursor-pointer"
-                  onClick={() => router.push("/account?tab=billing")}
+                  onClick={() => window.open("/account?tab=billing", "_blank")}
                 >
                   <CreditCard className="mr-2 h-4 w-4" />
                   <span>Billing</span>

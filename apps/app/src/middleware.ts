@@ -12,6 +12,12 @@ const isPublicRoute = createRouteMatcher([
   "/sso-callback(.*)",
 ]);
 
+// Define routes that require authentication but not necessarily an organization
+const authOnlyRoutes = createRouteMatcher([
+  "/onboarding(.*)",
+  "/workspace(.*)",
+]);
+
 // Define routes that should redirect to onboarding if org is not set
 const requiresOrgRoute = createRouteMatcher([
   "/documents(.*)",
@@ -75,6 +81,11 @@ export default clerkMiddleware(async (auth, req) => {
     return redirectToSignIn({ returnBackUrl: req.url });
   }
 
+  // Allow auth-only routes (onboarding, select-organization) for authenticated users
+  if (authOnlyRoutes(req)) {
+    return NextResponse.next();
+  }
+
   // Redirect authenticated users away from login
   if (userId && req.nextUrl.pathname === "/login") {
     const url = new URL("/", req.url);
@@ -109,15 +120,10 @@ export default clerkMiddleware(async (auth, req) => {
     }
   }
 
-  // Redirect to onboarding if no organization is set for protected routes
+  // For authenticated users without an active org on protected routes
+  // Redirect to workspace selector (which will handle showing existing orgs or redirecting to onboarding)
   if (userId && !orgId && requiresOrgRoute(req)) {
-    const url = new URL("/onboarding", req.url);
-    return NextResponse.redirect(url);
-  }
-
-  // Redirect away from onboarding if user already has organization
-  if (userId && orgId && req.nextUrl.pathname === "/onboarding") {
-    const url = new URL("/", req.url);
+    const url = new URL("/workspace", req.url);
     return NextResponse.redirect(url);
   }
 

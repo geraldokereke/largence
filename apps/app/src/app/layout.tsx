@@ -11,27 +11,27 @@ import { ClerkProvider } from "@clerk/nextjs";
 const generalSans = localFont({
   src: [
     {
-      path: "../../public/fonts/GeneralSans-Light.woff2",
+      path: "../../../../packages/fonts/GeneralSans-Light.woff2",
       weight: "300",
       style: "normal",
     },
     {
-      path: "../../public/fonts/GeneralSans-Regular.woff2",
+      path: "../../../../packages/fonts/GeneralSans-Regular.woff2",
       weight: "400",
       style: "normal",
     },
     {
-      path: "../../public/fonts/GeneralSans-Medium.woff2",
+      path: "../../../../packages/fonts/GeneralSans-Medium.woff2",
       weight: "500",
       style: "normal",
     },
     {
-      path: "../../public/fonts/GeneralSans-Semibold.woff2",
+      path: "../../../../packages/fonts/GeneralSans-Semibold.woff2",
       weight: "600",
       style: "normal",
     },
     {
-      path: "../../public/fonts/GeneralSans-Bold.woff2",
+      path: "../../../../packages/fonts/GeneralSans-Bold.woff2",
       weight: "700",
       style: "normal",
     },
@@ -43,42 +43,42 @@ const generalSans = localFont({
 const polySans = localFont({
   src: [
     {
-      path: "../../public/fonts/polysanstrial-slim.otf",
+      path: "../../../../packages/fonts/polysanstrial-slim.otf",
       weight: "300",
       style: "normal",
     },
     {
-      path: "../../public/fonts/polysanstrial-neutral.otf",
+      path: "../../../../packages/fonts/polysanstrial-neutral.otf",
       weight: "400",
       style: "normal",
     },
     {
-      path: "../../public/fonts/polysanstrial-median.otf",
+      path: "../../../../packages/fonts/polysanstrial-median.otf",
       weight: "500",
       style: "normal",
     },
     {
-      path: "../../public/fonts/polysanstrial-bulky.otf",
+      path: "../../../../packages/fonts/polysanstrial-bulky.otf",
       weight: "700",
       style: "normal",
     },
     {
-      path: "../../public/fonts/polysansitalictrial-slimitalic.otf",
+      path: "../../../../packages/fonts/polysansitalictrial-slimitalic.otf",
       weight: "300",
       style: "italic",
     },
     {
-      path: "../../public/fonts/polysansitalictrial-neutralitalic.otf",
+      path: "../../../../packages/fonts/polysansitalictrial-neutralitalic.otf",
       weight: "400",
       style: "italic",
     },
     {
-      path: "../../public/fonts/polysansitalictrial-medianitalic.otf",
+      path: "../../../../packages/fonts/polysansitalictrial-medianitalic.otf",
       weight: "500",
       style: "italic",
     },
     {
-      path: "../../public/fonts/polysansitalictrial-bulkyitalic.otf",
+      path: "../../../../packages/fonts/polysansitalictrial-bulkyitalic.otf",
       weight: "700",
       style: "italic",
     },
@@ -90,27 +90,27 @@ const polySans = localFont({
 const satoshi = localFont({
   src: [
     {
-      path: "../../public/fonts/Satoshi-Light.woff2",
+      path: "../../../../packages/fonts/Satoshi-Light.woff2",
       weight: "300",
       style: "normal",
     },
     {
-      path: "../../public/fonts/Satoshi-Regular.woff2",
+      path: "../../../../packages/fonts/Satoshi-Regular.woff2",
       weight: "400",
       style: "normal",
     },
     {
-      path: "../../public/fonts/Satoshi-Medium.woff2",
+      path: "../../../../packages/fonts/Satoshi-Medium.woff2",
       weight: "500",
       style: "normal",
     },
     {
-      path: "../../public/fonts/Satoshi-Bold.woff2",
+      path: "../../../../packages/fonts/Satoshi-Bold.woff2",
       weight: "700",
       style: "normal",
     },
     {
-      path: "../../public/fonts/Satoshi-Black.woff2",
+      path: "../../../../packages/fonts/Satoshi-Black.woff2",
       weight: "900",
       style: "normal",
     },

@@ -6,7 +6,7 @@ import { Spinner } from "@largence/components/ui/spinner"
 import Image from "next/image"
 import { ArrowRight, CheckCircle } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { useOrganization } from "@clerk/nextjs"
+import { useUser, useOrganization, useOrganizationList } from "@clerk/nextjs"
 import { useOnboarding } from "@largence/hooks/use-onboarding"
 import { CompanyInfoStep } from "@largence/components/onboarding/company-info-step"
 import { CompanyDetailsStep } from "@largence/components/onboarding/company-details-step"
@@ -62,7 +62,13 @@ const onboardingSteps = [
 ]
 
 export default function OnboardingPage() {
-  const { organization } = useOrganization()
+  const { user, isLoaded: userLoaded } = useUser()
+  const { organization, isLoaded: orgLoaded } = useOrganization()
+  const { userMemberships, isLoaded: membershipsLoaded } = useOrganizationList({
+    userMemberships: {
+      infinite: true,
+    },
+  })
   const router = useRouter()
   const [isClient, setIsClient] = useState(false)
   
@@ -84,14 +90,35 @@ export default function OnboardingPage() {
     setIsClient(true)
   }, [])
 
-  // Redirect if already has organization
-  if (organization) {
-    router.push("/")
-    return null
-  }
+  // Check if user has existing organizations and redirect accordingly
+  useEffect(() => {
+    if (!userLoaded || !orgLoaded || !membershipsLoaded || !isClient) return
+
+    const hasMemberships = userMemberships?.data && userMemberships.data.length > 0
+
+    // If user already has an active organization, redirect to dashboard
+    if (organization) {
+      router.push("/")
+      return
+    }
+
+    // If user has memberships but no active org, redirect to workspace selector
+    if (hasMemberships) {
+      router.push("/workspace")
+    }
+  }, [userLoaded, orgLoaded, membershipsLoaded, isClient, userMemberships, organization, router])
 
   // Don't render until client-side to avoid hydration mismatch
-  if (!isClient) {
+  if (!isClient || !userLoaded || !orgLoaded || !membershipsLoaded) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <Spinner size="sm" />
+      </div>
+    )
+  }
+
+  // Show loading while checking memberships
+  if (userMemberships?.data && userMemberships.data.length > 0) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <Spinner size="sm" />
@@ -157,7 +184,7 @@ export default function OnboardingPage() {
           <div className="w-full max-w-md">
             <div className="mb-8">
               <h1 className="text-3xl font-semibold mb-2 font-display">
-                Welcome to Largence
+                Welcome{user?.firstName ? `, ${user.firstName}` : " to Largence"}
               </h1>
               <p className="text-muted-foreground">
                 Let's get your workspace set up in a few simple steps

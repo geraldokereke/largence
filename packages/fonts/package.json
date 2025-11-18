@@ -1,0 +1,6 @@
+{
+  "name": "@largence/fonts",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Shared font assets for Largence monorepo"
+}

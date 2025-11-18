@@ -1,0 +1,9 @@
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://largence.com
+
+# Sitemaps
+Sitemap: https://largence.com/sitemap.xml

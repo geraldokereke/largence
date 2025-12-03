@@ -83,26 +83,46 @@
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    font-feature-settings: 'kern' 1, 'liga' 1;
+    font-feature-settings:
+      "kern" 1,
+      "liga" 1;
   }
-  
+
   /* Responsive images */
-  img, picture, video, canvas, svg {
+  img,
+  picture,
+  video,
+  canvas,
+  svg {
     @apply block max-w-full h-auto;
   }
-  
+
   /* Remove default margins */
-  h1, h2, h3, h4, h5, h6, p, figure, blockquote, dl, dd {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  p,
+  figure,
+  blockquote,
+  dl,
+  dd {
     @apply m-0;
   }
-  
+
   /* Improved focus states */
   :focus-visible {
     @apply outline-2 outline-offset-2 outline-primary;
   }
-  
+
   /* Better tap targets on mobile */
-  button, a, input, select, textarea {
+  button,
+  a,
+  input,
+  select,
+  textarea {
     @apply min-h-11 sm:min-h-9;
   }
 }
@@ -116,7 +136,9 @@ html {
 
 /* Prevent zoom on iOS */
 @supports (-webkit-touch-callout: none) {
-  input, select, textarea {
+  input,
+  select,
+  textarea {
     font-size: 16px;
   }
 }

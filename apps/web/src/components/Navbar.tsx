@@ -18,8 +18,8 @@ export const Navbar: React.FC = () => {
   React.useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
-      
-      const sections = menuItems.map(item => item.href.substring(1));
+
+      const sections = menuItems.map((item) => item.href.substring(1));
       for (const section of sections) {
         const element = document.getElementById(section);
         if (element) {
@@ -65,14 +65,19 @@ export const Navbar: React.FC = () => {
   return (
     <>
       <nav className="fixed top-0 left-0 right-0 z-50 py-2 px-4 touch-manipulation">
-        <div className={`max-w-6xl mx-auto px-4 sm:px-6 transition-all duration-500 ease-in-out rounded-xl ${
-          scrolled 
-            ? "rounded-xl bg-background/80 backdrop-blur-md border"
-            : ""
-        }`}>
+        <div
+          className={`max-w-6xl mx-auto px-4 sm:px-6 transition-all duration-500 ease-in-out rounded-xl ${
+            scrolled
+              ? "rounded-xl bg-background/80 backdrop-blur-md border"
+              : ""
+          }`}
+        >
           <div className="flex items-center justify-between h-12 sm:h-14">
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-2 group z-50 shrink-0">
+            <Link
+              href="/"
+              className="flex items-center gap-2 group z-50 shrink-0"
+            >
               <Image
                 src="/logo.png"
                 alt="Largence Logo"
@@ -94,7 +99,9 @@ export const Navbar: React.FC = () => {
                     key={item.href}
                     href={item.href}
                     className={`text-sm font-medium transition-colors duration-200 relative group px-2.5 py-1.5 rounded-md ${
-                      isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                      isActive
+                        ? "text-primary"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                     }`}
                     onClick={() => setMobileMenuOpen(false)}
                   >
@@ -114,7 +121,13 @@ export const Navbar: React.FC = () => {
                 onClick={cycleTheme}
                 className="p-1.5 text-muted-foreground hover:text-foreground transition-colors duration-200"
                 aria-label="Toggle theme"
-                title={theme === "system" ? "System" : theme === "dark" ? "Dark" : "Light"}
+                title={
+                  theme === "system"
+                    ? "System"
+                    : theme === "dark"
+                      ? "Dark"
+                      : "Light"
+                }
               >
                 {theme === "system" ? (
                   <Monitor className="w-4 h-4" />
@@ -124,7 +137,7 @@ export const Navbar: React.FC = () => {
                   <Sun className="w-4 h-4" />
                 )}
               </button>
-              
+
               <Link href="https://app.largence.com/login">
                 <Button
                   variant="ghost"
@@ -186,7 +199,9 @@ export const Navbar: React.FC = () => {
         {/* Menu Content */}
         <div
           className={`relative h-full flex flex-col pt-20 px-6 transform transition-all duration-300 ${
-            mobileMenuOpen ? "translate-y-0 opacity-100" : "-translate-y-4 opacity-0"
+            mobileMenuOpen
+              ? "translate-y-0 opacity-100"
+              : "-translate-y-4 opacity-0"
           }`}
         >
           {/* Navigation Links */}
@@ -198,7 +213,9 @@ export const Navbar: React.FC = () => {
                   key={item.href}
                   href={item.href}
                   className={`text-base font-heading font-semibold transition-all duration-200 py-2 transform ${
-                    isActive ? 'text-primary' : 'text-foreground hover:text-primary'
+                    isActive
+                      ? "text-primary"
+                      : "text-foreground hover:text-primary"
                   } ${
                     mobileMenuOpen
                       ? "translate-x-0 opacity-100"
@@ -223,24 +240,24 @@ export const Navbar: React.FC = () => {
                 : "-translate-x-4 opacity-0"
             }`}
             style={{
-              transitionDelay: mobileMenuOpen ? `${menuItems.length * 50}ms` : "0ms",
+              transitionDelay: mobileMenuOpen
+                ? `${menuItems.length * 50}ms`
+                : "0ms",
             }}
           >
-            <Link href="https://app.largence.com/login" onClick={() => setMobileMenuOpen(false)}>
-              <Button
-                variant="outline"
-                size="lg"
-                className="w-full rounded-sm"
-              >
+            <Link
+              href="https://app.largence.com/login"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <Button variant="outline" size="lg" className="w-full rounded-sm">
                 Sign in
               </Button>
             </Link>
-            <Link href="https://app.largence.com/auth/signup" onClick={() => setMobileMenuOpen(false)}>
-              <Button
-                variant="default"
-                size="lg"
-                className="w-full rounded-sm"
-              >
+            <Link
+              href="https://app.largence.com/auth/signup"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <Button variant="default" size="lg" className="w-full rounded-sm">
                 Get Started
               </Button>
             </Link>
@@ -254,16 +271,23 @@ export const Navbar: React.FC = () => {
                 : "translate-y-4 opacity-0"
             }`}
             style={{
-              transitionDelay: mobileMenuOpen ? `${(menuItems.length + 1) * 50}ms` : "0ms",
+              transitionDelay: mobileMenuOpen
+                ? `${(menuItems.length + 1) * 50}ms`
+                : "0ms",
             }}
           >
             <p>© {new Date().getFullYear()} Largence</p>
-            <p className="text-xs mt-1">Enterprise Legal Intelligence for Africa</p>
+            <p className="text-xs mt-1">
+              Enterprise Legal Intelligence for Africa
+            </p>
           </div>
         </div>
       </div>
 
-      <ScheduleDemoDialog open={demoDialogOpen} onOpenChange={setDemoDialogOpen} />
+      <ScheduleDemoDialog
+        open={demoDialogOpen}
+        onOpenChange={setDemoDialogOpen}
+      />
     </>
   );
 };

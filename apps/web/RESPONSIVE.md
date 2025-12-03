@@ -1,11 +1,13 @@
 # Largence - Responsive Web Application
 
 ## Overview
+
 Enterprise-grade responsive Next.js application optimized for mobile, tablet, and desktop experiences across all devices.
 
 ## Responsive Features Implemented
 
 ### 1. Comprehensive Metadata & SEO
+
 - **Viewport Configuration**: Proper viewport settings with device-width and zoom controls
 - **Theme Colors**: Dynamic theme colors for light/dark modes
 - **Open Graph**: Complete OG tags for social media sharing
@@ -14,12 +16,14 @@ Enterprise-grade responsive Next.js application optimized for mobile, tablet, an
 - **Icons**: Full icon suite (favicon, SVG, PWA icons, Apple touch icons)
 
 ### 2. Progressive Web App (PWA) Support
+
 - **manifest.json**: Full PWA manifest with icons, theme colors, and display modes
 - **App Capabilities**: Standalone app mode with proper orientation support
 - **Screenshots**: Mobile and desktop screenshots for app stores
 - **Categories**: Business, productivity, and legal categorization
 
 ### 3. Performance Optimizations
+
 - **Image Optimization**: AVIF/WebP formats with responsive device sizes
 - **Font Display**: Swap strategy for all custom fonts (GeneralSans, PolySans, Satoshi)
 - **Compression**: Gzip/Brotli compression enabled
@@ -27,6 +31,7 @@ Enterprise-grade responsive Next.js application optimized for mobile, tablet, an
 - **Headers**: Security headers (HSTS, CSP, X-Frame-Options, etc.)
 
 ### 4. Mobile-First Design
+
 - **Touch Optimization**: `touch-manipulation` CSS on all interactive elements
 - **Tap Targets**: Minimum 44px tap targets on mobile (36px on desktop)
 - **Safe Areas**: Support for notched devices with safe-area-inset
@@ -34,6 +39,7 @@ Enterprise-grade responsive Next.js application optimized for mobile, tablet, an
 - **Typography**: Responsive text scaling from mobile to desktop
 
 ### 5. Accessibility & UX
+
 - **Reduced Motion**: Respects `prefers-reduced-motion` preference
 - **Focus States**: Enhanced focus indicators for keyboard navigation
 - **ARIA Labels**: Proper semantic HTML and ARIA attributes
@@ -41,6 +47,7 @@ Enterprise-grade responsive Next.js application optimized for mobile, tablet, an
 - **Error Boundaries**: Comprehensive error handling with recovery options
 
 ### 6. CSS Optimizations
+
 - **Font Rendering**: Antialiasing and kerning for better text display
 - **Smooth Scrolling**: Native smooth scroll with hardware acceleration
 - **Overflow Prevention**: Horizontal scroll prevention
@@ -90,11 +97,13 @@ apps/web/
 ## Typography Scale
 
 ### Headings (Mobile → Desktop)
+
 - H1: `text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl`
 - H2: `text-xl sm:text-2xl md:text-3xl lg:text-4xl`
 - H3: `text-lg sm:text-xl md:text-2xl lg:text-3xl`
 
 ### Body Text
+
 - Large: `text-sm sm:text-base md:text-lg lg:text-xl`
 - Regular: `text-xs sm:text-sm md:text-base lg:text-lg`
 - Small: `text-xs sm:text-sm`
@@ -102,18 +111,21 @@ apps/web/
 ## Performance Features
 
 ### Image Optimization
+
 - Automatic format selection (AVIF → WebP → JPEG/PNG)
 - Responsive srcset generation
 - Lazy loading by default
 - Blur-up placeholders
 
 ### Font Loading
+
 - Preconnect to font sources
 - Font display swap
 - Subsetting for reduced size
 - Local fonts with proper fallbacks
 
 ### Caching Strategy
+
 - Fonts: 1 year immutable cache
 - Images: 1 year immutable cache
 - Pages: Revalidate on demand
@@ -131,6 +143,7 @@ apps/web/
 ## Testing & Monitoring
 
 ### Scripts Available
+
 ```bash
 pnpm dev        # Development server
 pnpm build      # Production build
@@ -141,6 +154,7 @@ pnpm lighthouse # Lighthouse audit
 ```
 
 ### Recommended Tools
+
 - Lighthouse: Performance, accessibility, SEO audits
 - WebPageTest: Real-world performance testing
 - Chrome DevTools: Mobile device emulation
@@ -179,6 +193,7 @@ pnpm lighthouse # Lighthouse audit
 ## Utility Functions
 
 ### Responsive Utilities (`responsive-utils.ts`)
+
 - `isMobileDevice()`: Detect mobile devices
 - `isTouchDevice()`: Detect touch capability
 - `getViewportDimensions()`: Get current viewport size
@@ -187,6 +202,7 @@ pnpm lighthouse # Lighthouse audit
 - `getCurrentBreakpoint()`: Get active breakpoint
 
 ### Image Utilities (`image-utils.ts`)
+
 - `imageLoader()`: Optimize image loading
 - `preloadImage()`: Preload critical images
 - `responsiveImageSizes`: Predefined size strings

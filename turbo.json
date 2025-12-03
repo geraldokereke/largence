@@ -46,11 +46,6 @@
       "cache": false
     }
   },
-  "globalEnv": [
-    "NODE_ENV",
-    "NEXT_PUBLIC_*",
-    "DATABASE_URL",
-    "CLERK_*"
-  ],
+  "globalEnv": ["NODE_ENV", "NEXT_PUBLIC_*", "DATABASE_URL", "CLERK_*"],
   "ui": "tui"
 }

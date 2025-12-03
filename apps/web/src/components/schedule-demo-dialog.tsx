@@ -8,7 +8,10 @@ interface ScheduleDemoDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export function ScheduleDemoDialog({ open, onOpenChange }: ScheduleDemoDialogProps) {
+export function ScheduleDemoDialog({
+  open,
+  onOpenChange,
+}: ScheduleDemoDialogProps) {
   const calendarUrl = "https://cal.com/grayoj/30min";
 
   if (!open) return null;
@@ -33,9 +36,12 @@ export function ScheduleDemoDialog({ open, onOpenChange }: ScheduleDemoDialogPro
 
         {/* Header */}
         <div className="p-6 sm:p-8 border-b border-border">
-          <h2 className="text-2xl sm:text-3xl font-bold font-display mb-2">Schedule a Demo</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold font-display mb-2">
+            Schedule a Demo
+          </h2>
           <p className="text-muted-foreground">
-            See how Largence can transform your legal operations. Choose a time that works for you.
+            See how Largence can transform your legal operations. Choose a time
+            that works for you.
           </p>
         </div>
 

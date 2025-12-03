@@ -41,10 +41,17 @@ export function CookieConsent() {
           <div className="flex flex-col md:flex-row items-start md:items-center gap-3 md:gap-4">
             <Cookie className="w-6 h-6 md:w-8 md:h-8 text-primary shrink-0" />
             <div className="flex-1">
-              <h3 className="font-heading font-semibold text-base md:text-lg mb-1 md:mb-2">We use cookies</h3>
+              <h3 className="font-heading font-semibold text-base md:text-lg mb-1 md:mb-2">
+                We use cookies
+              </h3>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                We use cookies to enhance your browsing experience, analyze site traffic, and personalize content. By clicking "Accept", you consent to our use of cookies. 
-                <Link href="#privacy" className="text-primary hover:underline ml-1 cursor-pointer">
+                We use cookies to enhance your browsing experience, analyze site
+                traffic, and personalize content. By clicking "Accept", you
+                consent to our use of cookies.
+                <Link
+                  href="#privacy"
+                  className="text-primary hover:underline ml-1 cursor-pointer"
+                >
                   Learn more
                 </Link>
               </p>

@@ -1,5 +1,5 @@
-import Link from 'next/link';
-import { Button } from '@largence/ui';
+import Link from "next/link";
+import { Button } from "@largence/ui";
 
 export default function NotFound() {
   return (
@@ -13,9 +13,7 @@ export default function NotFound() {
           </p>
         </div>
         <Link href="/">
-          <Button className="w-full sm:w-auto">
-            Return home
-          </Button>
+          <Button className="w-full sm:w-auto">Return home</Button>
         </Link>
       </div>
     </div>

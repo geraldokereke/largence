@@ -121,66 +121,69 @@ const geistMono = Geist_Mono({
 });
 
 export const viewport: Viewport = {
-  width: 'device-width',
+  width: "device-width",
   initialScale: 1,
   maximumScale: 5,
   userScalable: true,
-  viewportFit: 'cover',
+  viewportFit: "cover",
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
-    { media: '(prefers-color-scheme: dark)', color: '#252525' }
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#252525" },
   ],
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://largence.com'),
+  metadataBase: new URL("https://largence.com"),
   title: {
-    default: 'Largence - Enterprise Legal Intelligence for Africa',
-    template: '%s | Largence'
+    default: "Largence - Enterprise Legal Intelligence for Africa",
+    template: "%s | Largence",
   },
-  description: 'Automate contract drafting, ensure regulatory compliance, and streamline governance for African enterprises with AI-powered legal intelligence.',
+  description:
+    "Automate contract drafting, ensure regulatory compliance, and streamline governance for African enterprises with AI-powered legal intelligence.",
   keywords: [
-    'legal tech',
-    'contract management',
-    'compliance automation',
-    'legal AI',
-    'Africa legal software',
-    'contract drafting',
-    'regulatory compliance',
-    'enterprise legal',
-    'legal intelligence',
-    'governance automation'
+    "legal tech",
+    "contract management",
+    "compliance automation",
+    "legal AI",
+    "Africa legal software",
+    "contract drafting",
+    "regulatory compliance",
+    "enterprise legal",
+    "legal intelligence",
+    "governance automation",
   ],
-  authors: [{ name: 'Largence' }],
-  creator: 'Largence',
-  publisher: 'Largence',
+  authors: [{ name: "Largence" }],
+  creator: "Largence",
+  publisher: "Largence",
   formatDetection: {
     email: false,
     address: false,
     telephone: false,
   },
   openGraph: {
-    type: 'website',
-    locale: 'en_US',
-    url: 'https://largence.com',
-    siteName: 'Largence',
-    title: 'Largence - Enterprise Legal Intelligence for Africa',
-    description: 'Automate contract drafting, ensure regulatory compliance, and streamline governance for African enterprises with AI-powered legal intelligence.',
+    type: "website",
+    locale: "en_US",
+    url: "https://largence.com",
+    siteName: "Largence",
+    title: "Largence - Enterprise Legal Intelligence for Africa",
+    description:
+      "Automate contract drafting, ensure regulatory compliance, and streamline governance for African enterprises with AI-powered legal intelligence.",
     images: [
       {
-        url: '/og-image.png',
+        url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: 'Largence - Enterprise Legal Intelligence',
-      }
+        alt: "Largence - Enterprise Legal Intelligence",
+      },
     ],
   },
   twitter: {
-    card: 'summary_large_image',
-    title: 'Largence - Enterprise Legal Intelligence for Africa',
-    description: 'Automate contract drafting, ensure regulatory compliance, and streamline governance for African enterprises.',
-    images: ['/og-image.png'],
-    creator: '@largence',
+    card: "summary_large_image",
+    title: "Largence - Enterprise Legal Intelligence for Africa",
+    description:
+      "Automate contract drafting, ensure regulatory compliance, and streamline governance for African enterprises.",
+    images: ["/og-image.png"],
+    creator: "@largence",
   },
   robots: {
     index: true,
@@ -188,34 +191,34 @@ export const metadata: Metadata = {
     googleBot: {
       index: true,
       follow: true,
-      'max-video-preview': -1,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
     },
   },
   icons: {
     icon: [
-      { url: '/icon.ico', sizes: 'any' },
-      { url: '/icon.svg', type: 'image/svg+xml' },
-      { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
-      { url: '/icon-512.png', sizes: '512x512', type: 'image/png' },
+      { url: "/icon.ico", sizes: "any" },
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
     ],
     apple: [
-      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
     ],
   },
-  manifest: '/manifest.json',
+  manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
-    statusBarStyle: 'black-translucent',
-    title: 'Largence',
+    statusBarStyle: "black-translucent",
+    title: "Largence",
   },
   alternates: {
-    canonical: 'https://largence.com',
+    canonical: "https://largence.com",
   },
   other: {
-    'mobile-web-app-capable': 'yes',
-    'apple-mobile-web-app-capable': 'yes',
+    "mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-capable": "yes",
   },
 };
 

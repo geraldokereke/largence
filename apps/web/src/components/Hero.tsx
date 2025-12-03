@@ -81,15 +81,15 @@ export function Hero() {
           transition={{ duration: 0.5, delay: 0.3 }}
           className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-16 w-full px-2"
         >
-            <span className="w-full sm:w-auto block">
-              <Button
-                size="lg"
-                className="w-full h-12 px-6 sm:px-8 text-base sm:text-lg rounded-full transition-all"
-              >
-                Get Started
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </span>
+          <span className="w-full sm:w-auto block">
+            <Button
+              size="lg"
+              className="w-full h-12 px-6 sm:px-8 text-base sm:text-lg rounded-full transition-all"
+            >
+              Get Started
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          </span>
           <Button
             onClick={() => setDemoDialogOpen(true)}
             variant="outline"
@@ -108,7 +108,6 @@ export function Hero() {
           className="relative mx-auto max-w-5xl"
         >
           <div className="relative rounded-xl border border-border/50 bg-background/50 backdrop-blur-xl overflow-hidden">
-
             <div className="relative aspect-16/10 w-full bg-muted/20">
               <Image
                 src="/app.png"

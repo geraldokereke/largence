@@ -15,9 +15,9 @@ interface ThemeProviderState {
   setTheme: (theme: Theme) => void;
 }
 
-const ThemeProviderContext = React.createContext<ThemeProviderState | undefined>(
-  undefined
-);
+const ThemeProviderContext = React.createContext<
+  ThemeProviderState | undefined
+>(undefined);
 
 export function ThemeProvider({
   children,
@@ -62,7 +62,7 @@ export function ThemeProvider({
         setThemeState(newTheme);
       },
     }),
-    [theme, storageKey]
+    [theme, storageKey],
   );
 
   if (!mounted) {

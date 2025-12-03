@@ -17,10 +17,10 @@ const plans = [
       "AI contract drafting",
       "Basic templates library",
       "Email support",
-      "5 GB storage"
+      "5 GB storage",
     ],
     cta: "Start Free Trial",
-    popular: false
+    popular: false,
   },
   {
     name: "Professional",
@@ -35,10 +35,10 @@ const plans = [
       "Priority support",
       "50 GB storage",
       "Compliance automation",
-      "Analytics & reporting"
+      "Analytics & reporting",
     ],
     cta: "Start Free Trial",
-    popular: true
+    popular: true,
   },
   {
     name: "Enterprise",
@@ -55,17 +55,20 @@ const plans = [
       "Advanced security",
       "Custom integrations",
       "SLA guarantee",
-      "On-premise option"
+      "On-premise option",
     ],
     cta: "Contact Sales",
-    popular: false
-  }
+    popular: false,
+  },
 ];
 
 export function PricingSection() {
   return (
-    <section id="pricing" className="relative py-12 md:py-16 lg:py-24 px-4 sm:px-6 touch-manipulation">
-      <motion.div 
+    <section
+      id="pricing"
+      className="relative py-12 md:py-16 lg:py-24 px-4 sm:px-6 touch-manipulation"
+    >
+      <motion.div
         className="max-w-6xl mx-auto px-6 sm:px-8 lg:px-12 py-12 rounded-xl border border-border/30"
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -80,7 +83,8 @@ export function PricingSection() {
             Choose the Right Plan for Your Team
           </h2>
           <p className="text-xs sm:text-sm md:text-base lg:text-lg text-muted-foreground max-w-3xl mx-auto">
-            Transparent pricing with no hidden fees. All plans include a 14-day free trial.
+            Transparent pricing with no hidden fees. All plans include a 14-day
+            free trial.
           </p>
         </div>
 
@@ -94,8 +98,8 @@ export function PricingSection() {
               transition={{ duration: 0.4, delay: index * 0.1 }}
               className={`relative p-6 md:p-8 rounded-xl border transition-all flex flex-col ${
                 plan.popular
-                  ? 'border-primary bg-primary/5'
-                  : 'border-border bg-card hover:border-primary/50'
+                  ? "border-primary bg-primary/5"
+                  : "border-border bg-card hover:border-primary/50"
               }`}
             >
               {plan.popular && (
@@ -105,25 +109,37 @@ export function PricingSection() {
               )}
 
               <div className="mb-6">
-                <h3 className="font-heading text-xl font-bold mb-2">{plan.name}</h3>
-                <p className="text-sm text-muted-foreground mb-4">{plan.description}</p>
+                <h3 className="font-heading text-xl font-bold mb-2">
+                  {plan.name}
+                </h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  {plan.description}
+                </p>
                 <div className="flex items-baseline gap-1">
-                  <span className="font-display text-4xl font-bold">{plan.price}</span>
+                  <span className="font-display text-4xl font-bold">
+                    {plan.price}
+                  </span>
                   <span className="text-muted-foreground">{plan.period}</span>
                 </div>
               </div>
 
               <ul className="space-y-3 mb-8 flex-1">
                 {plan.features.map((feature, featureIndex) => (
-                  <li key={featureIndex} className="flex items-start gap-2 text-sm">
+                  <li
+                    key={featureIndex}
+                    className="flex items-start gap-2 text-sm"
+                  >
                     <Check className="w-4 h-4 text-primary shrink-0 mt-0.5" />
                     <span>{feature}</span>
                   </li>
                 ))}
               </ul>
 
-              <Link href={plan.name === "Enterprise" ? "#contact" : "/signup"} className="block mt-auto">
-                <Button 
+              <Link
+                href={plan.name === "Enterprise" ? "#contact" : "/signup"}
+                className="block mt-auto"
+              >
+                <Button
                   variant={plan.popular ? "default" : "outline"}
                   size="lg"
                   className="w-full cursor-pointer"
@@ -143,9 +159,13 @@ export function PricingSection() {
           className="mt-12 text-center"
         >
           <p className="text-sm text-muted-foreground mb-4">
-            All plans include: SOC 2 compliance, 256-bit encryption, GDPR compliance, and regular security audits
+            All plans include: SOC 2 compliance, 256-bit encryption, GDPR
+            compliance, and regular security audits
           </p>
-          <Link href="#contact" className="text-sm text-primary hover:underline">
+          <Link
+            href="#contact"
+            className="text-sm text-primary hover:underline"
+          >
             Need a custom plan? Contact our sales team →
           </Link>
         </motion.div>

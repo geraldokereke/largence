@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import dynamic from "next/dynamic";
 import { Hero } from "@/components/Hero";
@@ -11,9 +11,12 @@ import { Footer } from "@/components/landing/Footer";
 import { CookieConsent } from "@/components/landing/CookieConsent";
 
 // Import Navbar dynamically with no SSR since it uses useTheme
-const Navbar = dynamic(() => import("@/components/Navbar").then(mod => ({ default: mod.Navbar })), {
-  ssr: false,
-});
+const Navbar = dynamic(
+  () => import("@/components/Navbar").then((mod) => ({ default: mod.Navbar })),
+  {
+    ssr: false,
+  },
+);
 
 export default function Home() {
   return (

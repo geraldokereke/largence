@@ -172,17 +172,16 @@ export default function RootLayout({
         <body
           className={`${generalSans.variable} ${polySans.variable} ${satoshi.variable} ${geistMono.variable} font-sans antialiased overflow-hidden`}
         >
-          
-            <QueryProvider>
-              <RouteLoading />
-              {children}
-              <Toaster
-                position="top-right"
-                expand={false}
-                richColors
-                closeButton
-              />
-            </QueryProvider>
+          <QueryProvider>
+            <RouteLoading />
+            {children}
+            <Toaster
+              position="top-right"
+              expand={false}
+              richColors
+              closeButton
+            />
+          </QueryProvider>
         </body>
       </ClerkProvider>
     </html>

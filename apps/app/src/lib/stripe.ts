@@ -79,7 +79,7 @@ export const PLANS = {
 export async function getOrCreateStripeCustomer(
   organizationId: string,
   email: string,
-  name?: string,
+  name?: string
 ): Promise<string> {
   // Check if subscription exists with customer
   const existingSubscription = await prisma.subscription.findUnique({
@@ -124,10 +124,10 @@ export async function createCheckoutSession(
   customerId: string,
   plan: keyof typeof PLANS,
   successUrl: string,
-  cancelUrl: string,
+  cancelUrl: string
 ): Promise<Stripe.Checkout.Session> {
   const planConfig = PLANS[plan];
-
+  
   if (!planConfig.priceId) {
     throw new Error(`No price ID configured for plan: ${plan}`);
   }
@@ -165,7 +165,7 @@ export async function createCheckoutSession(
 // Create customer portal session
 export async function createPortalSession(
   customerId: string,
-  returnUrl: string,
+  returnUrl: string
 ): Promise<Stripe.BillingPortal.Session> {
   const session = await stripe.billingPortal.sessions.create({
     customer: customerId,
@@ -177,10 +177,10 @@ export async function createPortalSession(
 
 // Update subscription from Stripe webhook
 export async function updateSubscriptionFromStripe(
-  stripeSubscription: Stripe.Subscription,
+  stripeSubscription: Stripe.Subscription
 ): Promise<void> {
   const organizationId = stripeSubscription.metadata.organizationId;
-
+  
   if (!organizationId) {
     console.error("No organizationId in subscription metadata");
     return;
@@ -224,10 +224,10 @@ export async function updateSubscriptionFromStripe(
 
 // Handle subscription deleted
 export async function handleSubscriptionDeleted(
-  stripeSubscription: Stripe.Subscription,
+  stripeSubscription: Stripe.Subscription
 ): Promise<void> {
   const organizationId = stripeSubscription.metadata.organizationId;
-
+  
   if (!organizationId) return;
 
   // Downgrade to free plan
@@ -250,20 +250,16 @@ export async function handleSubscriptionDeleted(
 // Helper to get plan from price ID
 function getPlanFromPriceId(priceId: string | undefined): PlanType {
   if (!priceId) return PlanType.FREE;
-
+  
   if (priceId === process.env.STRIPE_STARTER_PRICE_ID) return PlanType.STARTER;
-  if (priceId === process.env.STRIPE_PROFESSIONAL_PRICE_ID)
-    return PlanType.PROFESSIONAL;
-  if (priceId === process.env.STRIPE_ENTERPRISE_PRICE_ID)
-    return PlanType.ENTERPRISE;
-
+  if (priceId === process.env.STRIPE_PROFESSIONAL_PRICE_ID) return PlanType.PROFESSIONAL;
+  if (priceId === process.env.STRIPE_ENTERPRISE_PRICE_ID) return PlanType.ENTERPRISE;
+  
   return PlanType.FREE;
 }
 
 // Map Stripe status to our status
-function mapStripeStatus(
-  status: Stripe.Subscription.Status,
-): SubscriptionStatus {
+function mapStripeStatus(status: Stripe.Subscription.Status): SubscriptionStatus {
   const statusMap: Record<Stripe.Subscription.Status, SubscriptionStatus> = {
     trialing: SubscriptionStatus.TRIALING,
     active: SubscriptionStatus.ACTIVE,
@@ -274,7 +270,7 @@ function mapStripeStatus(
     incomplete_expired: SubscriptionStatus.INCOMPLETE_EXPIRED,
     paused: SubscriptionStatus.PAUSED,
   };
-
+  
   return statusMap[status] || SubscriptionStatus.ACTIVE;
 }
 
@@ -296,7 +292,7 @@ export async function getSubscription(organizationId: string) {
 // Check if organization can perform action
 export async function canPerformAction(
   organizationId: string,
-  actionType: "document" | "compliance",
+  actionType: "document" | "compliance"
 ): Promise<{ allowed: boolean; reason?: string; subscription?: any }> {
   const subscription = await getSubscription(organizationId);
 
@@ -317,8 +313,7 @@ export async function canPerformAction(
   if (!activeStatuses.includes(subscription.status)) {
     return {
       allowed: false,
-      reason:
-        "Your subscription is not active. Please update your payment method.",
+      reason: "Your subscription is not active. Please update your payment method.",
       subscription,
     };
   }
@@ -326,13 +321,12 @@ export async function canPerformAction(
   // Count usage this period
   const usageCount = subscription.usageRecords.filter(
     (r) =>
-      r.type ===
-      (actionType === "document" ? "DOCUMENT_GENERATED" : "COMPLIANCE_CHECK"),
+      r.type === (actionType === "document" ? "DOCUMENT_GENERATED" : "COMPLIANCE_CHECK")
   ).length;
 
   // Check against limits
   const limit = subscription.maxContracts;
-
+  
   // -1 means unlimited
   if (limit === -1) {
     return { allowed: true, subscription };
@@ -353,7 +347,7 @@ export async function canPerformAction(
 export async function recordUsage(
   organizationId: string,
   type: "DOCUMENT_GENERATED" | "COMPLIANCE_CHECK",
-  resourceId?: string,
+  resourceId?: string
 ): Promise<void> {
   let subscription = await prisma.subscription.findUnique({
     where: { organizationId },
@@ -377,12 +371,8 @@ export async function recordUsage(
 
   // Calculate current billing period
   const now = new Date();
-  const periodStart =
-    subscription.currentPeriodStart ||
-    new Date(now.getFullYear(), now.getMonth(), 1);
-  const periodEnd =
-    subscription.currentPeriodEnd ||
-    new Date(now.getFullYear(), now.getMonth() + 1, 0);
+  const periodStart = subscription.currentPeriodStart || new Date(now.getFullYear(), now.getMonth(), 1);
+  const periodEnd = subscription.currentPeriodEnd || new Date(now.getFullYear(), now.getMonth() + 1, 0);
 
   await prisma.usageRecord.create({
     data: {
@@ -412,11 +402,11 @@ export async function getUsageStats(organizationId: string) {
   }
 
   const documentsGenerated = subscription.usageRecords.filter(
-    (r) => r.type === "DOCUMENT_GENERATED",
+    (r) => r.type === "DOCUMENT_GENERATED"
   ).length;
 
   const complianceChecks = subscription.usageRecords.filter(
-    (r) => r.type === "COMPLIANCE_CHECK",
+    (r) => r.type === "COMPLIANCE_CHECK"
   ).length;
 
   return {

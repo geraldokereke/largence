@@ -1,6 +1,0 @@
-{
-  "buildCommand": "cd ../.. && turbo run build --filter=@largence/web",
-  "installCommand": "pnpm install",
-  "framework": null,
-  "outputDirectory": ".next"
-}

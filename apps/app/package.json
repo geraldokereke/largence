@@ -9,7 +9,8 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "preinstall": "npx only-allow pnpm"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.34.5",

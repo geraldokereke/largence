@@ -141,8 +141,8 @@ export function FeaturesSection() {
                   onClick={() => setSelectedFeature(feature)}
                   className={`w-full group relative p-4 rounded-xl text-left transition-all cursor-pointer touch-manipulation ${
                     isSelected
-                      ? 'bg-primary/10 border-2 border-primary shadow-lg'
-                      : 'bg-card border border-border hover:border-primary/50 hover:shadow-md'
+                      ? 'bg-primary/10 border-2 border-primary'
+                      : 'bg-card border border-border hover:border-primary/50'
                   }`}
                   initial={{ opacity: 0, x: -20 }}
                   whileInView={{ opacity: 1, x: 0 }}
@@ -185,25 +185,15 @@ export function FeaturesSection() {
                 className="space-y-6"
               >
                 {/* Screenshot */}
-                <div className="relative rounded-xl border border-border/50 bg-linear-to-b from-background/80 to-background/40 backdrop-blur-xl p-3 shadow-2xl overflow-hidden">
+                <div className="relative rounded-xl border border-border/50 bg-linear-to-b from-background/80 to-background/40 backdrop-blur-xl p-3 overflow-hidden">
                   <div className="absolute -inset-4 bg-linear-to-r from-primary/20 via-accent/20 to-primary/20 rounded-2xl blur-3xl opacity-50" />
                   
-                  {/* Browser chrome */}
-                  <div className="relative flex items-center gap-2 mb-3 px-3 py-2 bg-muted/30 rounded-lg backdrop-blur-sm">
-                    <div className="flex gap-1.5">
-                      <div className="w-3 h-3 rounded-full bg-red-500/80" />
-                      <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
-                      <div className="w-3 h-3 rounded-full bg-green-500/80" />
-                    </div>
-                    <div className="flex-1 mx-4 px-3 py-1 bg-background/50 rounded-md">
-                      <div className="h-2 w-32 bg-muted-foreground/20 rounded" />
-                    </div>
-                  </div>
+                 
                   
                   {/* Screenshot */}
                   <div className="relative aspect-video bg-linear-to-br from-muted/50 to-muted/30 rounded-xl overflow-hidden border border-border/30">
                     <Image
-                      src="/screenshot.png"
+                      src="/demo.gif"
                       alt={selectedFeature.title}
                       fill
                       className="object-cover object-top"

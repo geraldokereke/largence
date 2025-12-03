@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import { Button } from "@largence/components/ui/button"
-import { Input } from "@largence/components/ui/input"
-import { toast } from "sonner"
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import { Button } from "@largence/components/ui/button";
+import { Input } from "@largence/components/ui/input";
+import { toast } from "sonner";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Users,
   Search,
@@ -18,102 +18,107 @@ import {
   Award,
   Mail,
   Trash2,
-} from "lucide-react"
-import { useOrganization } from "@clerk/nextjs"
-import { InviteMemberDialog } from "@largence/components/invite-member-dialog"
-import { Avatar, AvatarFallback, AvatarImage } from "@largence/components/ui/avatar"
-import { Skeleton } from "@largence/components/ui/skeleton"
+} from "lucide-react";
+import { useOrganization } from "@clerk/nextjs";
+import { InviteMemberDialog } from "@largence/components/invite-member-dialog";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@largence/components/ui/avatar";
+import { Skeleton } from "@largence/components/ui/skeleton";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@largence/components/ui/dropdown-menu"
-
+} from "@largence/components/ui/dropdown-menu";
 
 export default function TeamsPage() {
-  const queryClient = useQueryClient()
-  const { organization, membership: currentMembership } = useOrganization()
+  const queryClient = useQueryClient();
+  const { organization, membership: currentMembership } = useOrganization();
 
   // Fetch memberships with React Query
   const { data: membershipsData, isLoading: membershipsLoading } = useQuery({
-    queryKey: ['organization-memberships', organization?.id],
+    queryKey: ["organization-memberships", organization?.id],
     queryFn: async () => {
-      if (!organization) return null
-      const memberships = await organization.getMemberships({ pageSize: 50 })
-      return memberships
+      if (!organization) return null;
+      const memberships = await organization.getMemberships({ pageSize: 50 });
+      return memberships;
     },
     enabled: !!organization,
-  })
+  });
 
   // Fetch invitations with React Query
   const { data: invitationsData, isLoading: invitationsLoading } = useQuery({
-    queryKey: ['organization-invitations', organization?.id],
+    queryKey: ["organization-invitations", organization?.id],
     queryFn: async () => {
-      if (!organization) return null
-      const invitations = await organization.getInvitations({ pageSize: 20 })
-      return invitations
+      if (!organization) return null;
+      const invitations = await organization.getInvitations({ pageSize: 20 });
+      return invitations;
     },
     enabled: !!organization,
-  })
+  });
 
   // Remove member mutation
   const removeMemberMutation = useMutation({
     mutationFn: async (membershipId: string) => {
-      if (!organization) throw new Error('No organization')
-      await organization.removeMember(membershipId)
+      if (!organization) throw new Error("No organization");
+      await organization.removeMember(membershipId);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['organization-memberships'] })
-      toast.success('Member removed', {
-        description: 'The member has been removed from the organization.'
-      })
+      queryClient.invalidateQueries({ queryKey: ["organization-memberships"] });
+      toast.success("Member removed", {
+        description: "The member has been removed from the organization.",
+      });
     },
     onError: (error) => {
-      console.error('Error removing member:', error)
-      toast.error('Failed to remove member', {
-        description: 'Please try again.'
-      })
+      console.error("Error removing member:", error);
+      toast.error("Failed to remove member", {
+        description: "Please try again.",
+      });
     },
-  })
+  });
 
   // Revoke invitation mutation
   const revokeInvitationMutation = useMutation({
     mutationFn: async (invitationId: string) => {
-      const invitation = invitationsData?.data?.find(inv => inv.id === invitationId)
-      if (!invitation) throw new Error('Invitation not found')
-      await invitation.revoke()
+      const invitation = invitationsData?.data?.find(
+        (inv) => inv.id === invitationId,
+      );
+      if (!invitation) throw new Error("Invitation not found");
+      await invitation.revoke();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['organization-invitations'] })
-      toast.success('Invitation revoked', {
-        description: 'The invitation has been revoked.'
-      })
+      queryClient.invalidateQueries({ queryKey: ["organization-invitations"] });
+      toast.success("Invitation revoked", {
+        description: "The invitation has been revoked.",
+      });
     },
     onError: (error) => {
-      console.error('Error revoking invitation:', error)
-      toast.error('Failed to revoke invitation', {
-        description: 'Please try again.'
-      })
+      console.error("Error revoking invitation:", error);
+      toast.error("Failed to revoke invitation", {
+        description: "Please try again.",
+      });
     },
-  })
+  });
 
-  const isAdmin = currentMembership?.role === "org:admin"
-  const isLoading = membershipsLoading || invitationsLoading
-  const totalMembers = membershipsData?.total_count || 0
-  const pendingInvites = invitationsData?.total_count || 0
-  const memberships = membershipsData?.data || []
-  const invitations = invitationsData?.data || []
+  const isAdmin = currentMembership?.role === "org:admin";
+  const isLoading = membershipsLoading || invitationsLoading;
+  const totalMembers = membershipsData?.total_count || 0;
+  const pendingInvites = invitationsData?.total_count || 0;
+  const memberships = membershipsData?.data || [];
+  const invitations = invitationsData?.data || [];
 
   const handleRemoveMember = async (membershipId: string) => {
-    if (!confirm("Are you sure you want to remove this member?")) return
-    removeMemberMutation.mutate(membershipId)
-  }
+    if (!confirm("Are you sure you want to remove this member?")) return;
+    removeMemberMutation.mutate(membershipId);
+  };
 
   const handleRevokeInvitation = async (invitationId: string) => {
-    if (!confirm("Are you sure you want to revoke this invitation?")) return
-    revokeInvitationMutation.mutate(invitationId)
-  }
+    if (!confirm("Are you sure you want to revoke this invitation?")) return;
+    revokeInvitationMutation.mutate(invitationId);
+  };
 
   if (isLoading) {
     return (
@@ -189,7 +194,7 @@ export default function TeamsPage() {
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -197,11 +202,10 @@ export default function TeamsPage() {
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
           <div>
-            <h1 className="text-2xl font-semibold font-display">
-              Teams
-            </h1>
+            <h1 className="text-2xl font-semibold font-display">Teams</h1>
             <p className="text-sm text-muted-foreground mt-1">
-              Manage teams, members, and collaborate on legal work across {organization?.name}
+              Manage teams, members, and collaborate on legal work across{" "}
+              {organization?.name}
             </p>
           </div>
           <InviteMemberDialog />
@@ -302,8 +306,8 @@ export default function TeamsPage() {
 
           <div className="divide-y">
             {memberships.map((membership) => {
-              const userData = membership.publicUserData
-              if (!userData) return null
+              const userData = membership.publicUserData;
+              if (!userData) return null;
 
               return (
                 <div
@@ -356,36 +360,45 @@ export default function TeamsPage() {
                   {/* Joined */}
                   <div className="col-span-2 flex items-center">
                     <span className="text-sm text-muted-foreground">
-                      {new Date(membership.createdAt).toLocaleDateString('en-US', {
-                        month: 'short',
-                        year: 'numeric'
-                      })}
+                      {new Date(membership.createdAt).toLocaleDateString(
+                        "en-US",
+                        {
+                          month: "short",
+                          year: "numeric",
+                        },
+                      )}
                     </span>
                   </div>
 
                   {/* Actions */}
                   <div className="col-span-1 flex items-center justify-end">
-                    {isAdmin && userData.userId !== currentMembership?.publicUserData?.userId && (
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-sm">
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem
-                            onClick={() => handleRemoveMember(membership.id)}
-                            className="text-destructive focus:text-destructive"
-                          >
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            Remove Member
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    )}
+                    {isAdmin &&
+                      userData.userId !==
+                        currentMembership?.publicUserData?.userId && (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 rounded-sm"
+                            >
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              onClick={() => handleRemoveMember(membership.id)}
+                              className="text-destructive focus:text-destructive"
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Remove Member
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      )}
                   </div>
                 </div>
-              )
+              );
             })}
           </div>
         </div>
@@ -409,9 +422,13 @@ export default function TeamsPage() {
                       <Mail className="h-5 w-5 text-muted-foreground" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium">{invitation.emailAddress}</p>
+                      <p className="text-sm font-medium">
+                        {invitation.emailAddress}
+                      </p>
                       <p className="text-xs text-muted-foreground">
-                        Invited {new Date(invitation.createdAt).toLocaleDateString()} • {invitation.role === "org:admin" ? "Admin" : "Member"}
+                        Invited{" "}
+                        {new Date(invitation.createdAt).toLocaleDateString()} •{" "}
+                        {invitation.role === "org:admin" ? "Admin" : "Member"}
                       </p>
                     </div>
                   </div>
@@ -432,5 +449,5 @@ export default function TeamsPage() {
         </div>
       )}
     </div>
-  )
+  );
 }

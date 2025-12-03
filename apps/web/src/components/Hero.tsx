@@ -4,182 +4,151 @@ import * as React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@largence/ui";
-import { CalendarDays } from "lucide-react";
+import { CalendarDays, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { ScheduleDemoDialog } from "./schedule-demo-dialog";
 
 export function Hero() {
   const [demoDialogOpen, setDemoDialogOpen] = React.useState(false);
+
   return (
-    <section className="relative pt-32 pb-16 px-4 sm:px-6 touch-manipulation">
-      <div className="max-w-6xl mx-auto px-6 sm:px-8 lg:px-12 py-12 border border-border/50">
-        {/* Geometric decoration */}
-        <div className="absolute top-8 right-8 w-32 h-32 opacity-5 pointer-events-none">
-          <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="50" cy="50" r="40" stroke="currentColor" strokeWidth="2"/>
-            <circle cx="50" cy="50" r="25" stroke="currentColor" strokeWidth="2"/>
-            <circle cx="50" cy="50" r="10" stroke="currentColor" strokeWidth="2"/>
-          </svg>
-        </div>
-
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-          {/* Left Column - Content */}
-          <motion.div 
-            className="space-y-6"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            {/* Y Combinator Badge */}
-            <motion.div 
-              className="inline-flex items-center gap-3 px-4 py-2.5 rounded-full bg-linear-to-r from-orange-500/10 to-orange-600/10 border border-orange-500/20 shadow-sm backdrop-blur-sm"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.4, delay: 0.1 }}
-            >
-              <div className="flex items-center justify-center w-5 h-5 bg-orange-500 text-white font-bold text-xs rounded">
-                Y
-              </div>
-              <span className="text-sm font-semibold text-foreground">Not Yet Backed by Y Combinator</span>
-            </motion.div>
-            
-            <div className="space-y-4">
-              <motion.h1 
-                className="font-display text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold tracking-tight leading-tight"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
+    <section className="relative pt-32 pb-20 px-4 sm:px-6 overflow-hidden min-h-screen">
+      <div
+        className="max-w-6xl mx-auto text-center relative"
+        style={{ zIndex: 10 }}
+      >
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="flex justify-center mb-8"
+        >
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-transparent border border-orange-400 text-sm font-medium text-gray-900 dark:text-gray-100">
+            <span className="flex items-center justify-center h-5 w-5 rounded bg-orange-400">
+              <svg
+                viewBox="0 0 20 20"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-3.5 w-3.5"
               >
-                <span className="text-foreground">Enterprise Legal </span>
-                <span className="text-primary">Intelligence </span>
-                <span className="text-foreground">for Africa</span>
-              </motion.h1>
-              
-              <motion.p 
-                className="text-xs sm:text-sm md:text-base lg:text-lg text-foreground/70 leading-relaxed"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.3 }}
-              >
-                Automate contract drafting, ensure regulatory compliance, and streamline governance 
-                for African enterprises with AI-powered legal intelligence.
-              </motion.p>
-            </div>
+                <rect width="20" height="20" rx="4" fill="#FF6F1A" />
+                <text
+                  x="50%"
+                  y="55%"
+                  textAnchor="middle"
+                  dominantBaseline="middle"
+                  fontSize="11"
+                  fontWeight="bold"
+                  fill="white"
+                  fontFamily="Arial, Helvetica, sans-serif"
+                >
+                  Y
+                </text>
+              </svg>
+            </span>
+            <span className="tracking-wide">
+              Not Yet Backed by Y Combinator
+            </span>
+          </div>
+        </motion.div>
 
-            <motion.div 
-              className="flex flex-row gap-2 sm:gap-3"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-            >
-              <Link href="https://app.largence.com/auth/signup">
-                <Button size="default" className="text-sm sm:text-base group shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all w-full sm:w-auto">
-                  Get Started
-                  <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14M12 5l7 7-7 7" />
-                  </svg>
-                </Button>
-              </Link>
+        <motion.h1
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+          className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-foreground mb-6"
+        >
+          Enterprise Legal <br className="hidden sm:block" />
+          <span className="text-transparent bg-clip-text bg-linear-to-r from-primary to-primary/60">
+            Intelligence for Africa
+          </span>
+        </motion.h1>
+
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed"
+        >
+          Automate contract drafting, ensure regulatory compliance, and
+          streamline governance for African enterprises with AI-powered legal
+          intelligence.
+        </motion.p>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+          className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-16 w-full px-2"
+        >
+            <span className="w-full sm:w-auto block">
               <Button
-                onClick={() => setDemoDialogOpen(true)}
-                variant="outline"
-                size="default"
-                className="text-sm sm:text-base group border-border/50 hover:border-border bg-background/50 backdrop-blur-sm w-full sm:w-auto"
+                size="lg"
+                className="w-full h-12 px-6 sm:px-8 text-base sm:text-lg rounded-full transition-all"
               >
-                <CalendarDays className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                Schedule Demo
+                Get Started
+                <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
-            </motion.div>
-
-            {/* Stats Grid */}
-            <motion.div 
-              className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 pt-6 border-t border-border/50"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.5 }}
-            >
-              <div className="space-y-1">
-                <div className="text-xl sm:text-2xl lg:text-3xl font-bold font-display text-foreground">Beta</div>
-                <div className="text-xs text-foreground/60 font-medium">Launch Phase</div>
-              </div>
-              <div className="space-y-1">
-                <div className="text-xl sm:text-2xl lg:text-3xl font-bold font-display text-foreground">3</div>
-                <div className="text-xs text-foreground/60 font-medium">Pilot Countries</div>
-              </div>
-              <div className="space-y-1">
-                <div className="text-xl sm:text-2xl lg:text-3xl font-bold font-display text-foreground">99.5%</div>
-                <div className="text-xs text-foreground/60 font-medium">Uptime</div>
-              </div>
-              <div className="space-y-1">
-                <div className="text-xl sm:text-2xl lg:text-3xl font-bold font-display text-foreground">24/7</div>
-                <div className="text-xs text-foreground/60 font-medium">Support</div>
-              </div>
-            </motion.div>
-          </motion.div>
-
-          {/* Right Column - Screenshot */}
-          <motion.div 
-            className="relative"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
+            </span>
+          <Button
+            onClick={() => setDemoDialogOpen(true)}
+            variant="outline"
+            size="lg"
+            className="w-full sm:w-auto h-12 px-6 sm:px-8 text-base sm:text-lg rounded-full border-border/50 bg-background/50 backdrop-blur-sm hover:bg-muted/50"
           >
-            {/* Glow effects */}
-            <div className="absolute -inset-4 bg-linear-to-r from-primary/20 via-accent/20 to-primary/20 rounded-2xl blur-3xl opacity-50" />
-            <div className="absolute top-1/4 -left-8 w-72 h-72 bg-primary/20 rounded-full blur-3xl" />
-            <div className="absolute bottom-1/4 -right-8 w-72 h-72 bg-accent/20 rounded-full blur-3xl" />
-            
-            {/* Screenshot container with browser UI */}
-            <div className="relative rounded-2xl border border-border/50 bg-linear-to-b from-background/80 to-background/40 backdrop-blur-xl p-3 shadow-2xl overflow-hidden">
-              {/* Browser chrome */}
-              <div className="flex items-center gap-2 mb-3 px-3 py-2 bg-muted/30 rounded-lg backdrop-blur-sm">
-                <div className="flex gap-1.5">
-                  <div className="w-3 h-3 rounded-full bg-red-500/80" />
-                  <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
-                  <div className="w-3 h-3 rounded-full bg-green-500/80" />
-                </div>
-                <div className="flex-1 mx-4 px-3 py-1 bg-background/50 rounded-md">
-                  <div className="h-2 w-32 bg-muted-foreground/20 rounded" />
-                </div>
-              </div>
-              
-              {/* Screenshot - Larger and Taller */}
-              <div className="relative rounded-xl overflow-hidden border border-border/30">
-                <Image
-                  src="/"
-                  alt="Largence Dashboard"
-                  width={1200}
-                  height={900}
-                  className="w-full h-auto"
-                  priority
-                />
-              </div>
+            <CalendarDays className="mr-2 h-4 w-4" />
+            Book Demo
+          </Button>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.4 }}
+          className="relative mx-auto max-w-5xl"
+        >
+          <div className="relative rounded-xl border border-border/50 bg-background/50 backdrop-blur-xl overflow-hidden">
+
+            <div className="relative aspect-16/10 w-full bg-muted/20">
+              <Image
+                src="/app.png"
+                alt="Largence Dashboard"
+                fill
+                className="object-fit"
+                priority
+              />
             </div>
-            
-            {/* Floating badge */}
-            <motion.div 
-              className="absolute -bottom-4 -left-4 px-4 py-3 rounded-xl bg-background border border-border/50 shadow-xl backdrop-blur-sm"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.4, delay: 0.8 }}
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center justify-center">
-                  <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <div>
-                  <div className="text-sm font-semibold text-foreground">GDPR Compliant</div>
-                  <div className="text-xs text-foreground/60">Data privacy guaranteed</div>
-                </div>
+          </div>
+
+          <div className="absolute -inset-4 -z-10 bg-primary/20 blur-3xl opacity-20 rounded-[3rem]" />
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.6 }}
+          className="mt-16 pt-8 border-t border-border/50 grid grid-cols-2 md:grid-cols-4 gap-8"
+        >
+          {[
+            { label: "Launch Phase", value: "Beta" },
+            { label: "Pilot Countries", value: "3" },
+            { label: "Uptime", value: "99.9%" },
+            { label: "Support", value: "24/7" },
+          ].map((stat, i) => (
+            <div key={i} className="text-center">
+              <div className="text-2xl font-bold text-foreground">
+                {stat.value}
               </div>
-            </motion.div>
-          </motion.div>
-        </div>
+              <div className="text-sm text-muted-foreground">{stat.label}</div>
+            </div>
+          ))}
+        </motion.div>
       </div>
 
-      <ScheduleDemoDialog open={demoDialogOpen} onOpenChange={setDemoDialogOpen} />
+      <ScheduleDemoDialog
+        open={demoDialogOpen}
+        onOpenChange={setDemoDialogOpen}
+      />
     </section>
   );
 }

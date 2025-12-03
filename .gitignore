@@ -4,6 +4,8 @@ node_modules/
 .zed/
 .env
 
+.vscode/
+
 **/node_modules/
 **/.pnp/
 **/.pnpm/

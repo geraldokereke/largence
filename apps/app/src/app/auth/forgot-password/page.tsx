@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { ForgotPasswordForm } from "@largence/components/forgot-password-form";
 import Image from "next/image";
@@ -48,7 +48,9 @@ export default function ForgotPasswordPage() {
           </h2>
           <div className="space-y-6">
             <div className="p-6 rounded-lg bg-card border">
-              <h3 className="font-semibold text-lg mb-2">Password Reset Process</h3>
+              <h3 className="font-semibold text-lg mb-2">
+                Password Reset Process
+              </h3>
               <ol className="space-y-2 text-muted-foreground list-decimal list-inside">
                 <li>Enter your email address</li>
                 <li>Check your inbox for a verification code</li>
@@ -58,7 +60,9 @@ export default function ForgotPasswordPage() {
             </div>
 
             <div className="p-6 rounded-lg bg-card border">
-              <h3 className="font-semibold text-lg mb-2">Didn't receive the code?</h3>
+              <h3 className="font-semibold text-lg mb-2">
+                Didn't receive the code?
+              </h3>
               <ul className="space-y-2 text-muted-foreground">
                 <li>• Check your spam or junk folder</li>
                 <li>• Make sure you entered the correct email</li>
@@ -67,7 +71,9 @@ export default function ForgotPasswordPage() {
             </div>
 
             <div className="p-6 rounded-lg bg-primary/10 border border-primary/20">
-              <h3 className="font-semibold text-lg mb-2">Still having trouble?</h3>
+              <h3 className="font-semibold text-lg mb-2">
+                Still having trouble?
+              </h3>
               <p className="text-muted-foreground mb-4">
                 Contact our support team for assistance
               </p>

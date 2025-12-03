@@ -12,7 +12,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@largence/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@largence/components/ui/avatar";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@largence/components/ui/avatar";
 import { Building2, LogOut, Settings, User as UserIcon } from "lucide-react";
 import { OrganizationSelector } from "./organization-selector";
 
@@ -24,9 +28,10 @@ export function UserProfileDropdown() {
 
   if (!user) return null;
 
-  const userInitials = user.firstName && user.lastName
-    ? `${user.firstName[0]}${user.lastName[0]}`
-    : user.emailAddresses[0]?.emailAddress[0]?.toUpperCase() || "U";
+  const userInitials =
+    user.firstName && user.lastName
+      ? `${user.firstName[0]}${user.lastName[0]}`
+      : user.emailAddresses[0]?.emailAddress[0]?.toUpperCase() || "U";
 
   return (
     <>
@@ -42,7 +47,9 @@ export function UserProfileDropdown() {
         <DropdownMenuContent className="w-56" align="end" forceMount>
           <DropdownMenuLabel className="font-normal">
             <div className="flex flex-col space-y-1">
-              <p className="text-sm font-medium leading-none">{user.fullName}</p>
+              <p className="text-sm font-medium leading-none">
+                {user.fullName}
+              </p>
               <p className="text-xs leading-none text-muted-foreground">
                 {user.emailAddresses[0]?.emailAddress}
               </p>
@@ -53,8 +60,12 @@ export function UserProfileDropdown() {
             <>
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
-                  <p className="text-xs text-muted-foreground">Current workspace</p>
-                  <p className="text-sm font-medium leading-none">{organization.name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    Current workspace
+                  </p>
+                  <p className="text-sm font-medium leading-none">
+                    {organization.name}
+                  </p>
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
@@ -82,7 +93,7 @@ export function UserProfileDropdown() {
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <OrganizationSelector 
+      <OrganizationSelector
         open={showOrgSelector}
         onOpenChange={setShowOrgSelector}
       />

@@ -1,34 +1,34 @@
-"use client"
+"use client";
 
-import { useState, useRef, useEffect } from "react"
-import { useRouter, useParams } from "next/navigation"
-import { toast } from "sonner"
-import { Button } from "@largence/components/ui/button"
-import { Input } from "@largence/components/ui/input"
-import { Spinner } from "@largence/components/ui/spinner"
+import { useState, useRef, useEffect } from "react";
+import { useRouter, useParams } from "next/navigation";
+import { toast } from "sonner";
+import { Button } from "@largence/components/ui/button";
+import { Input } from "@largence/components/ui/input";
+import { Spinner } from "@largence/components/ui/spinner";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@largence/components/ui/select"
+} from "@largence/components/ui/select";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@largence/components/ui/dropdown-menu"
-import { 
-  ArrowLeft, 
-  Download, 
-  Save, 
-  Bold, 
-  Italic, 
-  Underline, 
-  AlignLeft, 
-  AlignCenter, 
-  AlignRight, 
+} from "@largence/components/ui/dropdown-menu";
+import {
+  ArrowLeft,
+  Download,
+  Save,
+  Bold,
+  Italic,
+  Underline,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
   AlignJustify,
   List,
   ListOrdered,
@@ -45,19 +45,21 @@ import {
   Palette,
   Type,
   Indent,
-  Outdent
-} from "lucide-react"
-import { Separator } from "@largence/components/ui/separator"
+  Outdent,
+} from "lucide-react";
+import { Separator } from "@largence/components/ui/separator";
 
 export default function DocumentEditorPreviewPage() {
-  const router = useRouter()
-  const editorRef = useRef<HTMLDivElement>(null)
-  const [loading, setLoading] = useState(false) // Disabled for preview
-  const [saving, setSaving] = useState(false)
-  const [exporting, setExporting] = useState(false)
-  const [title, setTitle] = useState("Employment Contract - John Doe & XYZ Corporation")
-  const [fontSize, setFontSize] = useState("16")
-  const [fontFamily, setFontFamily] = useState("Arial")
+  const router = useRouter();
+  const editorRef = useRef<HTMLDivElement>(null);
+  const [loading, setLoading] = useState(false); // Disabled for preview
+  const [saving, setSaving] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [title, setTitle] = useState(
+    "Employment Contract - John Doe & XYZ Corporation",
+  );
+  const [fontSize, setFontSize] = useState("16");
+  const [fontFamily, setFontFamily] = useState("Arial");
   const [content, setContent] = useState(`
     <h1>Employment Contract</h1>
     
@@ -113,107 +115,107 @@ export default function DocumentEditorPreviewPage() {
         </div>
       </div>
     </div>
-  `)
-  const [status, setStatus] = useState<"DRAFT" | "FINAL" | "ARCHIVED">("DRAFT")
+  `);
+  const [status, setStatus] = useState<"DRAFT" | "FINAL" | "ARCHIVED">("DRAFT");
 
   const handleSave = async () => {
-    setSaving(true)
+    setSaving(true);
     setTimeout(() => {
-      setSaving(false)
+      setSaving(false);
       toast.success("Document saved successfully", {
-        description: "Your changes have been saved."
-      })
-    }, 1500)
-  }
+        description: "Your changes have been saved.",
+      });
+    }, 1500);
+  };
 
   const handleDownload = () => {
-    const blob = new Blob([content], { type: "text/html" })
-    const url = URL.createObjectURL(blob)
-    const link = window.document.createElement("a")
-    link.href = url
-    link.download = `${title}.html`
-    window.document.body.appendChild(link)
-    link.click()
-    window.document.body.removeChild(link)
-    URL.revokeObjectURL(url)
-  }
+    const blob = new Blob([content], { type: "text/html" });
+    const url = URL.createObjectURL(blob);
+    const link = window.document.createElement("a");
+    link.href = url;
+    link.download = `${title}.html`;
+    window.document.body.appendChild(link);
+    link.click();
+    window.document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
 
   useEffect(() => {
     // Enable design mode for better contentEditable support
     if (editorRef.current) {
-      document.execCommand('defaultParagraphSeparator', false, 'p')
+      document.execCommand("defaultParagraphSeparator", false, "p");
     }
-  }, [])
+  }, []);
 
   const execCommand = (command: string, value?: string) => {
-    document.execCommand(command, false, value)
+    document.execCommand(command, false, value);
     if (editorRef.current) {
-      editorRef.current.focus()
+      editorRef.current.focus();
       // Update content state after command
-      setContent(editorRef.current.innerHTML)
+      setContent(editorRef.current.innerHTML);
     }
-  }
+  };
 
   const handleFontSizeChange = (size: string) => {
-    setFontSize(size)
+    setFontSize(size);
     // Use font size 7 then wrap selection in span
-    document.execCommand("fontSize", false, "7")
-    const fontElements = editorRef.current?.querySelectorAll('font[size="7"]')
+    document.execCommand("fontSize", false, "7");
+    const fontElements = editorRef.current?.querySelectorAll('font[size="7"]');
     fontElements?.forEach((element) => {
-      const span = document.createElement("span")
-      span.style.fontSize = `${size}px`
-      span.innerHTML = element.innerHTML
-      element.parentNode?.replaceChild(span, element)
-    })
+      const span = document.createElement("span");
+      span.style.fontSize = `${size}px`;
+      span.innerHTML = element.innerHTML;
+      element.parentNode?.replaceChild(span, element);
+    });
     if (editorRef.current) {
-      setContent(editorRef.current.innerHTML)
+      setContent(editorRef.current.innerHTML);
     }
-  }
+  };
 
   const handleFontFamilyChange = (family: string) => {
-    setFontFamily(family)
-    execCommand("fontName", family)
-  }
+    setFontFamily(family);
+    execCommand("fontName", family);
+  };
 
   const handleTextColor = (color: string) => {
-    execCommand("foreColor", color)
-  }
+    execCommand("foreColor", color);
+  };
 
   const handleHighlight = (color: string) => {
-    execCommand("hiliteColor", color)
-  }
+    execCommand("hiliteColor", color);
+  };
 
   const insertLink = () => {
-    const url = prompt("Enter URL:")
+    const url = prompt("Enter URL:");
     if (url) {
-      execCommand("createLink", url)
+      execCommand("createLink", url);
     }
-  }
+  };
 
   const insertImage = () => {
-    const url = prompt("Enter image URL:")
+    const url = prompt("Enter image URL:");
     if (url) {
-      execCommand("insertImage", url)
+      execCommand("insertImage", url);
     }
-  }
+  };
 
   const handleExportHTML = () => {
-    const blob = new Blob([content], { type: "text/html" })
-    const url = URL.createObjectURL(blob)
-    const link = window.document.createElement("a")
-    link.href = url
-    link.download = `${title}.html`
-    window.document.body.appendChild(link)
-    link.click()
-    window.document.body.removeChild(link)
-    URL.revokeObjectURL(url)
-  }
+    const blob = new Blob([content], { type: "text/html" });
+    const url = URL.createObjectURL(blob);
+    const link = window.document.createElement("a");
+    link.href = url;
+    link.download = `${title}.html`;
+    window.document.body.appendChild(link);
+    link.click();
+    window.document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
 
   const handleExportPDF = async () => {
-    setExporting(true)
+    setExporting(true);
     try {
       // Create a printable version
-      const printWindow = window.open("", "_blank")
+      const printWindow = window.open("", "_blank");
       if (printWindow) {
         printWindow.document.write(`
           <!DOCTYPE html>
@@ -232,56 +234,62 @@ export default function DocumentEditorPreviewPage() {
               ${content}
             </body>
           </html>
-        `)
-        printWindow.document.close()
-        printWindow.print()
+        `);
+        printWindow.document.close();
+        printWindow.print();
       }
     } finally {
-      setExporting(false)
+      setExporting(false);
     }
-  }
+  };
 
   const handleExportDOCX = async () => {
-    setExporting(true)
+    setExporting(true);
     try {
       // For now, download as HTML with .doc extension (compatible with Word)
-      const blob = new Blob([`
+      const blob = new Blob(
+        [
+          `
         <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
         <head><meta charset='utf-8'><title>${title}</title></head>
         <body>${content}</body>
         </html>
-      `], { type: "application/msword" })
-      const url = URL.createObjectURL(blob)
-      const link = window.document.createElement("a")
-      link.href = url
-      link.download = `${title}.doc`
-      window.document.body.appendChild(link)
-      link.click()
-      window.document.body.removeChild(link)
-      URL.revokeObjectURL(url)
+      `,
+        ],
+        { type: "application/msword" },
+      );
+      const url = URL.createObjectURL(blob);
+      const link = window.document.createElement("a");
+      link.href = url;
+      link.download = `${title}.doc`;
+      window.document.body.appendChild(link);
+      link.click();
+      window.document.body.removeChild(link);
+      URL.revokeObjectURL(url);
     } finally {
-      setExporting(false)
+      setExporting(false);
     }
-  }
+  };
 
   const handleSendToDocuSign = async () => {
-    setExporting(true)
+    setExporting(true);
     try {
       // This would integrate with DocuSign API
       toast.info("DocuSign Integration", {
-        description: "DocuSign API integration is required. Contact your administrator to enable this feature."
-      })
+        description:
+          "DocuSign API integration is required. Contact your administrator to enable this feature.",
+      });
     } finally {
-      setExporting(false)
+      setExporting(false);
     }
-  }
+  };
 
   if (loading) {
     return (
       <div className="flex h-screen w-screen items-center justify-center">
         <Spinner size="sm" />
       </div>
-    )
+    );
   }
 
   return (
@@ -337,7 +345,11 @@ export default function DocumentEditorPreviewPage() {
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" disabled={exporting} className="h-9 rounded-sm">
+                <Button
+                  variant="outline"
+                  disabled={exporting}
+                  className="h-9 rounded-sm"
+                >
                   {exporting ? (
                     <>
                       <Spinner size="sm" className="mr-2" />
@@ -371,7 +383,11 @@ export default function DocumentEditorPreviewPage() {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            <Button onClick={handleSave} disabled={saving} className="h-9 rounded-sm">
+            <Button
+              onClick={handleSave}
+              disabled={saving}
+              className="h-9 rounded-sm"
+            >
               {saving ? (
                 <>
                   <Spinner size="sm" className="mr-2" />
@@ -500,10 +516,30 @@ export default function DocumentEditorPreviewPage() {
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-48">
               <div className="grid grid-cols-6 gap-1 p-2">
-                {["#000000", "#434343", "#666666", "#999999", "#b7b7b7", "#cccccc",
-                  "#ff0000", "#ff9900", "#ffff00", "#00ff00", "#00ffff", "#0000ff",
-                  "#9900ff", "#ff00ff", "#990000", "#cc6600", "#cccc00", "#009900",
-                  "#009999", "#000099", "#660099", "#990099"].map((color) => (
+                {[
+                  "#000000",
+                  "#434343",
+                  "#666666",
+                  "#999999",
+                  "#b7b7b7",
+                  "#cccccc",
+                  "#ff0000",
+                  "#ff9900",
+                  "#ffff00",
+                  "#00ff00",
+                  "#00ffff",
+                  "#0000ff",
+                  "#9900ff",
+                  "#ff00ff",
+                  "#990000",
+                  "#cc6600",
+                  "#cccc00",
+                  "#009900",
+                  "#009999",
+                  "#000099",
+                  "#660099",
+                  "#990099",
+                ].map((color) => (
                   <button
                     key={color}
                     className="h-6 w-6 rounded-sm border border-border hover:scale-110 transition-transform"
@@ -529,8 +565,20 @@ export default function DocumentEditorPreviewPage() {
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-48">
               <div className="grid grid-cols-6 gap-1 p-2">
-                {["transparent", "#ffff00", "#00ff00", "#00ffff", "#ff00ff", "#ff0000",
-                  "#0000ff", "#ffcc99", "#ffff99", "#ccffcc", "#ccffff", "#ffccff"].map((color) => (
+                {[
+                  "transparent",
+                  "#ffff00",
+                  "#00ff00",
+                  "#00ffff",
+                  "#ff00ff",
+                  "#ff0000",
+                  "#0000ff",
+                  "#ffcc99",
+                  "#ffff99",
+                  "#ccffcc",
+                  "#ccffff",
+                  "#ffccff",
+                ].map((color) => (
                   <button
                     key={color}
                     className="h-6 w-6 rounded-sm border border-border hover:scale-110 transition-transform"
@@ -675,11 +723,15 @@ export default function DocumentEditorPreviewPage() {
               <span>Created: {new Date().toLocaleDateString()}</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className={`h-2 w-2 rounded-full ${
-                status === "DRAFT" ? "bg-yellow-500" :
-                status === "FINAL" ? "bg-green-500" :
-                "bg-gray-500"
-              }`} />
+              <div
+                className={`h-2 w-2 rounded-full ${
+                  status === "DRAFT"
+                    ? "bg-yellow-500"
+                    : status === "FINAL"
+                      ? "bg-green-500"
+                      : "bg-gray-500"
+                }`}
+              />
               <span className="font-medium">{status}</span>
             </div>
           </div>
@@ -696,5 +748,5 @@ export default function DocumentEditorPreviewPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

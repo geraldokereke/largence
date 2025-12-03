@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useOrganization } from "@clerk/nextjs"
-import { Button } from "@largence/components/ui/button"
+import { useState } from "react";
+import { useOrganization } from "@clerk/nextjs";
+import { Button } from "@largence/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -11,66 +11,68 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@largence/components/ui/dialog"
-import { Input } from "@largence/components/ui/input"
-import { Label } from "@largence/components/ui/label"
+} from "@largence/components/ui/dialog";
+import { Input } from "@largence/components/ui/input";
+import { Label } from "@largence/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@largence/components/ui/select"
-import { Spinner } from "@largence/components/ui/spinner"
-import { UserPlus, Mail, CheckCircle } from "lucide-react"
+} from "@largence/components/ui/select";
+import { Spinner } from "@largence/components/ui/spinner";
+import { UserPlus, Mail, CheckCircle } from "lucide-react";
 
 export function InviteMemberDialog() {
-  const [open, setOpen] = useState(false)
-  const [email, setEmail] = useState("")
-  const [role, setRole] = useState<"org:member" | "org:admin">("org:member")
-  const [isInviting, setIsInviting] = useState(false)
-  const [success, setSuccess] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  
+  const [open, setOpen] = useState(false);
+  const [email, setEmail] = useState("");
+  const [role, setRole] = useState<"org:member" | "org:admin">("org:member");
+  const [isInviting, setIsInviting] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   const { organization, invitations } = useOrganization({
     invitations: {
       pageSize: 5,
       keepPreviousData: true,
     },
-  })
+  });
 
   const handleInvite = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsInviting(true)
-    setError(null)
-    setSuccess(false)
+    e.preventDefault();
+    setIsInviting(true);
+    setError(null);
+    setSuccess(false);
 
     try {
       if (!organization) {
-        throw new Error("No organization found")
+        throw new Error("No organization found");
       }
 
       await organization.inviteMember({
         emailAddress: email,
         role: role,
-      })
+      });
 
-      setSuccess(true)
-      setEmail("")
-      
+      setSuccess(true);
+      setEmail("");
+
       // Auto close after 2 seconds
       setTimeout(() => {
-        setOpen(false)
-        setSuccess(false)
-      }, 2000)
-      
+        setOpen(false);
+        setSuccess(false);
+      }, 2000);
     } catch (err: any) {
-      console.error("Invite error:", err)
-      setError(err?.errors?.[0]?.message || "Failed to send invitation. Please try again.")
+      console.error("Invite error:", err);
+      setError(
+        err?.errors?.[0]?.message ||
+          "Failed to send invitation. Please try again.",
+      );
     } finally {
-      setIsInviting(false)
+      setIsInviting(false);
     }
-  }
+  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -84,7 +86,8 @@ export function InviteMemberDialog() {
         <DialogHeader>
           <DialogTitle className="font-display">Invite Team Member</DialogTitle>
           <DialogDescription>
-            Send an invitation to join {organization?.name}. They'll receive an email with instructions.
+            Send an invitation to join {organization?.name}. They'll receive an
+            email with instructions.
           </DialogDescription>
         </DialogHeader>
 
@@ -128,7 +131,9 @@ export function InviteMemberDialog() {
                 <Label htmlFor="role">Role</Label>
                 <Select
                   value={role}
-                  onValueChange={(value: "org:member" | "org:admin") => setRole(value)}
+                  onValueChange={(value: "org:member" | "org:admin") =>
+                    setRole(value)
+                  }
                   disabled={isInviting}
                 >
                   <SelectTrigger className="h-10 rounded-sm">
@@ -140,8 +145,8 @@ export function InviteMemberDialog() {
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground">
-                  {role === "org:admin" 
-                    ? "Admins can manage organization settings and members" 
+                  {role === "org:admin"
+                    ? "Admins can manage organization settings and members"
                     : "Members can access and collaborate on documents"}
                 </p>
               </div>
@@ -179,5 +184,5 @@ export function InviteMemberDialog() {
         )}
       </DialogContent>
     </Dialog>
-  )
+  );
 }

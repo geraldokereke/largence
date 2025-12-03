@@ -1,17 +1,20 @@
-"use client"
+"use client";
 
-import { motion } from "framer-motion"
-import { Mail, Phone, CreditCard } from "lucide-react"
-import { Input } from "@largence/components/ui/input"
-import { Label } from "@largence/components/ui/label"
-import type { OnboardingFormData } from "@largence/hooks/use-onboarding"
+import { motion } from "framer-motion";
+import { Mail, Phone, CreditCard } from "lucide-react";
+import { Input } from "@largence/components/ui/input";
+import { Label } from "@largence/components/ui/label";
+import type { OnboardingFormData } from "@largence/hooks/use-onboarding";
 
 interface BillingContactStepProps {
-  formData: OnboardingFormData
-  updateFormData: (data: Partial<OnboardingFormData>) => void
+  formData: OnboardingFormData;
+  updateFormData: (data: Partial<OnboardingFormData>) => void;
 }
 
-export function BillingContactStep({ formData, updateFormData }: BillingContactStepProps) {
+export function BillingContactStep({
+  formData,
+  updateFormData,
+}: BillingContactStepProps) {
   return (
     <motion.div
       initial={{ opacity: 0, x: 20 }}
@@ -39,7 +42,9 @@ export function BillingContactStep({ formData, updateFormData }: BillingContactS
             className="h-10 rounded-sm pl-10"
           />
         </div>
-        <p className="text-xs text-muted-foreground">Invoices and receipts will be sent here</p>
+        <p className="text-xs text-muted-foreground">
+          Invoices and receipts will be sent here
+        </p>
       </div>
 
       <div className="space-y-2">
@@ -55,7 +60,9 @@ export function BillingContactStep({ formData, updateFormData }: BillingContactS
             className="h-10 rounded-sm pl-10"
           />
         </div>
-        <p className="text-xs text-muted-foreground">Optional - for important account notifications</p>
+        <p className="text-xs text-muted-foreground">
+          Optional - for important account notifications
+        </p>
       </div>
 
       <div className="p-4 bg-muted/50 rounded-sm border">
@@ -64,11 +71,12 @@ export function BillingContactStep({ formData, updateFormData }: BillingContactS
           <div>
             <p className="text-sm font-medium">Payment information</p>
             <p className="text-xs text-muted-foreground mt-1">
-              You can add payment methods and manage your subscription after completing setup
+              You can add payment methods and manage your subscription after
+              completing setup
             </p>
           </div>
         </div>
       </div>
     </motion.div>
-  )
+  );
 }

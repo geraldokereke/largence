@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { Check, ChevronsUpDown } from "lucide-react"
+import * as React from "react";
+import { Check, ChevronsUpDown } from "lucide-react";
 
-import { cn } from "@largence/lib/utils"
-import { Button } from "@largence/components/ui/button"
+import { cn } from "@largence/lib/utils";
+import { Button } from "@largence/components/ui/button";
 import {
   Command,
   CommandEmpty,
@@ -12,12 +12,12 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@largence/components/ui/command"
+} from "@largence/components/ui/command";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@largence/components/ui/popover"
+} from "@largence/components/ui/popover";
 
 export const countries = [
   { value: "nigeria", label: "Nigeria", flag: "🇳🇬" },
@@ -31,13 +31,13 @@ export const countries = [
   { value: "rwanda", label: "Rwanda", flag: "🇷🇼" },
   { value: "ethiopia", label: "Ethiopia", flag: "🇪🇹" },
   { value: "cote-divoire", label: "Côte d'Ivoire", flag: "🇨🇮" },
-]
+];
 
 interface CountryComboboxProps {
-  value?: string
-  onValueChange: (value: string) => void
-  placeholder?: string
-  emptyText?: string
+  value?: string;
+  onValueChange: (value: string) => void;
+  placeholder?: string;
+  emptyText?: string;
 }
 
 export function CountryCombobox({
@@ -46,9 +46,9 @@ export function CountryCombobox({
   placeholder = "Select country...",
   emptyText = "No country found.",
 }: CountryComboboxProps) {
-  const [open, setOpen] = React.useState(false)
+  const [open, setOpen] = React.useState(false);
 
-  const selectedCountry = countries.find((country) => country.value === value)
+  const selectedCountry = countries.find((country) => country.value === value);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -82,14 +82,14 @@ export function CountryCombobox({
                   value={country.value}
                   keywords={[country.label]}
                   onSelect={(currentValue) => {
-                    onValueChange(currentValue === value ? "" : currentValue)
-                    setOpen(false)
+                    onValueChange(currentValue === value ? "" : currentValue);
+                    setOpen(false);
                   }}
                 >
                   <Check
                     className={cn(
                       "mr-2 h-4 w-4",
-                      value === country.value ? "opacity-100" : "opacity-0"
+                      value === country.value ? "opacity-100" : "opacity-0",
                     )}
                   />
                   <span className="text-lg mr-2">{country.flag}</span>
@@ -101,5 +101,5 @@ export function CountryCombobox({
         </Command>
       </PopoverContent>
     </Popover>
-  )
+  );
 }

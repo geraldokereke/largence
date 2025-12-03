@@ -46,13 +46,18 @@ export function ForgotPasswordForm({ className }: ForgotPasswordFormProps) {
       setSuccess("We've sent a verification code to your email");
     } catch (err: any) {
       console.error("Reset password error:", err);
-      setError(err?.errors?.[0]?.message || "Failed to send reset code. Please try again.");
+      setError(
+        err?.errors?.[0]?.message ||
+          "Failed to send reset code. Please try again.",
+      );
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleResetPassword = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleResetPassword = async (
+    event: React.FormEvent<HTMLFormElement>,
+  ) => {
     event.preventDefault();
     setIsLoading(true);
     setError(null);

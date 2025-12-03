@@ -25,36 +25,40 @@ export function LoginForm({
   description = "Sign in to your Largence workspace to continue",
   onSubmit,
 }: LoginFormProps) {
-  const { showPassword, isLoading, error, togglePasswordVisibility, handleSubmit } =
-    useLoginForm();
+  const {
+    showPassword,
+    isLoading,
+    error,
+    togglePasswordVisibility,
+    handleSubmit,
+  } = useLoginForm();
   const { signIn } = useSignIn();
-  const [oauthLoading, setOauthLoading] = useState<"google" | "microsoft" | null>(null);
+  const [oauthLoading, setOauthLoading] = useState<
+    "google" | "microsoft" | null
+  >(null);
 
-  const handleOAuthSignIn = (provider: "oauth_google" | "oauth_microsoft") => async () => {
-    if (!signIn) return;
-    
-    try {
-      setOauthLoading(provider === "oauth_google" ? "google" : "microsoft");
-      await signIn.authenticateWithRedirect({
-        strategy: provider,
-        redirectUrl: "/sso-callback",
-        redirectUrlComplete: "/onboarding",
-      });
-    } catch (err) {
-      console.error("OAuth error:", err);
-      setOauthLoading(null);
-    }
-  };
+  const handleOAuthSignIn =
+    (provider: "oauth_google" | "oauth_microsoft") => async () => {
+      if (!signIn) return;
+
+      try {
+        setOauthLoading(provider === "oauth_google" ? "google" : "microsoft");
+        await signIn.authenticateWithRedirect({
+          strategy: provider,
+          redirectUrl: "/sso-callback",
+          redirectUrlComplete: "/onboarding",
+        });
+      } catch (err) {
+        console.error("OAuth error:", err);
+        setOauthLoading(null);
+      }
+    };
 
   return (
     <div className={cn("w-full", className)}>
       <div className="mb-8">
-        <h1 className="text-3xl font-semibold mb-2 font-display">
-          {title}
-        </h1>
-        <p className="text-muted-foreground">
-          {description}
-        </p>
+        <h1 className="text-3xl font-semibold mb-2 font-display">{title}</h1>
+        <p className="text-muted-foreground">{description}</p>
       </div>
 
       <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
@@ -161,7 +165,7 @@ export function LoginForm({
               </>
             )}
           </Button>
-          
+
           <Button
             variant="outline"
             type="button"

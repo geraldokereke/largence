@@ -36,7 +36,7 @@ export function OrganizationSelector({
 
   const handleSelectOrganization = async (orgId: string) => {
     if (!setActive) return;
-    
+
     setIsLoading(true);
     try {
       await setActive({ organization: orgId });
@@ -75,7 +75,7 @@ export function OrganizationSelector({
                 "hover:border-primary hover:bg-accent",
                 organization?.id === org.id
                   ? "border-primary bg-accent"
-                  : "border-border"
+                  : "border-border",
               )}
             >
               <div className="shrink-0 w-10 h-10 rounded-sm bg-primary/10 flex items-center justify-center">
@@ -92,7 +92,8 @@ export function OrganizationSelector({
               <div className="flex-1 text-left">
                 <div className="font-medium">{org.name}</div>
                 <div className="text-sm text-muted-foreground">
-                  {org.membersCount} {org.membersCount === 1 ? "member" : "members"}
+                  {org.membersCount}{" "}
+                  {org.membersCount === 1 ? "member" : "members"}
                 </div>
               </div>
               {organization?.id === org.id && (

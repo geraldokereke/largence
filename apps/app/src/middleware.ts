@@ -2,7 +2,6 @@ import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { clerkClient } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
-// Define public routes that don't require authentication
 const isPublicRoute = createRouteMatcher([
   "/login(.*)",
   "/api/webhooks(.*)",
@@ -12,13 +11,11 @@ const isPublicRoute = createRouteMatcher([
   "/sso-callback(.*)",
 ]);
 
-// Define routes that require authentication but not necessarily an organization
 const authOnlyRoutes = createRouteMatcher([
   "/onboarding(.*)",
   "/workspace(.*)",
 ]);
 
-// Define routes that should redirect to onboarding if org is not set
 const requiresOrgRoute = createRouteMatcher([
   "/documents(.*)",
   "/drafts(.*)",
@@ -30,98 +27,91 @@ const requiresOrgRoute = createRouteMatcher([
   "/create(.*)",
 ]);
 
-// Extract subdomain from hostname
 function getSubdomain(hostname: string): string | null {
-  // Remove port if present
-  const host = hostname.split(':')[0];
-  const parts = host.split('.');
-  
-  // For localhost or IP addresses, no subdomain
-  if (host === 'localhost' || /^\d+\.\d+\.\d+\.\d+$/.test(host)) {
+  const host = hostname.split(":")[0];
+  const parts = host.split(".");
+
+  if (host === "localhost" || /^\d+\.\d+\.\d+\.\d+$/.test(host)) {
     return null;
   }
-  
-  // Skip subdomain routing for main domains (largence.com, app.largence.com, www)
-  if (parts.length === 2 || (parts.length === 3 && (parts[0] === 'www' || parts[0] === 'app'))) {
+
+  if (
+    parts.length === 2 ||
+    (parts.length === 3 && (parts[0] === "www" || parts[0] === "app"))
+  ) {
     return null;
   }
-  
-  // For subdomain.largence.com (3+ parts), return subdomain
+
   if (parts.length >= 3) {
     return parts[0];
   }
-  
+
   return null;
 }
 
-// Get organization by slug
 async function getOrgBySlug(slug: string) {
   try {
     const client = await clerkClient();
     const organizations = await client.organizations.getOrganizationList();
-    return organizations.data.find(org => org.slug === slug);
+    return organizations.data.find((org) => org.slug === slug);
   } catch (error) {
-    console.error('Error fetching organization by slug:', error);
+    console.error("Error fetching organization by slug:", error);
     return null;
   }
 }
 
 export default clerkMiddleware(async (auth, req) => {
   const { userId, orgId, orgSlug, redirectToSignIn } = await auth();
-  const hostname = req.headers.get('host') || '';
+  const hostname = req.headers.get("host") || "";
   const subdomain = getSubdomain(hostname);
 
-  // Allow public routes without authentication
   if (isPublicRoute(req)) {
     return NextResponse.next();
   }
 
-  // Redirect unauthenticated users to sign-in
   if (!userId) {
     return redirectToSignIn({ returnBackUrl: req.url });
   }
 
-  // Allow auth-only routes (onboarding, select-organization) for authenticated users
   if (authOnlyRoutes(req)) {
     return NextResponse.next();
   }
 
-  // Redirect authenticated users away from login
   if (userId && req.nextUrl.pathname === "/login") {
     const url = new URL("/", req.url);
     return NextResponse.redirect(url);
   }
 
-  // Handle subdomain organization switching
   if (subdomain && userId) {
     if (orgSlug !== subdomain) {
       const targetOrg = await getOrgBySlug(subdomain);
-      
+
       if (targetOrg) {
         const client = await clerkClient();
-        const membership = await client.organizations.getOrganizationMembershipList({
-          organizationId: targetOrg.id,
-        });
-        
-        const isMember = membership.data.some(m => m.publicUserData?.userId === userId);
-        
+        const membership =
+          await client.organizations.getOrganizationMembershipList({
+            organizationId: targetOrg.id,
+          });
+
+        const isMember = membership.data.some(
+          (m) => m.publicUserData?.userId === userId,
+        );
+
         if (isMember) {
           const url = new URL(req.url);
-          url.searchParams.set('__clerk_org_switch', targetOrg.id);
+          url.searchParams.set("__clerk_org_switch", targetOrg.id);
           return NextResponse.redirect(url);
         } else {
-          const url = new URL('/unauthorized', req.url);
+          const url = new URL("/unauthorized", req.url);
           return NextResponse.redirect(url);
         }
       } else {
-        const url = new URL('/not-found', req.url);
+        const url = new URL("/not-found", req.url);
         return NextResponse.redirect(url);
       }
     }
   }
 
-  // For authenticated users without an active org on protected routes
-  // Redirect to workspace selector (which will handle showing existing orgs or redirecting to onboarding)
   if (userId && !orgId && requiresOrgRoute(req)) {
     const url = new URL("/workspace", req.url);
     return NextResponse.redirect(url);
@@ -132,9 +122,7 @@ export default clerkMiddleware(async (auth, req) => {
 
 export const config = {
   matcher: [
-    // Skip Next.js internals and all static files, unless found in search params
     "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
-    // Always run for API routes
     "/(api|trpc)(.*)",
   ],
 };

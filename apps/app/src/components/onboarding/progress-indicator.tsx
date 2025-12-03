@@ -1,11 +1,14 @@
-"use client"
+"use client";
 
 interface ProgressIndicatorProps {
-  currentStep: number
-  totalSteps: number
+  currentStep: number;
+  totalSteps: number;
 }
 
-export function ProgressIndicator({ currentStep, totalSteps }: ProgressIndicatorProps) {
+export function ProgressIndicator({
+  currentStep,
+  totalSteps,
+}: ProgressIndicatorProps) {
   return (
     <div className="flex gap-2 justify-center pt-4">
       {Array.from({ length: totalSteps }, (_, i) => i + 1).map((s) => (
@@ -15,11 +18,11 @@ export function ProgressIndicator({ currentStep, totalSteps }: ProgressIndicator
             s === currentStep
               ? "bg-primary"
               : s < currentStep
-              ? "bg-primary/30"
-              : "bg-border"
+                ? "bg-primary/30"
+                : "bg-border"
           }`}
         />
       ))}
     </div>
-  )
+  );
 }

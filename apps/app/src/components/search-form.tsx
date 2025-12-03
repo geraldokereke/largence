@@ -1,7 +1,7 @@
-import { Search } from "lucide-react"
+import { Search } from "lucide-react";
 
-import { Label } from "@largence/components/ui/label"
-import { Input } from "@largence/components/ui/input"
+import { Label } from "@largence/components/ui/label";
+import { Input } from "@largence/components/ui/input";
 
 export function SearchForm({ ...props }: React.ComponentProps<"form">) {
   return (
@@ -21,5 +21,5 @@ export function SearchForm({ ...props }: React.ComponentProps<"form">) {
         </kbd>
       </div>
     </form>
-  )
+  );
 }

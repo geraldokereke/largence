@@ -1,19 +1,23 @@
-"use client"
+"use client";
 
-import { Check } from "lucide-react"
-import { Label } from "@largence/components/ui/label"
+import { Check } from "lucide-react";
+import { Label } from "@largence/components/ui/label";
 
 interface DocumentTypeStepProps {
   documentTypes: Array<{
-    id: string
-    name: string
-    icon: React.ComponentType<{ className?: string }>
-  }>
-  selectedType: string
-  onSelect: (typeId: string) => void
+    id: string;
+    name: string;
+    icon: React.ComponentType<{ className?: string }>;
+  }>;
+  selectedType: string;
+  onSelect: (typeId: string) => void;
 }
 
-export function DocumentTypeStep({ documentTypes, selectedType, onSelect }: DocumentTypeStepProps) {
+export function DocumentTypeStep({
+  documentTypes,
+  selectedType,
+  onSelect,
+}: DocumentTypeStepProps) {
   return (
     <div className="space-y-6">
       <div>
@@ -27,8 +31,8 @@ export function DocumentTypeStep({ documentTypes, selectedType, onSelect }: Docu
 
       <div className="grid grid-cols-2 gap-3">
         {documentTypes.map((type) => {
-          const Icon = type.icon
-          const isSelected = selectedType === type.id
+          const Icon = type.icon;
+          const isSelected = selectedType === type.id;
           return (
             <button
               key={type.id}
@@ -53,9 +57,9 @@ export function DocumentTypeStep({ documentTypes, selectedType, onSelect }: Docu
               />
               <p className="font-medium text-sm">{type.name}</p>
             </button>
-          )
+          );
         })}
       </div>
     </div>
-  )
+  );
 }

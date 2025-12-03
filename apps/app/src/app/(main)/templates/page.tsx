@@ -1,22 +1,22 @@
 "use client";
 
-import { Button } from "@largence/components/ui/button"
-import { Input } from "@largence/components/ui/input"
-import { useRouter } from "next/navigation"
-import { 
-  Shield, 
-  Users, 
-  FileCheck, 
-  Building2, 
-  Briefcase, 
-  Globe, 
+import { Button } from "@largence/components/ui/button";
+import { Input } from "@largence/components/ui/input";
+import { useRouter } from "next/navigation";
+import {
+  Shield,
+  Users,
+  FileCheck,
+  Building2,
+  Briefcase,
+  Globe,
   Search,
   Filter,
   Star,
   Clock,
   Download,
-  Eye
-} from "lucide-react"
+  Eye,
+} from "lucide-react";
 
 const categories = [
   { id: "all", name: "All Templates", count: 48 },
@@ -25,7 +25,7 @@ const categories = [
   { id: "compliance", name: "Compliance", count: 8 },
   { id: "corporate", name: "Corporate", count: 9 },
   { id: "international", name: "International", count: 4 },
-]
+];
 
 const templates = [
   {
@@ -33,7 +33,8 @@ const templates = [
     name: "Employment Contract",
     category: "Employment",
     type: "employment",
-    description: "Comprehensive employment agreement with terms, compensation, and benefits",
+    description:
+      "Comprehensive employment agreement with terms, compensation, and benefits",
     icon: Users,
     jurisdictions: ["Nigeria", "Ghana", "Kenya", "South Africa"],
     popularity: 4.8,
@@ -59,7 +60,8 @@ const templates = [
     name: "Service Agreement",
     category: "Contracts",
     type: "service",
-    description: "Professional services contract with scope, deliverables, and payment terms",
+    description:
+      "Professional services contract with scope, deliverables, and payment terms",
     icon: Briefcase,
     jurisdictions: ["Nigeria", "Ghana", "Kenya"],
     popularity: 4.7,
@@ -98,7 +100,8 @@ const templates = [
     name: "Consulting Agreement",
     category: "Contracts",
     type: "consulting",
-    description: "Independent contractor agreement with IP and confidentiality clauses",
+    description:
+      "Independent contractor agreement with IP and confidentiality clauses",
     icon: Briefcase,
     jurisdictions: ["Multi-jurisdiction"],
     popularity: 4.7,
@@ -111,7 +114,8 @@ const templates = [
     name: "Terms of Service",
     category: "Compliance",
     type: "terms",
-    description: "Website or app terms of service with user obligations and limitations",
+    description:
+      "Website or app terms of service with user obligations and limitations",
     icon: FileCheck,
     jurisdictions: ["Multi-jurisdiction"],
     popularity: 4.4,
@@ -124,7 +128,8 @@ const templates = [
     name: "Cross-Border Agreement",
     category: "International",
     type: "crossborder",
-    description: "International trade agreement with jurisdiction and dispute resolution",
+    description:
+      "International trade agreement with jurisdiction and dispute resolution",
     icon: Globe,
     jurisdictions: ["Multi-jurisdiction"],
     popularity: 4.6,
@@ -132,7 +137,7 @@ const templates = [
     lastUpdated: "5 days ago",
     featured: false,
   },
-]
+];
 
 export default function TemplatesPage() {
   const router = useRouter();
@@ -149,129 +154,136 @@ export default function TemplatesPage() {
           Template Library
         </h1>
         <p className="text-sm text-muted-foreground">
-          Jurisdiction-specific legal templates reviewed by experts across 50+ countries
+          Jurisdiction-specific legal templates reviewed by experts across 50+
+          countries
         </p>
       </div>
 
       {/* Search and Filters */}
-              <div className="flex flex-col sm:flex-row gap-3 mb-6">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search templates..."
-                    className="h-10 rounded-sm pl-9"
-                  />
+      <div className="flex flex-col sm:flex-row gap-3 mb-6">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search templates..."
+            className="h-10 rounded-sm pl-9"
+          />
+        </div>
+        <Button variant="outline" className="h-10 rounded-sm">
+          <Filter className="h-5 w-5" />
+          Filters
+        </Button>
+      </div>
+
+      {/* Categories */}
+      <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+        {categories.map((category) => (
+          <button
+            key={category.id}
+            className={`px-4 py-2 rounded-sm border whitespace-nowrap transition-colors ${
+              category.id === "all"
+                ? "bg-primary text-primary-foreground border-primary"
+                : "bg-background hover:bg-accent"
+            }`}
+          >
+            <span className="text-sm font-medium">{category.name}</span>
+            <span className="ml-2 text-xs opacity-70">({category.count})</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Templates Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {templates.map((template) => {
+          const Icon = template.icon;
+          return (
+            <div
+              key={template.id}
+              className="group relative flex flex-col h-96 rounded-sm border bg-card p-6 hover:border-primary/50 hover:shadow-md transition-all"
+            >
+              {/* Featured Badge */}
+              {template.featured && (
+                <div className="absolute top-3 right-3">
+                  <div className="flex items-center gap-1 px-2 py-1 rounded-sm bg-amber-500/10 border border-amber-500/20">
+                    <Star className="h-3 w-3 text-amber-600 fill-amber-600" />
+                    <span className="text-xs font-medium text-amber-700">
+                      Featured
+                    </span>
+                  </div>
                 </div>
-                <Button variant="outline" className="h-10 rounded-sm">
-                  <Filter className="h-5 w-5" />
-                  Filters
-                </Button>
+              )}
+
+              {/* Icon */}
+              <div className="mb-4">
+                <div className="inline-flex p-3 rounded-sm bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                  <Icon className="h-6 w-6 text-primary" />
+                </div>
               </div>
 
-              {/* Categories */}
-              <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
-                {categories.map((category) => (
-                  <button
-                    key={category.id}
-                    className={`px-4 py-2 rounded-sm border whitespace-nowrap transition-colors ${
-                      category.id === "all"
-                        ? "bg-primary text-primary-foreground border-primary"
-                        : "bg-background hover:bg-accent"
-                    }`}
-                  >
-                    <span className="text-sm font-medium">{category.name}</span>
-                    <span className="ml-2 text-xs opacity-70">({category.count})</span>
-                  </button>
-                ))}
-              </div>
+              {/* Content - grows to fill space */}
+              <div className="flex-1 flex flex-col">
+                <h3 className="text-lg font-semibold mb-2 font-heading">
+                  {template.name}
+                </h3>
+                <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                  {template.description}
+                </p>
 
-              {/* Templates Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {templates.map((template) => {
-                  const Icon = template.icon
-                  return (
-                    <div
-                      key={template.id}
-                      className="group relative flex flex-col h-96 rounded-sm border bg-card p-6 hover:border-primary/50 hover:shadow-md transition-all"
+                {/* Jurisdictions - fixed height container */}
+                <div className="flex flex-wrap gap-1 mb-3 min-h-7">
+                  {template.jurisdictions.map((jurisdiction, idx) => (
+                    <span
+                      key={idx}
+                      className="inline-flex items-center px-2 py-0.5 rounded-sm bg-muted text-xs h-fit"
                     >
-                      {/* Featured Badge */}
-                      {template.featured && (
-                        <div className="absolute top-3 right-3">
-                          <div className="flex items-center gap-1 px-2 py-1 rounded-sm bg-amber-500/10 border border-amber-500/20">
-                            <Star className="h-3 w-3 text-amber-600 fill-amber-600" />
-                            <span className="text-xs font-medium text-amber-700">Featured</span>
-                          </div>
-                        </div>
-                      )}
+                      {jurisdiction}
+                    </span>
+                  ))}
+                </div>
 
-                      {/* Icon */}
-                      <div className="mb-4">
-                        <div className="inline-flex p-3 rounded-sm bg-primary/10 group-hover:bg-primary/20 transition-colors">
-                          <Icon className="h-6 w-6 text-primary" />
-                        </div>
-                      </div>
-
-                      {/* Content - grows to fill space */}
-                      <div className="flex-1 flex flex-col">
-                        <h3 className="text-lg font-semibold mb-2 font-heading">
-                          {template.name}
-                        </h3>
-                        <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                          {template.description}
-                        </p>
-
-                        {/* Jurisdictions - fixed height container */}
-                        <div className="flex flex-wrap gap-1 mb-3 min-h-7">
-                          {template.jurisdictions.map((jurisdiction, idx) => (
-                            <span
-                              key={idx}
-                              className="inline-flex items-center px-2 py-0.5 rounded-sm bg-muted text-xs h-fit"
-                            >
-                              {jurisdiction}
-                            </span>
-                          ))}
-                        </div>
-
-                        {/* Stats - pushed to bottom of flex container */}
-                        <div className="flex items-center gap-4 text-xs text-muted-foreground mt-auto mb-4">
-                          <div className="flex items-center gap-1">
-                            <Star className="h-3 w-3 fill-amber-500 text-amber-500" />
-                            <span>{template.popularity}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Download className="h-3 w-3" />
-                            <span>{template.usageCount.toLocaleString()}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Clock className="h-3 w-3" />
-                            <span>{template.lastUpdated}</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Actions - always at bottom */}
-                      <div className="flex gap-2">
-                        <Button 
-                          className="flex-1 h-9 rounded-sm text-sm cursor-pointer"
-                          onClick={() => handleUseTemplate(template.type)}
-                        >
-                          Use Template
-                        </Button>
-                        <Button variant="outline" size="icon" className="h-9 w-9 rounded-sm cursor-pointer">
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  )
-                })}
+                {/* Stats - pushed to bottom of flex container */}
+                <div className="flex items-center gap-4 text-xs text-muted-foreground mt-auto mb-4">
+                  <div className="flex items-center gap-1">
+                    <Star className="h-3 w-3 fill-amber-500 text-amber-500" />
+                    <span>{template.popularity}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Download className="h-3 w-3" />
+                    <span>{template.usageCount.toLocaleString()}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Clock className="h-3 w-3" />
+                    <span>{template.lastUpdated}</span>
+                  </div>
+                </div>
               </div>
 
-              {/* Load More */}
-              <div className="mt-8 text-center">
-                <Button variant="outline" className="h-10 rounded-sm">
-                  Load More Templates
+              {/* Actions - always at bottom */}
+              <div className="flex gap-2">
+                <Button
+                  className="flex-1 h-9 rounded-sm text-sm cursor-pointer"
+                  onClick={() => handleUseTemplate(template.type)}
+                >
+                  Use Template
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-9 w-9 rounded-sm cursor-pointer"
+                >
+                  <Eye className="h-4 w-4" />
                 </Button>
               </div>
             </div>
-  )
+          );
+        })}
+      </div>
+
+      {/* Load More */}
+      <div className="mt-8 text-center">
+        <Button variant="outline" className="h-10 rounded-sm">
+          Load More Templates
+        </Button>
+      </div>
+    </div>
+  );
 }

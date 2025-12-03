@@ -16,27 +16,104 @@ model Document {
   content        String   @db.Text
   status         DocumentStatus @default(DRAFT)
   
-  // User and Organization from Clerk
   userId         String
   organizationId String
   
-  // Document metadata
-  documentType   String   // e.g., "Contract", "NDA", "Employment Agreement"
-  jurisdiction   String?  // e.g., "Nigeria", "Ghana", "Kenya", "South Africa"
-  category       String?  // e.g., "Employment", "Corporate", "Commercial"
+  documentType   String   
+  jurisdiction   String?  
+  category       String?  
   
-  // AI Generation metadata
   aiPrompt       String?  @db.Text
-  aiModel        String?  // e.g., "gpt-4", "gpt-3.5-turbo"
+  aiModel        String?  
   generatedAt    DateTime?
   
-  // Timestamps
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+  
+  // Relations
+  complianceChecks ComplianceCheck[]
   
   @@index([userId])
   @@index([organizationId])
   @@index([status])
+  @@index([createdAt])
+}
+
+model ComplianceCheck {
+  id             String   @id @default(cuid())
+  documentId     String
+  document       Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  
+  status         ComplianceStatus @default(PENDING)
+  overallScore   Int?     
+  
+  issues         Json     
+  warnings       Json     
+  suggestions    Json     
+  
+  rulesChecked   Json     // Rules that were applied
+  jurisdiction   String?  // Jurisdiction rules used
+  documentType   String?  // Document type rules used
+  
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  completedAt    DateTime?
+  
+  @@index([documentId])
+  @@index([createdAt])
+}
+
+model Notification {
+  id             String   @id @default(cuid())
+  userId         String
+  organizationId String
+  
+  type           NotificationType
+  title          String
+  message        String   @db.Text
+  
+  documentId     String?
+  complianceId   String?
+  
+  read           Boolean  @default(false)
+  actionUrl      String?
+  
+  createdAt      DateTime @default(now())
+  
+  @@index([userId])
+  @@index([organizationId])
+  @@index([read])
+  @@index([createdAt])
+}
+
+model AuditLog {
+  id             String   @id @default(cuid())
+  userId         String?  // Can be null for system events
+  organizationId String
+  
+  action         AuditAction
+  actionLabel    String   // Human readable action label
+  entityType     String   // Document, User, Compliance, etc.
+  entityId       String?  // ID of the affected entity
+  entityName     String   // Name/title of the entity
+  
+  metadata       Json?    // Additional context (oldValue, newValue, etc.)
+  
+  ipAddress      String?
+  userAgent      String?
+  location       String?  // Geo-location if available
+  device         String?  // Device info extracted from userAgent
+  
+  userName       String?  // Cached user name for display
+  userAvatar     String?  // Cached user initials
+  userType       String   @default("user") // "user" or "system"
+  
+  createdAt      DateTime @default(now())
+  
+  @@index([userId])
+  @@index([organizationId])
+  @@index([action])
+  @@index([entityType])
   @@index([createdAt])
 }
 
@@ -45,3 +122,252 @@ enum DocumentStatus {
   FINAL
   ARCHIVED
 }
+
+enum ComplianceStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  FAILED
+}
+
+enum NotificationType {
+  COMPLIANCE_COMPLETED
+  COMPLIANCE_FAILED
+  DOCUMENT_SHARED
+  DOCUMENT_UPDATED
+  SYSTEM_ALERT
+}
+
+enum AuditAction {
+  // Document actions
+  DOCUMENT_CREATED
+  DOCUMENT_UPDATED
+  DOCUMENT_DELETED
+  DOCUMENT_VIEWED
+  DOCUMENT_EXPORTED
+  DOCUMENT_SHARED
+  DOCUMENT_SIGNED
+  DOCUMENT_APPROVED
+  DOCUMENT_REJECTED
+  
+  // Compliance actions
+  COMPLIANCE_CHECK_RUN
+  COMPLIANCE_CHECK_COMPLETED
+  
+  // User actions
+  USER_INVITED
+  USER_REMOVED
+  USER_ROLE_CHANGED
+  USER_LOGIN
+  USER_LOGOUT
+  
+  // System actions
+  SYSTEM_BACKUP
+  SYSTEM_RESTORE
+  SETTINGS_CHANGED
+  
+  // Integration actions
+  INTEGRATION_CONNECTED
+  INTEGRATION_DISCONNECTED
+  INTEGRATION_SYNCED
+  INTEGRATION_ERROR
+}
+
+// Integration model for third-party service connections
+model Integration {
+  id               String   @id @default(cuid())
+  organizationId   String
+  userId           String   // User who connected the integration
+  
+  provider         IntegrationProvider
+  name             String   // Display name (e.g., "My Google Drive")
+  
+  status           IntegrationStatus @default(PENDING)
+  
+  // OAuth tokens (encrypted in production)
+  accessToken      String?  @db.Text
+  refreshToken     String?  @db.Text
+  tokenExpiresAt   DateTime?
+  
+  // Integration metadata
+  externalAccountId String?  // Account ID on the external service
+  externalEmail     String?  // Email on the external service
+  scope            String[] // OAuth scopes granted
+  
+  // Sync settings
+  syncEnabled      Boolean  @default(true)
+  syncFrequency    String   @default("realtime") // realtime, hourly, daily
+  lastSyncAt       DateTime?
+  lastSyncStatus   String?  // success, error, partial
+  lastSyncError    String?  @db.Text
+  syncedItemsCount Int      @default(0)
+  
+  // Feature flags
+  settings         Json?    // Integration-specific settings
+  features         String[] // Enabled features for this integration
+  
+  connectedAt      DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  
+  // Sync history
+  syncHistory      IntegrationSync[]
+  
+  @@unique([organizationId, provider])
+  @@index([organizationId])
+  @@index([provider])
+  @@index([status])
+}
+
+model IntegrationSync {
+  id             String   @id @default(cuid())
+  integrationId  String
+  integration    Integration @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+  
+  status         SyncStatus
+  itemsSynced    Int      @default(0)
+  itemsFailed    Int      @default(0)
+  
+  error          String?  @db.Text
+  details        Json?    // Detailed sync results
+  
+  startedAt      DateTime @default(now())
+  completedAt    DateTime?
+  
+  @@index([integrationId])
+  @@index([startedAt])
+}
+
+enum IntegrationProvider {
+  NOTION
+  GOOGLE_DRIVE
+  DROPBOX
+  SLACK
+  MICROSOFT_365
+  DOCUSIGN
+  GOOGLE_SHEETS
+  SALESFORCE
+  TRELLO
+  ASANA
+  ZAPIER
+  AIRTABLE
+  HUBSPOT
+}
+
+enum IntegrationStatus {
+  PENDING      // OAuth flow started but not completed
+  CONNECTED    // Successfully connected and active
+  DISCONNECTED // User disconnected
+  ERROR        // Connection error (e.g., token expired)
+  SUSPENDED    // Temporarily suspended
+}
+
+enum SyncStatus {
+  PENDING
+  IN_PROGRESS
+  SUCCESS
+  PARTIAL    // Some items failed
+  FAILED
+}
+
+// ==================== BILLING MODELS ====================
+
+model Subscription {
+  id               String   @id @default(cuid())
+  organizationId   String   @unique
+  
+  // Stripe IDs
+  stripeCustomerId     String   @unique
+  stripeSubscriptionId String?  @unique
+  stripePriceId        String?
+  
+  // Plan details
+  plan             PlanType @default(FREE)
+  status           SubscriptionStatus @default(TRIALING)
+  
+  // Limits based on plan
+  maxTeamMembers   Int      @default(1)
+  maxContracts     Int      @default(1)      // Per month, -1 for unlimited
+  maxStorage       Int      @default(0)      // In GB
+  
+  // Feature flags
+  hasAiDrafting        Boolean @default(true)
+  hasComplianceAuto    Boolean @default(false)
+  hasAnalytics         Boolean @default(false)
+  hasCustomTemplates   Boolean @default(false)
+  hasPrioritySupport   Boolean @default(false)
+  hasCustomIntegrations Boolean @default(false)
+  
+  // Billing cycle
+  currentPeriodStart DateTime?
+  currentPeriodEnd   DateTime?
+  cancelAtPeriodEnd  Boolean  @default(false)
+  canceledAt         DateTime?
+  
+  // Trial
+  trialStart         DateTime?
+  trialEnd           DateTime?
+  
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  
+  // Relations
+  usageRecords       UsageRecord[]
+  
+  @@index([organizationId])
+  @@index([stripeCustomerId])
+  @@index([status])
+}
+
+model UsageRecord {
+  id             String   @id @default(cuid())
+  subscriptionId String
+  subscription   Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  
+  // Usage tracking
+  type           UsageType
+  count          Int      @default(1)
+  
+  // Reference to the resource
+  resourceId     String?  // Document ID or Compliance Check ID
+  resourceType   String?  // "document" or "compliance"
+  
+  // Metadata
+  metadata       Json?
+  
+  // Period tracking (for monthly reset)
+  periodStart    DateTime
+  periodEnd      DateTime
+  
+  createdAt      DateTime @default(now())
+  
+  @@index([subscriptionId])
+  @@index([type])
+  @@index([periodStart, periodEnd])
+  @@index([createdAt])
+}
+
+enum PlanType {
+  FREE
+  STARTER
+  PROFESSIONAL
+  ENTERPRISE
+}
+
+enum SubscriptionStatus {
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  UNPAID
+  INCOMPLETE
+  INCOMPLETE_EXPIRED
+  PAUSED
+}
+
+enum UsageType {
+  DOCUMENT_GENERATED
+  COMPLIANCE_CHECK
+  STORAGE_USED
+  TEAM_MEMBER_ADDED
+}
+

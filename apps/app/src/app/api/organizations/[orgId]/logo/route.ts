@@ -3,11 +3,11 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: Promise<{ orgId: string }> }
+  { params }: { params: Promise<{ orgId: string }> },
 ) {
   try {
     const { userId } = await auth();
-    
+
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -28,11 +28,14 @@ export async function POST(
 
     // Upload logo to Clerk organization
     const client = await clerkClient();
-    const organization = await client.organizations.updateOrganizationMetadata(orgId, {
-      publicMetadata: {
-        logoUrl: dataUrl,
+    const organization = await client.organizations.updateOrganizationMetadata(
+      orgId,
+      {
+        publicMetadata: {
+          logoUrl: dataUrl,
+        },
       },
-    });
+    );
 
     // Note: Clerk doesn't support custom organization images via API yet
     // The logo is stored in metadata and can be displayed in the UI
@@ -41,7 +44,7 @@ export async function POST(
     console.error("Error uploading organization logo:", error);
     return NextResponse.json(
       { error: error?.message || "Failed to upload logo" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

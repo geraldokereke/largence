@@ -4,7 +4,15 @@ import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@largence/components/ui/button";
-import { ArrowRight, ArrowLeft, Sparkles, Users, Shield, Scale, Briefcase } from "lucide-react";
+import {
+  ArrowRight,
+  ArrowLeft,
+  Sparkles,
+  Users,
+  Shield,
+  Scale,
+  Briefcase,
+} from "lucide-react";
 import { CreateHeader } from "@largence/components/create/create-header";
 import { DocumentTypeStep } from "@largence/components/create/document-type-step";
 import { BasicInfoStep } from "@largence/components/create/basic-info-step";
@@ -12,6 +20,8 @@ import { PartyDetailsStep } from "@largence/components/create/party-details-step
 import { SpecialClausesStep } from "@largence/components/create/special-clauses-step";
 import { ReviewStep } from "@largence/components/create/review-step";
 import { Spinner } from "@largence/components/ui/spinner";
+import { UpgradeModal } from "@largence/components/upgrade-modal";
+import { useUpgradeModal } from "@/hooks/use-upgrade-modal";
 
 const documentTypes = [
   { id: "employment", name: "Employment Contract", icon: Users },
@@ -59,6 +69,7 @@ export default function CreatePage() {
   const [generatedContent, setGeneratedContent] = useState("");
   const [documentId, setDocumentId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const upgradeModal = useUpgradeModal();
   const [formData, setFormData] = useState({
     documentType: "",
     documentName: "",
@@ -77,12 +88,12 @@ export default function CreatePage() {
     additionalNotes: "",
   });
   const [errors, setErrors] = useState<{
-    documentName?: string
-    jurisdiction?: string
-    industry?: string
-    startDate?: string
-    partyName?: string
-    party2Name?: string
+    documentName?: string;
+    jurisdiction?: string;
+    industry?: string;
+    startDate?: string;
+    partyName?: string;
+    party2Name?: string;
   }>({});
 
   // Pre-select document type from query parameter
@@ -96,35 +107,35 @@ export default function CreatePage() {
   const totalSteps = 5; // Added review step
 
   const validateStep = (currentStep: number): boolean => {
-    const newErrors: typeof errors = {}
+    const newErrors: typeof errors = {};
 
     if (currentStep === 2) {
       if (!formData.documentName.trim()) {
-        newErrors.documentName = "Document name is required"
+        newErrors.documentName = "Document name is required";
       }
       if (!formData.jurisdiction) {
-        newErrors.jurisdiction = "Jurisdiction is required"
+        newErrors.jurisdiction = "Jurisdiction is required";
       }
       if (!formData.industry) {
-        newErrors.industry = "Industry is required"
+        newErrors.industry = "Industry is required";
       }
       if (!formData.startDate) {
-        newErrors.startDate = "Start date is required"
+        newErrors.startDate = "Start date is required";
       }
     }
 
     if (currentStep === 3) {
       if (!formData.partyName.trim()) {
-        newErrors.partyName = "First party name is required"
+        newErrors.partyName = "First party name is required";
       }
       if (!formData.party2Name.trim()) {
-        newErrors.party2Name = "Second party name is required"
+        newErrors.party2Name = "Second party name is required";
       }
     }
 
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleNext = () => {
     if (step < totalSteps) {
@@ -163,7 +174,7 @@ ${formData.compensationType ? `Type: ${formData.compensationType}` : "Not specif
 ${formData.compensationAmount ? `Amount: ${formData.compensationAmount}` : ""}
 
 SPECIAL CLAUSES TO INCLUDE:
-${formData.specialClauses.length > 0 ? formData.specialClauses.map(c => `- ${c}`).join("\n") : "None specified"}
+${formData.specialClauses.length > 0 ? formData.specialClauses.map((c) => `- ${c}`).join("\n") : "None specified"}
 
 ADDITIONAL REQUIREMENTS:
 ${formData.additionalNotes || "None"}
@@ -181,7 +192,9 @@ Please generate a comprehensive, legally sound document with:
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          documentType: documentTypes.find((d) => d.id === formData.documentType)?.name,
+          documentType: documentTypes.find(
+            (d) => d.id === formData.documentType,
+          )?.name,
           jurisdiction: formData.jurisdiction,
           parties: {
             party1: formData.partyName || "Party A",
@@ -196,12 +209,26 @@ Please generate a comprehensive, legally sound document with:
         const contentType = response.headers.get("content-type");
         if (contentType && contentType.includes("application/json")) {
           const data = await response.json();
+
+          // Handle payment required - show upgrade modal
+          if (response.status === 402 || data.requiresUpgrade) {
+            upgradeModal.openUpgradeModal({
+              reason: data.error,
+              feature: "document",
+              currentPlan: data.currentPlan,
+            });
+            setIsGenerating(false);
+            return;
+          }
+
           throw new Error(data.error || "Failed to generate document");
         } else {
           // Non-JSON response (likely HTML error page)
           const text = await response.text();
           console.error("Non-JSON response:", text);
-          throw new Error(`Server error: ${response.status} ${response.statusText}`);
+          throw new Error(
+            `Server error: ${response.status} ${response.statusText}`,
+          );
         }
       }
 
@@ -210,13 +237,14 @@ Please generate a comprehensive, legally sound document with:
       setDocumentId(data.documentId);
       setIsGenerated(true);
       toast.success("Document generated successfully", {
-        description: "Your legal document has been created."
+        description: "Your legal document has been created.",
       });
     } catch (err: any) {
       console.error("Generate error:", err);
       setError(err.message || "Failed to generate document. Please try again.");
       toast.error("Failed to generate document", {
-        description: err.message || "Please check your information and try again."
+        description:
+          err.message || "Please check your information and try again.",
       });
     } finally {
       setIsGenerating(false);
@@ -305,7 +333,11 @@ Please generate a comprehensive, legally sound document with:
 
               {/* Step 3: Party Details */}
               {step === 3 && (
-                <PartyDetailsStep formData={formData} onUpdate={updateFormData} errors={errors} />
+                <PartyDetailsStep
+                  formData={formData}
+                  onUpdate={updateFormData}
+                  errors={errors}
+                />
               )}
 
               {/* Step 4: Special Clauses */}
@@ -340,13 +372,15 @@ Please generate a comprehensive, legally sound document with:
 
                 <Button
                   onClick={handleNext}
-                  disabled={isGenerating || (step === 1 && !formData.documentType)}
+                  disabled={
+                    isGenerating || (step === 1 && !formData.documentType)
+                  }
                   className="h-10 rounded-sm cursor-pointer"
                 >
                   {isGenerating ? (
                     <>
-                    Generating
-                    <Spinner size="sm" variant="white" />
+                      Generating
+                      <Spinner size="sm" variant="white" />
                     </>
                   ) : step === totalSteps ? (
                     <>
@@ -365,6 +399,15 @@ Please generate a comprehensive, legally sound document with:
           </div>
         </div>
       </div>
+
+      {/* Upgrade Modal */}
+      <UpgradeModal
+        isOpen={upgradeModal.isOpen}
+        onClose={upgradeModal.closeUpgradeModal}
+        reason={upgradeModal.reason}
+        feature={upgradeModal.feature}
+        currentPlan={upgradeModal.currentPlan}
+      />
     </div>
   );
 }

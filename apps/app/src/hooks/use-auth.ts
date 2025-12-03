@@ -100,5 +100,7 @@ export function useRequireAuth(requireOrg = false) {
     }
   }
 
-  return { isReady: isLoaded && isSignedIn && (!requireOrg || hasOrganization) };
+  return {
+    isReady: isLoaded && isSignedIn && (!requireOrg || hasOrganization),
+  };
 }

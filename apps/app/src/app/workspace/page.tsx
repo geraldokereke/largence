@@ -1,60 +1,64 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { useUser, useOrganizationList } from "@clerk/nextjs"
-import { useRouter } from "next/navigation"
-import Image from "next/image"
-import { Button } from "@largence/components/ui/button"
-import { Spinner } from "@largence/components/ui/spinner"
-import { Building2, ChevronRight, Plus, Shield, Users } from "lucide-react"
+import { useEffect, useState } from "react";
+import { useUser, useOrganizationList } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+import { Button } from "@largence/components/ui/button";
+import { Spinner } from "@largence/components/ui/spinner";
+import { Building2, ChevronRight, Plus, Shield, Users } from "lucide-react";
 
 export default function SelectOrganizationPage() {
-  const { user, isLoaded: userLoaded } = useUser()
-  const { userMemberships, isLoaded: membershipsLoaded, setActive } = useOrganizationList({
+  const { user, isLoaded: userLoaded } = useUser();
+  const {
+    userMemberships,
+    isLoaded: membershipsLoaded,
+    setActive,
+  } = useOrganizationList({
     userMemberships: {
       infinite: true,
     },
-  })
-  const router = useRouter()
-  const [isClient, setIsClient] = useState(false)
-  const [isSelecting, setIsSelecting] = useState(false)
+  });
+  const router = useRouter();
+  const [isClient, setIsClient] = useState(false);
+  const [isSelecting, setIsSelecting] = useState(false);
 
   useEffect(() => {
-    setIsClient(true)
-  }, [])
+    setIsClient(true);
+  }, []);
 
   useEffect(() => {
-    if (!userLoaded || !membershipsLoaded || !isClient) return
+    if (!userLoaded || !membershipsLoaded || !isClient) return;
 
     // If no memberships, redirect to onboarding to create one
     if (!userMemberships?.data || userMemberships.data.length === 0) {
-      router.push("/onboarding")
+      router.push("/onboarding");
     }
-  }, [userLoaded, membershipsLoaded, isClient, userMemberships, router])
+  }, [userLoaded, membershipsLoaded, isClient, userMemberships, router]);
 
   const handleSelectOrg = async (orgId: string, orgName: string) => {
-    if (!setActive || isSelecting) return
-    
-    setIsSelecting(true)
+    if (!setActive || isSelecting) return;
+
+    setIsSelecting(true);
     try {
-      await setActive({ organization: orgId })
-      router.push("/")
+      await setActive({ organization: orgId });
+      router.push("/");
     } catch (error) {
-      console.error("Error setting active org:", error)
-      setIsSelecting(false)
+      console.error("Error setting active org:", error);
+      setIsSelecting(false);
     }
-  }
+  };
 
   const handleCreateNew = () => {
-    router.push("/onboarding")
-  }
+    router.push("/onboarding");
+  };
 
   if (!isClient || !userLoaded || !membershipsLoaded) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <Spinner size="sm" />
       </div>
-    )
+    );
   }
 
   if (!userMemberships?.data || userMemberships.data.length === 0) {
@@ -62,7 +66,7 @@ export default function SelectOrganizationPage() {
       <div className="flex min-h-screen items-center justify-center bg-background">
         <Spinner size="sm" />
       </div>
-    )
+    );
   }
 
   return (
@@ -72,14 +76,16 @@ export default function SelectOrganizationPage() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center gap-2">
-              <Image 
-                src="/logo.png" 
-                alt="Largence Logo" 
-                width={32} 
+              <Image
+                src="/logo.png"
+                alt="Largence Logo"
+                width={32}
                 height={32}
                 className="shrink-0"
               />
-              <span className="text-xl font-semibold tracking-tight font-heading">Largence</span>
+              <span className="text-xl font-semibold tracking-tight font-heading">
+                Largence
+              </span>
             </div>
           </div>
         </div>
@@ -108,16 +114,19 @@ export default function SelectOrganizationPage() {
                 Your Organizations
               </h2>
               <span className="text-sm text-muted-foreground">
-                {userMemberships.data.length} {userMemberships.data.length === 1 ? 'organization' : 'organizations'}
+                {userMemberships.data.length}{" "}
+                {userMemberships.data.length === 1
+                  ? "organization"
+                  : "organizations"}
               </span>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {userMemberships.data.map((membership) => {
-                const org = membership.organization
-                const role = membership.role
-                const isAdmin = role === 'org:admin'
-                
+                const org = membership.organization;
+                const role = membership.role;
+                const isAdmin = role === "org:admin";
+
                 return (
                   <button
                     key={membership.id}
@@ -140,19 +149,27 @@ export default function SelectOrganizationPage() {
 
                     {/* Role Badge */}
                     <div className="flex items-center gap-2 flex-wrap">
-                      <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium ${
-                        isAdmin 
-                          ? 'bg-primary/10 text-primary border border-primary/20' 
-                          : 'bg-muted text-muted-foreground border border-border'
-                      }`}>
-                        {isAdmin ? <Shield className="w-3 h-3" /> : <Users className="w-3 h-3" />}
-                        {role.replace('org:', '').charAt(0).toUpperCase() + role.replace('org:', '').slice(1)}
+                      <div
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium ${
+                          isAdmin
+                            ? "bg-primary/10 text-primary border border-primary/20"
+                            : "bg-muted text-muted-foreground border border-border"
+                        }`}
+                      >
+                        {isAdmin ? (
+                          <Shield className="w-3 h-3" />
+                        ) : (
+                          <Users className="w-3 h-3" />
+                        )}
+                        {role.replace("org:", "").charAt(0).toUpperCase() +
+                          role.replace("org:", "").slice(1)}
                       </div>
-                      
+
                       {org.membersCount !== undefined && (
                         <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-muted text-muted-foreground border border-border">
                           <Users className="w-3 h-3" />
-                          {org.membersCount} {org.membersCount === 1 ? 'member' : 'members'}
+                          {org.membersCount}{" "}
+                          {org.membersCount === 1 ? "member" : "members"}
                         </div>
                       )}
                     </div>
@@ -160,7 +177,7 @@ export default function SelectOrganizationPage() {
                     {/* Hover Effect Overlay */}
                     <div className="absolute inset-0 rounded-xl bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
                   </button>
-                )
+                );
               })}
 
               {/* Create New Organization Card */}
@@ -188,14 +205,25 @@ export default function SelectOrganizationPage() {
           <div className="mt-12 p-4 rounded-lg bg-muted/50 border border-border/50">
             <div className="flex items-start gap-3">
               <div className="shrink-0 w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <svg
+                  className="w-4 h-4 text-primary"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
                 </svg>
               </div>
               <div className="flex-1">
                 <p className="text-sm font-medium mb-1">Need help?</p>
                 <p className="text-xs text-muted-foreground">
-                  If you can't find your organization or need to be invited to one, contact your organization administrator.
+                  If you can't find your organization or need to be invited to
+                  one, contact your organization administrator.
                 </p>
               </div>
             </div>
@@ -208,10 +236,12 @@ export default function SelectOrganizationPage() {
         <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="flex flex-col items-center gap-4">
             <Spinner size="lg" />
-            <p className="text-sm text-muted-foreground">Loading organization...</p>
+            <p className="text-sm text-muted-foreground">
+              Loading organization...
+            </p>
           </div>
         </div>
       )}
     </div>
-  )
+  );
 }

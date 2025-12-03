@@ -15,11 +15,11 @@ export async function getCurrentUser() {
  */
 export async function requireAuth() {
   const { userId } = await auth();
-  
+
   if (!userId) {
     redirect("/login");
   }
-  
+
   return userId;
 }
 
@@ -29,15 +29,15 @@ export async function requireAuth() {
  */
 export async function requireOrganization() {
   const { userId, orgId } = await auth();
-  
+
   if (!userId) {
     redirect("/login");
   }
-  
+
   if (!orgId) {
     redirect("/onboarding");
   }
-  
+
   return { userId, orgId };
 }
 
@@ -46,13 +46,13 @@ export async function requireOrganization() {
  */
 export async function getOrganizationMetadata(orgId: string) {
   const { clerkClient } = await import("@clerk/nextjs/server");
-  
+
   try {
     const client = await clerkClient();
     const org = await client.organizations.getOrganization({
       organizationId: orgId,
     });
-    
+
     return org.publicMetadata as {
       industry?: string;
       teamSize?: string;

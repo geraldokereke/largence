@@ -11,19 +11,19 @@ export interface OnboardingFormData {
   country: string;
   website: string;
   companySize: string;
-  
+
   // Logo
   logoUrl: string;
   logoFile: File | null;
-  
+
   // Team & Use Case
   teamSize: string;
   useCase: string;
-  
+
   // Contact & Billing
   billingEmail: string;
   phone: string;
-  
+
   // Integrations
   integrations: string[];
 }
@@ -89,7 +89,11 @@ export function useOnboarding() {
 
       // Generate consistent slug for subdomain
       const slug = formData.companyName
-        ? formData.companyName.toLowerCase().replace(/[^a-z0-9]/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "")
+        ? formData.companyName
+            .toLowerCase()
+            .replace(/[^a-z0-9]/g, "-")
+            .replace(/-+/g, "-")
+            .replace(/^-|-$/g, "")
         : undefined;
 
       // Create organization with slug
@@ -111,12 +115,15 @@ export function useOnboarding() {
         try {
           const logoFormData = new FormData();
           logoFormData.append("file", formData.logoFile);
-          
-          const logoResponse = await fetch(`/api/organizations/${organization.id}/logo`, {
-            method: "POST",
-            body: logoFormData,
-          });
-          
+
+          const logoResponse = await fetch(
+            `/api/organizations/${organization.id}/logo`,
+            {
+              method: "POST",
+              body: logoFormData,
+            },
+          );
+
           if (logoResponse.ok) {
             const logoData = await logoResponse.json();
             uploadedLogoUrl = logoData.imageUrl;
@@ -152,8 +159,9 @@ export function useOnboarding() {
       // Redirect to main app domain (not subdomain for now)
       // TODO: Enable subdomain redirect once wildcard domain is configured in Vercel
       const currentHost = window.location.host;
-      const isLocalhost = currentHost.includes('localhost') || currentHost.includes('127.0.0.1');
-      
+      const isLocalhost =
+        currentHost.includes("localhost") || currentHost.includes("127.0.0.1");
+
       if (isLocalhost) {
         // For local development, redirect to main domain
         window.location.href = "/";
@@ -164,7 +172,10 @@ export function useOnboarding() {
       }
     } catch (err: any) {
       console.error("Onboarding error:", err);
-      setError(err?.errors?.[0]?.message || "Failed to complete setup. Please try again.");
+      setError(
+        err?.errors?.[0]?.message ||
+          "Failed to complete setup. Please try again.",
+      );
       setIsCompleting(false);
     }
   };

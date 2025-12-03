@@ -1,17 +1,17 @@
-"use client"
+"use client";
 
-import { motion } from "framer-motion"
-import { Users, Mail, Phone } from "lucide-react"
-import { Input } from "@largence/components/ui/input"
-import { Label } from "@largence/components/ui/label"
-import type { OnboardingFormData } from "@largence/hooks/use-onboarding"
+import { motion } from "framer-motion";
+import { Users, Mail, Phone } from "lucide-react";
+import { Input } from "@largence/components/ui/input";
+import { Label } from "@largence/components/ui/label";
+import type { OnboardingFormData } from "@largence/hooks/use-onboarding";
 
 interface TeamSizeStepProps {
-  formData: OnboardingFormData
-  updateFormData: (data: Partial<OnboardingFormData>) => void
+  formData: OnboardingFormData;
+  updateFormData: (data: Partial<OnboardingFormData>) => void;
 }
 
-const teamSizes = ["1-10", "11-50", "51-200", "200+"]
+const teamSizes = ["1-10", "11-50", "51-200", "200+"];
 
 export function TeamSizeStep({ formData, updateFormData }: TeamSizeStepProps) {
   return (
@@ -41,5 +41,5 @@ export function TeamSizeStep({ formData, updateFormData }: TeamSizeStepProps) {
         </div>
       </div>
     </motion.div>
-  )
+  );
 }

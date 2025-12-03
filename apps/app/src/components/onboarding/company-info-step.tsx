@@ -1,15 +1,21 @@
-"use client"
+"use client";
 
-import { motion } from "framer-motion"
-import { Input } from "@largence/components/ui/input"
-import { Label } from "@largence/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@largence/components/ui/select"
-import { LogoUpload } from "./logo-upload"
-import type { OnboardingFormData } from "@largence/hooks/use-onboarding"
+import { motion } from "framer-motion";
+import { Input } from "@largence/components/ui/input";
+import { Label } from "@largence/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@largence/components/ui/select";
+import { LogoUpload } from "./logo-upload";
+import type { OnboardingFormData } from "@largence/hooks/use-onboarding";
 
 interface CompanyInfoStepProps {
-  formData: OnboardingFormData
-  updateFormData: (data: Partial<OnboardingFormData>) => void
+  formData: OnboardingFormData;
+  updateFormData: (data: Partial<OnboardingFormData>) => void;
 }
 
 const industries = [
@@ -21,8 +27,8 @@ const industries = [
   "Retail",
   "Education",
   "Government",
-  "Other"
-]
+  "Other",
+];
 
 const countries = [
   "United States",
@@ -33,8 +39,8 @@ const countries = [
   "Australia",
   "Singapore",
   "Netherlands",
-  "Other"
-]
+  "Other",
+];
 
 const companySizes = [
   "1-10 employees",
@@ -42,16 +48,25 @@ const companySizes = [
   "51-200 employees",
   "201-500 employees",
   "501-1000 employees",
-  "1000+ employees"
-]
+  "1000+ employees",
+];
 
-export function CompanyInfoStep({ formData, updateFormData }: CompanyInfoStepProps) {
+export function CompanyInfoStep({
+  formData,
+  updateFormData,
+}: CompanyInfoStepProps) {
   // Generate subdomain slug from company name
   const generateSlug = (name: string) => {
-    return name.toLowerCase().replace(/[^a-z0-9]/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "")
-  }
+    return name
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, "-")
+      .replace(/-+/g, "-")
+      .replace(/^-|-$/g, "");
+  };
 
-  const subdomain = formData.companyName ? generateSlug(formData.companyName) : ""
+  const subdomain = formData.companyName
+    ? generateSlug(formData.companyName)
+    : "";
 
   return (
     <motion.div
@@ -71,7 +86,8 @@ export function CompanyInfoStep({ formData, updateFormData }: CompanyInfoStepPro
         />
         {subdomain && (
           <p className="text-xs text-muted-foreground">
-            Your workspace will be: <span className="font-medium text-foreground">{subdomain}</span>
+            Your workspace will be:{" "}
+            <span className="font-medium text-foreground">{subdomain}</span>
             {/* TODO: Show subdomain URL once wildcard domain is configured */}
             {/* <span className="font-medium text-foreground">{subdomain}.largence.com</span> */}
           </p>
@@ -80,12 +96,17 @@ export function CompanyInfoStep({ formData, updateFormData }: CompanyInfoStepPro
 
       <LogoUpload
         value={formData.logoUrl}
-        onChange={(url, file) => updateFormData({ logoUrl: url, logoFile: file })}
+        onChange={(url, file) =>
+          updateFormData({ logoUrl: url, logoFile: file })
+        }
       />
 
       <div className="space-y-2">
         <Label htmlFor="industry">Industry *</Label>
-        <Select value={formData.industry} onValueChange={(value) => updateFormData({ industry: value })}>
+        <Select
+          value={formData.industry}
+          onValueChange={(value) => updateFormData({ industry: value })}
+        >
           <SelectTrigger className="h-10 rounded-sm">
             <SelectValue placeholder="Select your industry" />
           </SelectTrigger>
@@ -99,5 +120,5 @@ export function CompanyInfoStep({ formData, updateFormData }: CompanyInfoStepPro
         </Select>
       </div>
     </motion.div>
-  )
+  );
 }

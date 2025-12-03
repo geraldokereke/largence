@@ -1,21 +1,18 @@
-import { NextResponse } from "next/server"
-import { auth } from "@clerk/nextjs/server"
-import prisma from "@largence/lib/prisma"
+import { NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
+import prisma from "@largence/lib/prisma";
 
 export async function GET() {
   try {
-    const { userId, orgId } = await auth()
+    const { userId, orgId } = await auth();
 
     if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const documents = await prisma.document.findMany({
       where: {
-        OR: [
-          { userId },
-          ...(orgId ? [{ organizationId: orgId }] : []),
-        ],
+        OR: [{ userId }, ...(orgId ? [{ organizationId: orgId }] : [])],
       },
       orderBy: {
         updatedAt: "desc",
@@ -30,14 +27,14 @@ export async function GET() {
         createdAt: true,
         updatedAt: true,
       },
-    })
+    });
 
-    return NextResponse.json({ documents })
+    return NextResponse.json({ documents });
   } catch (error: any) {
-    console.error("Fetch documents error:", error)
+    console.error("Fetch documents error:", error);
     return NextResponse.json(
       { error: "Failed to fetch documents" },
-      { status: 500 }
-    )
+      { status: 500 },
+    );
   }
 }

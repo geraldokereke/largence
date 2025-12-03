@@ -12,7 +12,7 @@ export default function Template({ children }: { children: React.ReactNode }) {
         type: "spring",
         stiffness: 380,
         damping: 30,
-        duration: 0.2
+        duration: 0.2,
       }}
       className="h-full"
     >

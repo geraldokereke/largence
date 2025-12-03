@@ -1,62 +1,62 @@
-"use client"
+"use client";
 
-import { useState, useRef } from "react"
-import { Upload, X, Building2 } from "lucide-react"
-import { Button } from "@largence/components/ui/button"
-import { Label } from "@largence/components/ui/label"
+import { useState, useRef } from "react";
+import { Upload, X, Building2 } from "lucide-react";
+import { Button } from "@largence/components/ui/button";
+import { Label } from "@largence/components/ui/label";
 
 interface LogoUploadProps {
-  value: string
-  onChange: (url: string, file: File | null) => void
+  value: string;
+  onChange: (url: string, file: File | null) => void;
 }
 
 export function LogoUpload({ value, onChange }: LogoUploadProps) {
-  const [isDragging, setIsDragging] = useState(false)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = (file: File) => {
     if (file && file.type.startsWith("image/")) {
-      const reader = new FileReader()
+      const reader = new FileReader();
       reader.onloadend = () => {
-        onChange(reader.result as string, file)
-      }
-      reader.readAsDataURL(file)
+        onChange(reader.result as string, file);
+      };
+      reader.readAsDataURL(file);
     }
-  }
+  };
 
   const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault()
-    setIsDragging(false)
-    
-    const file = e.dataTransfer.files[0]
+    e.preventDefault();
+    setIsDragging(false);
+
+    const file = e.dataTransfer.files[0];
     if (file) {
-      handleFileSelect(file)
+      handleFileSelect(file);
     }
-  }
+  };
 
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
+    const file = e.target.files?.[0];
     if (file) {
-      handleFileSelect(file)
+      handleFileSelect(file);
     }
-  }
+  };
 
   const handleRemove = () => {
-    onChange("", null)
+    onChange("", null);
     if (fileInputRef.current) {
-      fileInputRef.current.value = ""
+      fileInputRef.current.value = "";
     }
-  }
+  };
 
   return (
     <div className="space-y-2">
       <Label>Organization Logo (Optional)</Label>
-      
+
       {value ? (
         <div className="relative w-32 h-32 rounded-sm border-2 border-border overflow-hidden group">
-          <img 
-            src={value} 
-            alt="Organization logo" 
+          <img
+            src={value}
+            alt="Organization logo"
             className="w-full h-full object-cover"
           />
           <button
@@ -69,8 +69,8 @@ export function LogoUpload({ value, onChange }: LogoUploadProps) {
       ) : (
         <div
           onDragOver={(e) => {
-            e.preventDefault()
-            setIsDragging(true)
+            e.preventDefault();
+            setIsDragging(true);
           }}
           onDragLeave={() => setIsDragging(false)}
           onDrop={handleDrop}
@@ -101,12 +101,14 @@ export function LogoUpload({ value, onChange }: LogoUploadProps) {
               <>
                 <Building2 className="h-8 w-8" />
                 <p className="text-sm">Click to upload or drag and drop</p>
-                <p className="text-xs text-muted-foreground">PNG, JPG, SVG (max 5MB)</p>
+                <p className="text-xs text-muted-foreground">
+                  PNG, JPG, SVG (max 5MB)
+                </p>
               </>
             )}
           </button>
         </div>
       )}
     </div>
-  )
+  );
 }

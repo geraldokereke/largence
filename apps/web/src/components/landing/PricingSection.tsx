@@ -94,8 +94,8 @@ export function PricingSection() {
               transition={{ duration: 0.4, delay: index * 0.1 }}
               className={`relative p-6 md:p-8 rounded-xl border transition-all flex flex-col ${
                 plan.popular
-                  ? 'border-primary bg-primary/5 shadow-xl scale-105'
-                  : 'border-border bg-card hover:border-primary/50 hover:shadow-lg'
+                  ? 'border-primary bg-primary/5'
+                  : 'border-border bg-card hover:border-primary/50'
               }`}
             >
               {plan.popular && (

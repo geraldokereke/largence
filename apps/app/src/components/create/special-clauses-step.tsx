@@ -1,15 +1,15 @@
-"use client"
+"use client";
 
-import { Check } from "lucide-react"
-import { Label } from "@largence/components/ui/label"
+import { Check } from "lucide-react";
+import { Label } from "@largence/components/ui/label";
 
 interface SpecialClausesStepProps {
   formData: {
-    specialClauses: string[]
-    additionalNotes: string
-  }
-  onToggleClause: (clause: string) => void
-  onUpdate: (field: string, value: string) => void
+    specialClauses: string[];
+    additionalNotes: string;
+  };
+  onToggleClause: (clause: string) => void;
+  onUpdate: (field: string, value: string) => void;
 }
 
 const clauses = [
@@ -19,9 +19,13 @@ const clauses = [
   "Force majeure clause",
   "Dispute resolution mechanism",
   "Data protection compliance",
-]
+];
 
-export function SpecialClausesStep({ formData, onToggleClause, onUpdate }: SpecialClausesStepProps) {
+export function SpecialClausesStep({
+  formData,
+  onToggleClause,
+  onUpdate,
+}: SpecialClausesStepProps) {
   return (
     <div className="space-y-6">
       <div>
@@ -78,5 +82,5 @@ export function SpecialClausesStep({ formData, onToggleClause, onUpdate }: Speci
         </div>
       </div>
     </div>
-  )
+  );
 }

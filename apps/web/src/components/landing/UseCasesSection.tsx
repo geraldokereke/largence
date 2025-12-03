@@ -156,7 +156,6 @@ export function UseCasesSection() {
           })}
         </div>
 
-        {/* Selected Use Case Details */}
         <AnimatePresence mode="wait">
           <motion.div
             key={selectedCase.id}
@@ -164,7 +163,7 @@ export function UseCasesSection() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.4 }}
-            className="rounded-2xl border border-primary/20 bg-linear-to-br from-primary/5 via-background/50 to-primary/5 backdrop-blur-sm p-6 md:p-8 shadow-2xl"
+            className="rounded-2xl border border-primary/20 bg-linear-to-br from-primary/5 via-background/50 to-primary/5 backdrop-blur-sm p-6 md:p-8"
           >
             <div className="grid lg:grid-cols-[1fr_400px] gap-8 items-start">
               {/* Left: Details */}
@@ -207,7 +206,7 @@ export function UseCasesSection() {
                 className="relative"
               >
                 <div className="absolute -inset-4 bg-linear-to-br from-primary/30 via-primary/20 to-primary/30 rounded-3xl blur-2xl opacity-60" />
-                <div className="relative rounded-xl border border-primary/30 bg-linear-to-b from-background/90 to-background/60 backdrop-blur-md p-2 shadow-2xl overflow-hidden">
+                <div className="relative rounded-xl border border-primary/30 bg-linear-to-b from-background/90 to-background/60 backdrop-blur-md p-2 overflow-hidden">
                   {/* Window Controls */}
                   <div className="flex items-center gap-1.5 mb-2 px-2 py-1.5 bg-muted/40 rounded-t-lg">
                     <div className="w-2.5 h-2.5 rounded-full bg-red-500/70" />

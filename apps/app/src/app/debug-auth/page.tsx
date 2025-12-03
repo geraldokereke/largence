@@ -20,7 +20,7 @@ export default function DebugAuthPage() {
     try {
       await setActive({ organization: orgId });
       toast.success("Organization activated", {
-        description: "Redirecting to dashboard..."
+        description: "Redirecting to dashboard...",
       });
       setTimeout(() => {
         window.location.href = "/";
@@ -28,7 +28,7 @@ export default function DebugAuthPage() {
     } catch (error) {
       console.error("Error setting active org:", error);
       toast.error("Failed to activate organization", {
-        description: String(error)
+        description: String(error),
       });
     }
   };

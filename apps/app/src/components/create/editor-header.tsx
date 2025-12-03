@@ -1,18 +1,22 @@
-"use client"
+"use client";
 
-import { useRouter } from "next/navigation"
-import Image from "next/image"
-import { Button } from "@largence/components/ui/button"
-import { Clock, Download, Share2, Save, X } from "lucide-react"
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+import { Button } from "@largence/components/ui/button";
+import { Clock, Download, Share2, Save, X } from "lucide-react";
 
 interface EditorHeaderProps {
-  documentName: string
-  documentType: string
-  jurisdiction: string
+  documentName: string;
+  documentType: string;
+  jurisdiction: string;
 }
 
-export function EditorHeader({ documentName, documentType, jurisdiction }: EditorHeaderProps) {
-  const router = useRouter()
+export function EditorHeader({
+  documentName,
+  documentType,
+  jurisdiction,
+}: EditorHeaderProps) {
+  const router = useRouter();
 
   return (
     <div className="border-b bg-card">
@@ -27,10 +31,10 @@ export function EditorHeader({ documentName, documentType, jurisdiction }: Edito
             <X className="h-4 w-4" />
           </Button>
           <div className="flex items-center gap-3">
-            <Image 
-              src="/logo.png" 
-              alt="Largence Logo" 
-              width={24} 
+            <Image
+              src="/logo.png"
+              alt="Largence Logo"
+              width={24}
               height={24}
               className="shrink-0"
             />
@@ -67,5 +71,5 @@ export function EditorHeader({ documentName, documentType, jurisdiction }: Edito
         </div>
       </div>
     </div>
-  )
+  );
 }

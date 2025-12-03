@@ -28,7 +28,9 @@ export function SignupForm({ className }: SignupFormProps) {
   const [error, setError] = useState<string | null>(null);
   const [pendingVerification, setPendingVerification] = useState(false);
   const [code, setCode] = useState("");
-  const [oauthLoading, setOauthLoading] = useState<"google" | "microsoft" | null>(null);
+  const [oauthLoading, setOauthLoading] = useState<
+    "google" | "microsoft" | null
+  >(null);
   const [password, setPassword] = useState("");
   const { signUp, setActive } = useSignUp();
   const router = useRouter();
@@ -38,26 +40,32 @@ export function SignupForm({ className }: SignupFormProps) {
     const hasMinLength = pass.length >= 8;
     const hasNumber = /\d/.test(pass);
     const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(pass);
-    return { hasMinLength, hasNumber, hasSpecialChar, isValid: hasMinLength && hasNumber && hasSpecialChar };
+    return {
+      hasMinLength,
+      hasNumber,
+      hasSpecialChar,
+      isValid: hasMinLength && hasNumber && hasSpecialChar,
+    };
   };
 
   const passwordValidation = validatePassword(password);
 
-  const handleOAuthSignUp = (provider: "oauth_google" | "oauth_microsoft") => async () => {
-    if (!signUp) return;
-    
-    try {
-      setOauthLoading(provider === "oauth_google" ? "google" : "microsoft");
-      await signUp.authenticateWithRedirect({
-        strategy: provider,
-        redirectUrl: "/sso-callback",
-        redirectUrlComplete: "/onboarding",
-      });
-    } catch (err) {
-      console.error("OAuth error:", err);
-      setOauthLoading(null);
-    }
-  };
+  const handleOAuthSignUp =
+    (provider: "oauth_google" | "oauth_microsoft") => async () => {
+      if (!signUp) return;
+
+      try {
+        setOauthLoading(provider === "oauth_google" ? "google" : "microsoft");
+        await signUp.authenticateWithRedirect({
+          strategy: provider,
+          redirectUrl: "/sso-callback",
+          redirectUrlComplete: "/onboarding",
+        });
+      } catch (err) {
+        console.error("OAuth error:", err);
+        setOauthLoading(null);
+      }
+    };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -74,7 +82,9 @@ export function SignupForm({ className }: SignupFormProps) {
       // Validate password
       const validation = validatePassword(password);
       if (!validation.isValid) {
-        setError("Password must be at least 8 characters and contain a number and special character");
+        setError(
+          "Password must be at least 8 characters and contain a number and special character",
+        );
         setIsLoading(false);
         return;
       }
@@ -99,7 +109,10 @@ export function SignupForm({ className }: SignupFormProps) {
       setPendingVerification(true);
     } catch (err: any) {
       console.error("Signup error:", err);
-      setError(err?.errors?.[0]?.message || "Failed to create account. Please try again.");
+      setError(
+        err?.errors?.[0]?.message ||
+          "Failed to create account. Please try again.",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -203,9 +216,7 @@ export function SignupForm({ className }: SignupFormProps) {
         <h1 className="text-3xl font-semibold mb-2 font-display">
           Create Your Account
         </h1>
-        <p className="text-muted-foreground">
-          Get started with Largence today
-        </p>
+        <p className="text-muted-foreground">Get started with Largence today</p>
       </div>
 
       <form className="space-y-6" onSubmit={handleSubmit}>
@@ -290,26 +301,56 @@ export function SignupForm({ className }: SignupFormProps) {
           </div>
           <div className="space-y-1">
             <div className="flex items-center gap-2 text-xs">
-              <div className={`h-1.5 w-1.5 rounded-full ${
-                passwordValidation.hasMinLength ? 'bg-green-500' : 'bg-muted-foreground/30'
-              }`} />
-              <span className={passwordValidation.hasMinLength ? 'text-green-500' : 'text-muted-foreground'}>
+              <div
+                className={`h-1.5 w-1.5 rounded-full ${
+                  passwordValidation.hasMinLength
+                    ? "bg-green-500"
+                    : "bg-muted-foreground/30"
+                }`}
+              />
+              <span
+                className={
+                  passwordValidation.hasMinLength
+                    ? "text-green-500"
+                    : "text-muted-foreground"
+                }
+              >
                 At least 8 characters
               </span>
             </div>
             <div className="flex items-center gap-2 text-xs">
-              <div className={`h-1.5 w-1.5 rounded-full ${
-                passwordValidation.hasNumber ? 'bg-green-500' : 'bg-muted-foreground/30'
-              }`} />
-              <span className={passwordValidation.hasNumber ? 'text-green-500' : 'text-muted-foreground'}>
+              <div
+                className={`h-1.5 w-1.5 rounded-full ${
+                  passwordValidation.hasNumber
+                    ? "bg-green-500"
+                    : "bg-muted-foreground/30"
+                }`}
+              />
+              <span
+                className={
+                  passwordValidation.hasNumber
+                    ? "text-green-500"
+                    : "text-muted-foreground"
+                }
+              >
                 Contains a number
               </span>
             </div>
             <div className="flex items-center gap-2 text-xs">
-              <div className={`h-1.5 w-1.5 rounded-full ${
-                passwordValidation.hasSpecialChar ? 'bg-green-500' : 'bg-muted-foreground/30'
-              }`} />
-              <span className={passwordValidation.hasSpecialChar ? 'text-green-500' : 'text-muted-foreground'}>
+              <div
+                className={`h-1.5 w-1.5 rounded-full ${
+                  passwordValidation.hasSpecialChar
+                    ? "bg-green-500"
+                    : "bg-muted-foreground/30"
+                }`}
+              />
+              <span
+                className={
+                  passwordValidation.hasSpecialChar
+                    ? "text-green-500"
+                    : "text-muted-foreground"
+                }
+              >
                 Contains a special character
               </span>
             </div>
@@ -362,7 +403,7 @@ export function SignupForm({ className }: SignupFormProps) {
               </>
             )}
           </Button>
-          
+
           <Button
             variant="outline"
             type="button"

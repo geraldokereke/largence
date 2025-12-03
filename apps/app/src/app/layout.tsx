@@ -126,35 +126,38 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Largence - Enterprise Legal Intelligence for Africa",
-  description: "Automate contract drafting, ensure regulatory compliance, and streamline governance for African enterprises.",
+  description:
+    "Automate contract drafting, ensure regulatory compliance, and streamline governance for African enterprises.",
   icons: {
     icon: [
-      { url: '/logo.png' },
-      { url: '/logo.png', sizes: '32x32', type: 'image/png' },
+      { url: "/logo.png" },
+      { url: "/logo.png", sizes: "32x32", type: "image/png" },
     ],
-    apple: '/logo.png',
+    apple: "/logo.png",
   },
   openGraph: {
     title: "Largence - Enterprise Legal Intelligence for Africa",
-    description: "Automate contract drafting, ensure regulatory compliance, and streamline governance for African enterprises.",
-    url: 'https://largence.com',
-    siteName: 'Largence',
+    description:
+      "Automate contract drafting, ensure regulatory compliance, and streamline governance for African enterprises.",
+    url: "https://largence.com",
+    siteName: "Largence",
     images: [
       {
-        url: '/logo.png',
+        url: "/logo.png",
         width: 1200,
         height: 630,
-        alt: 'Largence Logo',
+        alt: "Largence Logo",
       },
     ],
-    locale: 'en_US',
-    type: 'website',
+    locale: "en_US",
+    type: "website",
   },
   twitter: {
-    card: 'summary_large_image',
+    card: "summary_large_image",
     title: "Largence - Enterprise Legal Intelligence for Africa",
-    description: "Automate contract drafting, ensure regulatory compliance, and streamline governance for African enterprises.",
-    images: ['/logo.png'],
+    description:
+      "Automate contract drafting, ensure regulatory compliance, and streamline governance for African enterprises.",
+    images: ["/logo.png"],
   },
 };
 
@@ -166,22 +169,21 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <ClerkProvider>
-      <body
-        className={`${generalSans.variable} ${polySans.variable} ${satoshi.variable} ${geistMono.variable} font-sans antialiased`}
-      >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange={false}
+        <body
+          className={`${generalSans.variable} ${polySans.variable} ${satoshi.variable} ${geistMono.variable} font-sans antialiased overflow-hidden`}
         >
-          <QueryProvider>
-            <RouteLoading />
-            {children}
-            <Toaster position="top-right" expand={false} richColors closeButton />
-          </QueryProvider>
-        </ThemeProvider>
-      </body>
+          
+            <QueryProvider>
+              <RouteLoading />
+              {children}
+              <Toaster
+                position="top-right"
+                expand={false}
+                richColors
+                closeButton
+              />
+            </QueryProvider>
+        </body>
       </ClerkProvider>
     </html>
   );

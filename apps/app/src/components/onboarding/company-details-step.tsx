@@ -1,16 +1,22 @@
-"use client"
+"use client";
 
-import { motion } from "framer-motion"
-import { Input } from "@largence/components/ui/input"
-import { Label } from "@largence/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@largence/components/ui/select"
-import { CountryCombobox } from "@largence/components/ui/country-combobox"
-import { Globe } from "lucide-react"
-import type { OnboardingFormData } from "@largence/hooks/use-onboarding"
+import { motion } from "framer-motion";
+import { Input } from "@largence/components/ui/input";
+import { Label } from "@largence/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@largence/components/ui/select";
+import { CountryCombobox } from "@largence/components/ui/country-combobox";
+import { Globe } from "lucide-react";
+import type { OnboardingFormData } from "@largence/hooks/use-onboarding";
 
 interface CompanyDetailsStepProps {
-  formData: OnboardingFormData
-  updateFormData: (data: Partial<OnboardingFormData>) => void
+  formData: OnboardingFormData;
+  updateFormData: (data: Partial<OnboardingFormData>) => void;
 }
 
 const companySizes = [
@@ -19,10 +25,13 @@ const companySizes = [
   "51-200 employees",
   "201-500 employees",
   "501-1000 employees",
-  "1000+ employees"
-]
+  "1000+ employees",
+];
 
-export function CompanyDetailsStep({ formData, updateFormData }: CompanyDetailsStepProps) {
+export function CompanyDetailsStep({
+  formData,
+  updateFormData,
+}: CompanyDetailsStepProps) {
   return (
     <motion.div
       initial={{ opacity: 0, x: 20 }}
@@ -32,7 +41,10 @@ export function CompanyDetailsStep({ formData, updateFormData }: CompanyDetailsS
     >
       <div className="space-y-2">
         <Label htmlFor="companySize">Company Size *</Label>
-        <Select value={formData.companySize} onValueChange={(value) => updateFormData({ companySize: value })}>
+        <Select
+          value={formData.companySize}
+          onValueChange={(value) => updateFormData({ companySize: value })}
+        >
           <SelectTrigger className="h-10 rounded-sm">
             <SelectValue placeholder="Select company size" />
           </SelectTrigger>
@@ -49,10 +61,13 @@ export function CompanyDetailsStep({ formData, updateFormData }: CompanyDetailsS
       <div className="space-y-2">
         <Label htmlFor="country">Primary Country *</Label>
         <CountryCombobox
-          value={formData.country?.toLowerCase().replace(/ /g, '-')}
+          value={formData.country?.toLowerCase().replace(/ /g, "-")}
           onValueChange={(value) => {
-            const country = value.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
-            updateFormData({ country })
+            const country = value
+              .split("-")
+              .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+              .join(" ");
+            updateFormData({ country });
           }}
           placeholder="Select your country"
         />
@@ -73,5 +88,5 @@ export function CompanyDetailsStep({ formData, updateFormData }: CompanyDetailsS
         </div>
       </div>
     </motion.div>
-  )
+  );
 }

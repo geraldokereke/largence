@@ -1,9 +1,8 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useOrganization, useOrganizationList } from "@clerk/nextjs";
+import { useOrganization, useOrganizationList, useAuth } from "@clerk/nextjs";
 import {
   Home,
   FileText,
@@ -17,6 +16,7 @@ import {
   Check,
   Plug2Icon,
   Building2,
+  Sparkles,
 } from "lucide-react";
 
 import { NavMain } from "@largence/components/nav-main";
@@ -36,57 +36,13 @@ import {
   DropdownMenuTrigger,
 } from "@largence/components/ui/dropdown-menu";
 import { Button } from "@largence/components/ui/button";
-
-const data = {
-  navMain: [
-    {
-      title: "Home",
-      url: "/",
-      icon: Home,
-    },
-    {
-      title: "Documents",
-      url: "/documents",
-      icon: FileText,
-      badge: "12",
-    },
-    {
-      title: "AI Drafts",
-      url: "/drafts",
-      icon: Brain,
-      badge: "3",
-    },
-    {
-      title: "Compliance Checks",
-      url: "/compliance",
-      icon: ShieldCheck,
-    },
-    {
-      title: "Templates Library",
-      url: "/templates",
-      icon: Folder,
-    },
-    {
-      title: "Teams & Roles",
-      url: "/teams",
-      icon: Users,
-    },
-    {
-      title: "Audit Trails",
-      url: "/audit",
-      icon: FileStack,
-    },
-    {
-      title: "Integrations",
-      url: "/integrations",
-      icon: Plug2Icon,
-    },
-  ],
-};
+import { UpgradeModal } from "@largence/components/upgrade-modal";
+import { useUpgradeModal } from "@/hooks/use-upgrade-modal";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname();
   const router = useRouter();
+  const { userId } = useAuth();
   const { organization } = useOrganization();
   const { userMemberships, setActive } = useOrganizationList({
     userMemberships: {
@@ -94,30 +50,116 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     },
   });
 
-  // Persist sidebar state using cookies for SSR compatibility
+  const [documentCount, setDocumentCount] = React.useState<number | null>(null);
+  const [draftCount, setDraftCount] = React.useState<number | null>(null);
+  const [plan, setPlan] = React.useState<string | null>(null);
+  const upgradeModal = useUpgradeModal();
+
   const [isClient, setIsClient] = React.useState(false);
 
   React.useEffect(() => {
+    if (!userId) return;
+
+    const fetchCounts = async () => {
+      try {
+        const response = await fetch("/api/documents");
+        if (response.ok) {
+          const data = await response.json();
+          const documents = data.documents || [];
+          setDocumentCount(documents.length);
+          setDraftCount(
+            documents.filter((d: any) => d.status === "DRAFT").length,
+          );
+        }
+      } catch (error) {
+        console.error("Failed to fetch document counts:", error);
+      }
+    };
+
+    const fetchBilling = async () => {
+      try {
+        const response = await fetch("/api/billing");
+        if (response.ok) {
+          const data = await response.json();
+          setPlan(data.plan);
+        }
+      } catch (error) {
+        console.error("Failed to fetch billing:", error);
+      }
+    };
+
+    fetchCounts();
+    fetchBilling();
+  }, [userId]);
+
+  const data = {
+    navMain: [
+      {
+        title: "Home",
+        url: "/",
+        icon: Home,
+      },
+      {
+        title: "Documents",
+        url: "/documents",
+        icon: FileText,
+        badge: documentCount !== null ? String(documentCount) : undefined,
+      },
+      {
+        title: "AI Drafts",
+        url: "/drafts",
+        icon: Brain,
+        badge: draftCount !== null ? String(draftCount) : undefined,
+      },
+      {
+        title: "Compliance Checks",
+        url: "/compliance",
+        icon: ShieldCheck,
+      },
+      {
+        title: "Templates Library",
+        url: "/templates",
+        icon: Folder,
+      },
+      {
+        title: "Teams & Roles",
+        url: "/teams",
+        icon: Users,
+      },
+      {
+        title: "Audit Trails",
+        url: "/audit",
+        icon: FileStack,
+      },
+      {
+        title: "Integrations",
+        url: "/integrations",
+        icon: Plug2Icon,
+      },
+    ],
+  };
+
+  React.useEffect(() => {
     setIsClient(true);
-    
-    // Restore sidebar state from localStorage
-    const savedState = localStorage.getItem('sidebar:state');
+
+    const savedState = localStorage.getItem("sidebar:state");
     if (savedState) {
       const sidebar = document.querySelector('[data-sidebar="sidebar"]');
       if (sidebar) {
-        const newState = savedState === 'expanded' ? 'expanded' : 'collapsed';
-        sidebar.setAttribute('data-state', newState);
+        const newState = savedState === "expanded" ? "expanded" : "collapsed";
+        sidebar.setAttribute("data-state", newState);
       }
     }
 
-    // Save state on change
     const handleStateChange = (mutations: MutationRecord[]) => {
       mutations.forEach((mutation) => {
-        if (mutation.type === 'attributes' && mutation.attributeName === 'data-state') {
-          const state = (mutation.target as Element).getAttribute('data-state');
+        if (
+          mutation.type === "attributes" &&
+          mutation.attributeName === "data-state"
+        ) {
+          const state = (mutation.target as Element).getAttribute("data-state");
           if (state) {
-            localStorage.setItem('sidebar:state', state);
-            // Also save to cookie for SSR
+            localStorage.setItem("sidebar:state", state);
             document.cookie = `sidebar:state=${state};path=/;max-age=31536000;samesite=lax`;
           }
         }
@@ -126,11 +168,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
     const observer = new MutationObserver(handleStateChange);
     const sidebar = document.querySelector('[data-sidebar="sidebar"]');
-    
+
     if (sidebar) {
-      observer.observe(sidebar, { 
-        attributes: true, 
-        attributeFilter: ['data-state'] 
+      observer.observe(sidebar, {
+        attributes: true,
+        attributeFilter: ["data-state"],
       });
     }
 
@@ -139,7 +181,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   const handleSwitchOrganization = async (orgId: string) => {
     if (!setActive) return;
-    
+
     try {
       await setActive({ organization: orgId });
       // Use router.refresh() for smoother transition
@@ -150,14 +192,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   };
 
   const handleNewDocument = () => {
-    router.push('/create');
+    router.push("/create");
   };
 
   return (
     <Sidebar
       collapsible="icon"
       className="top-(--header-height) h-[calc(100svh-var(--header-height))]! border-r"
-      
       {...props}
     >
       <SidebarContent className="gap-0 px-2 py-4">
@@ -165,15 +206,42 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarContent>
 
       <SidebarFooter className="border-t gap-0 px-4 py-4">
+        {plan === "FREE" && (
+          <div className="mb-4 p-4 rounded-sm border bg-primary/5 group-data-[collapsible=icon]:hidden">
+            <div className="flex items-center gap-2 mb-2">
+              <Sparkles className="h-4 w-4 text-primary" />
+              <span className="font-semibold text-sm">Free Plan</span>
+            </div>
+            <p className="text-xs text-muted-foreground mb-3">
+              Upgrade to unlock unlimited documents and compliance checks.
+            </p>
+            <Button
+              size="sm"
+              className="w-full h-8 text-xs rounded-sm"
+              onClick={() =>
+                upgradeModal.openUpgradeModal({
+                  reason: "Upgrade to unlock all features",
+                })
+              }
+            >
+              Upgrade
+            </Button>
+          </div>
+        )}
         <SidebarMenu className="gap-1 px-0">
           <SidebarMenuItem>
             <SidebarMenuButton
               asChild
               className="h-10 rounded-md hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors group-data-[collapsible=icon]:justify-center"
             >
-              <button onClick={handleNewDocument} className="flex items-center gap-3 w-full">
+              <button
+                onClick={handleNewDocument}
+                className="flex items-center gap-3 w-full"
+              >
                 <Plus className="h-5 w-5 shrink-0" />
-                <span className="font-medium text-sm group-data-[collapsible=icon]:hidden">New Document</span>
+                <span className="font-medium text-sm group-data-[collapsible=icon]:hidden">
+                  New Document
+                </span>
               </button>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -181,13 +249,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuItem>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <SidebarMenuButton
-                  className="h-10 rounded-md data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors group-data-[collapsible=icon]:justify-center"
-                >
+                <SidebarMenuButton className="h-10 rounded-md data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors group-data-[collapsible=icon]:justify-center">
                   <div className="bg-primary text-primary-foreground flex aspect-square h-5 w-5 items-center justify-center rounded-md shrink-0">
                     {organization?.imageUrl ? (
-                      <img 
-                        src={organization.imageUrl} 
+                      <img
+                        src={organization.imageUrl}
                         alt={organization.name}
                         className="h-full w-full rounded-md object-cover"
                       />
@@ -215,13 +281,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 {userMemberships?.data?.map((membership) => (
                   <DropdownMenuItem
                     key={membership.organization.id}
-                    onClick={() => handleSwitchOrganization(membership.organization.id)}
+                    onClick={() =>
+                      handleSwitchOrganization(membership.organization.id)
+                    }
                     className="gap-2 p-2 rounded-md cursor-pointer"
                   >
                     <div className="flex size-6 items-center justify-center rounded-md border bg-background">
                       {membership.organization.imageUrl ? (
-                        <img 
-                          src={membership.organization.imageUrl} 
+                        <img
+                          src={membership.organization.imageUrl}
                           alt={membership.organization.name}
                           className="h-full w-full rounded-md object-cover"
                         />
@@ -230,9 +298,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                       )}
                     </div>
                     <div className="flex flex-col gap-0.5">
-                      <span className="font-medium text-sm">{membership.organization.name}</span>
+                      <span className="font-medium text-sm">
+                        {membership.organization.name}
+                      </span>
                       <span className="text-xs text-muted-foreground">
-                        {membership.organization.membersCount} {membership.organization.membersCount === 1 ? 'member' : 'members'}
+                        {membership.organization.membersCount}{" "}
+                        {membership.organization.membersCount === 1
+                          ? "member"
+                          : "members"}
                       </span>
                     </div>
                     {organization?.id === membership.organization.id && (
@@ -240,7 +313,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     )}
                   </DropdownMenuItem>
                 ))}
-                
+
                 {userMemberships?.data && userMemberships.data.length === 0 && (
                   <div className="px-2 py-3 text-sm text-muted-foreground text-center">
                     No organizations found
@@ -252,6 +325,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarFooter>
       <SidebarRail />
+      <UpgradeModal
+        isOpen={upgradeModal.isOpen}
+        onClose={upgradeModal.closeUpgradeModal}
+        reason={upgradeModal.reason}
+        feature={upgradeModal.feature}
+        currentPlan={upgradeModal.currentPlan}
+      />
     </Sidebar>
   );
 }

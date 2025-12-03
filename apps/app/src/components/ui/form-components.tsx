@@ -11,7 +11,7 @@ export const StyledInput = forwardRef<
     ref={ref}
     className={cn(
       "rounded-sm focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 h-10 text-sm",
-      className
+      className,
     )}
     {...props}
   />
@@ -49,7 +49,7 @@ export const InputWithIcon = forwardRef<HTMLInputElement, InputWithIconProps>(
             className={cn(
               "absolute top-1/2 transform -translate-y-1/2 text-muted-foreground",
               isLeftIcon && "left-3",
-              isRightIcon && "right-3"
+              isRightIcon && "right-3",
             )}
           >
             {icon}
@@ -61,12 +61,12 @@ export const InputWithIcon = forwardRef<HTMLInputElement, InputWithIconProps>(
             isLeftIcon && "pl-10 pr-4",
             isRightIcon && "px-4 pr-10",
             !icon && "px-4",
-            className
+            className,
           )}
           {...props}
         />
       </div>
     );
-  }
+  },
 );
 InputWithIcon.displayName = "InputWithIcon";

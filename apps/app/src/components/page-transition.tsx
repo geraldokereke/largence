@@ -1,15 +1,15 @@
-"use client"
+"use client";
 
-import { motion, AnimatePresence } from "framer-motion"
-import { usePathname } from "next/navigation"
-import { ReactNode } from "react"
+import { motion, AnimatePresence } from "framer-motion";
+import { usePathname } from "next/navigation";
+import { ReactNode } from "react";
 
 interface PageTransitionProps {
-  children: ReactNode
+  children: ReactNode;
 }
 
 export function PageTransition({ children }: PageTransitionProps) {
-  const pathname = usePathname()
+  const pathname = usePathname();
 
   return (
     <AnimatePresence mode="wait" initial={false}>
@@ -26,5 +26,5 @@ export function PageTransition({ children }: PageTransitionProps) {
         {children}
       </motion.div>
     </AnimatePresence>
-  )
+  );
 }

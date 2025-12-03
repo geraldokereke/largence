@@ -1,33 +1,37 @@
-"use client"
+"use client";
 
-import { Edit2 } from "lucide-react"
-import { Button } from "@largence/components/ui/button"
+import { Edit2 } from "lucide-react";
+import { Button } from "@largence/components/ui/button";
 
 interface ReviewStepProps {
   formData: {
-    documentType: string
-    documentName: string
-    jurisdiction: string
-    industry: string
-    partyName: string
-    partyEmail: string
-    party2Name: string
-    party2Email: string
-    startDate: string
-    duration: string
-    compensationType: string
-    compensationAmount: string
-    specialClauses: string[]
-    additionalNotes: string
-  }
+    documentType: string;
+    documentName: string;
+    jurisdiction: string;
+    industry: string;
+    partyName: string;
+    partyEmail: string;
+    party2Name: string;
+    party2Email: string;
+    startDate: string;
+    duration: string;
+    compensationType: string;
+    compensationAmount: string;
+    specialClauses: string[];
+    additionalNotes: string;
+  };
   documentTypes: Array<{
-    id: string
-    name: string
-  }>
-  onEdit: (step: number) => void
+    id: string;
+    name: string;
+  }>;
+  onEdit: (step: number) => void;
 }
 
-export function ReviewStep({ formData, documentTypes, onEdit }: ReviewStepProps) {
+export function ReviewStep({
+  formData,
+  documentTypes,
+  onEdit,
+}: ReviewStepProps) {
   const sections = [
     {
       title: "Document Type",
@@ -35,7 +39,9 @@ export function ReviewStep({ formData, documentTypes, onEdit }: ReviewStepProps)
       items: [
         {
           label: "Type",
-          value: documentTypes.find((d) => d.id === formData.documentType)?.name || "Not specified",
+          value:
+            documentTypes.find((d) => d.id === formData.documentType)?.name ||
+            "Not specified",
         },
       ],
     },
@@ -43,8 +49,14 @@ export function ReviewStep({ formData, documentTypes, onEdit }: ReviewStepProps)
       title: "Basic Information",
       step: 2,
       items: [
-        { label: "Document Name", value: formData.documentName || "Not specified" },
-        { label: "Jurisdiction", value: formData.jurisdiction || "Not specified" },
+        {
+          label: "Document Name",
+          value: formData.documentName || "Not specified",
+        },
+        {
+          label: "Jurisdiction",
+          value: formData.jurisdiction || "Not specified",
+        },
         { label: "Industry", value: formData.industry || "Not specified" },
         { label: "Start Date", value: formData.startDate || "Not specified" },
         { label: "Duration", value: formData.duration || "Not specified" },
@@ -55,13 +67,23 @@ export function ReviewStep({ formData, documentTypes, onEdit }: ReviewStepProps)
       step: 3,
       items: [
         { label: "First Party", value: formData.partyName || "Not specified" },
-        ...(formData.partyEmail ? [{ label: "First Party Email", value: formData.partyEmail }] : []),
-        { label: "Second Party", value: formData.party2Name || "Not specified" },
-        ...(formData.party2Email ? [{ label: "Second Party Email", value: formData.party2Email }] : []),
+        ...(formData.partyEmail
+          ? [{ label: "First Party Email", value: formData.partyEmail }]
+          : []),
+        {
+          label: "Second Party",
+          value: formData.party2Name || "Not specified",
+        },
+        ...(formData.party2Email
+          ? [{ label: "Second Party Email", value: formData.party2Email }]
+          : []),
         ...(formData.compensationType
           ? [
               { label: "Compensation Type", value: formData.compensationType },
-              { label: "Compensation Amount", value: formData.compensationAmount || "Not specified" },
+              {
+                label: "Compensation Amount",
+                value: formData.compensationAmount || "Not specified",
+              },
             ]
           : []),
       ],
@@ -72,19 +94,24 @@ export function ReviewStep({ formData, documentTypes, onEdit }: ReviewStepProps)
       items: [
         {
           label: "Special Clauses",
-          value: formData.specialClauses.length > 0 ? formData.specialClauses.join(", ") : "None selected",
+          value:
+            formData.specialClauses.length > 0
+              ? formData.specialClauses.join(", ")
+              : "None selected",
         },
         ...(formData.additionalNotes
           ? [{ label: "Additional Notes", value: formData.additionalNotes }]
           : []),
       ],
     },
-  ]
+  ];
 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-semibold mb-2 font-title">Review & Generate</h2>
+        <h2 className="text-2xl font-semibold mb-2 font-title">
+          Review & Generate
+        </h2>
         <p className="text-muted-foreground">
           Review your information before generating the document
         </p>
@@ -92,7 +119,10 @@ export function ReviewStep({ formData, documentTypes, onEdit }: ReviewStepProps)
 
       <div className="space-y-4">
         {sections.map((section) => (
-          <div key={section.title} className="border rounded-sm p-4 bg-muted/30">
+          <div
+            key={section.title}
+            className="border rounded-sm p-4 bg-muted/30"
+          >
             <div className="flex items-center justify-between mb-3 pb-3 border-b">
               <h3 className="font-semibold text-sm">{section.title}</h3>
               <Button
@@ -107,16 +137,11 @@ export function ReviewStep({ formData, documentTypes, onEdit }: ReviewStepProps)
             </div>
             <div className="space-y-2">
               {section.items.map((item, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-start text-sm"
-                >
+                <div key={idx} className="flex items-start text-sm">
                   <span className="text-muted-foreground font-medium min-w-40">
                     {item.label}:
                   </span>
-                  <span className="text-foreground flex-1">
-                    {item.value}
-                  </span>
+                  <span className="text-foreground flex-1">{item.value}</span>
                 </div>
               ))}
             </div>
@@ -126,10 +151,11 @@ export function ReviewStep({ formData, documentTypes, onEdit }: ReviewStepProps)
 
       <div className="p-4 rounded-sm bg-primary/5 border border-primary/20">
         <p className="text-sm text-foreground">
-          <strong>Ready to generate?</strong> Your document will be created using AI based on
-          the information provided. You'll be able to edit it after generation.
+          <strong>Ready to generate?</strong> Your document will be created
+          using AI based on the information provided. You'll be able to edit it
+          after generation.
         </p>
       </div>
     </div>
-  )
+  );
 }

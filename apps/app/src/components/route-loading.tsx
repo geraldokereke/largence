@@ -1,18 +1,18 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { usePathname } from "next/navigation"
-import { motion, AnimatePresence } from "framer-motion"
+import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 
 export function RouteLoading() {
-  const pathname = usePathname()
-  const [isLoading, setIsLoading] = useState(false)
+  const pathname = usePathname();
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    setIsLoading(true)
-    const timeout = setTimeout(() => setIsLoading(false), 300)
-    return () => clearTimeout(timeout)
-  }, [pathname])
+    setIsLoading(true);
+    const timeout = setTimeout(() => setIsLoading(false), 300);
+    return () => clearTimeout(timeout);
+  }, [pathname]);
 
   return (
     <AnimatePresence>
@@ -26,5 +26,5 @@ export function RouteLoading() {
         />
       )}
     </AnimatePresence>
-  )
+  );
 }

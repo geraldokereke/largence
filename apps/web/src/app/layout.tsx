@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { Geist_Mono } from "next/font/google";
+import { ThemeProvider } from "../components/theme-provider";
 import "./globals.css";
 
 const generalSans = localFont({
@@ -224,7 +225,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning className="dark">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <meta name="format-detection" content="telephone=no" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -233,7 +234,9 @@ export default function RootLayout({
       <body
         className={`${generalSans.variable} ${polySans.variable} ${satoshi.variable} ${geistMono.variable} font-sans antialiased`}
       >
-        {children}
+        <ThemeProvider defaultTheme="system" storageKey="largence-theme">
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );

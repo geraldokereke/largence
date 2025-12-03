@@ -1,103 +1,165 @@
-"use client"
+"use client";
 
-import { useState, useRef, useEffect } from "react"
-import { useRouter, useParams } from "next/navigation"
-import { toast } from "sonner"
-import { Button } from "@largence/components/ui/button"
-import { Input } from "@largence/components/ui/input"
-import { Spinner } from "@largence/components/ui/spinner"
+import { useState, useEffect, useCallback } from "react";
+import { useRouter, useParams } from "next/navigation";
+import { toast } from "sonner";
+import { useEditor, EditorContent } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import Underline from "@tiptap/extension-underline";
+import TextAlign from "@tiptap/extension-text-align";
+import TipTapLink from "@tiptap/extension-link";
+import TipTapImage from "@tiptap/extension-image";
+import Placeholder from "@tiptap/extension-placeholder";
+import { TextStyle } from "@tiptap/extension-text-style";
+import { Color } from "@tiptap/extension-color";
+import { FontFamily } from "@tiptap/extension-font-family";
+import { Highlight } from "@tiptap/extension-highlight";
+import { Button } from "@largence/components/ui/button";
+import { Input } from "@largence/components/ui/input";
+import { Spinner } from "@largence/components/ui/spinner";
+import { UpgradeModal } from "@largence/components/upgrade-modal";
+import { useUpgradeModal } from "@/hooks/use-upgrade-modal";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@largence/components/ui/select"
+} from "@largence/components/ui/select";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@largence/components/ui/dropdown-menu"
-import { 
-  ArrowLeft, 
-  Download, 
-  Save, 
-  Bold, 
-  Italic, 
-  Underline, 
-  AlignLeft, 
-  AlignCenter, 
-  AlignRight, 
+} from "@largence/components/ui/dropdown-menu";
+import {
+  ArrowLeft,
+  Download,
+  Save,
+  Bold,
+  Italic,
+  Underline as UnderlineIcon,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
   AlignJustify,
   List,
   ListOrdered,
   Undo,
   Redo,
-  FileText,
   FileDown,
   PenTool,
   Strikethrough,
-  Subscript,
-  Superscript,
-  Link,
-  Image,
+  Link as LinkIcon,
+  Image as ImageIcon,
   Palette,
   Type,
   Indent,
-  Outdent
-} from "lucide-react"
-import { Separator } from "@largence/components/ui/separator"
+  Outdent,
+  Heading,
+  ShieldCheck,
+} from "lucide-react";
+import { Separator } from "@largence/components/ui/separator";
 
-export default function DocumentEditorPreviewPage() {
-  const router = useRouter()
-  const params = useParams()
-  const editorRef = useRef<HTMLDivElement>(null)
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const [exporting, setExporting] = useState(false)
-  const [title, setTitle] = useState("")
-  const [fontSize, setFontSize] = useState("16")
-  const [fontFamily, setFontFamily] = useState("Arial")
-  const [content, setContent] = useState("")
-  const [status, setStatus] = useState<"DRAFT" | "FINAL" | "ARCHIVED">("DRAFT")
-  const [document, setDocument] = useState<any>(null)
+export default function DocumentEditorPage() {
+  const router = useRouter();
+  const params = useParams();
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [checkingCompliance, setCheckingCompliance] = useState(false);
+  const [title, setTitle] = useState("");
+  const [status, setStatus] = useState<"DRAFT" | "FINAL" | "ARCHIVED">("DRAFT");
+  const [document, setDocument] = useState<any>(null);
+  const upgradeModal = useUpgradeModal();
+
+  const editor = useEditor({
+    extensions: [
+      StarterKit.configure({
+        heading: {
+          levels: [1, 2, 3, 4, 5, 6],
+        },
+      }),
+      Underline,
+      TextAlign.configure({
+        types: ["heading", "paragraph"],
+      }),
+      TipTapLink.configure({
+        openOnClick: false,
+      }),
+      TipTapImage,
+      Placeholder.configure({
+        placeholder: "Start writing your document...",
+      }),
+      TextStyle,
+      Color,
+      FontFamily.configure({
+        types: ["textStyle"],
+      }),
+      Highlight.configure({
+        multicolor: true,
+      }),
+    ],
+    content: "",
+    immediatelyRender: false,
+    editorProps: {
+      attributes: {
+        class:
+          "prose prose-sm max-w-none focus:outline-none min-h-[600px] p-6 sm:p-8 md:p-10",
+      },
+    },
+  });
 
   useEffect(() => {
     const fetchDocument = async () => {
       try {
-        const response = await fetch(`/api/documents/${params.id}`)
+        const response = await fetch(`/api/documents/${params.id}`);
         if (response.ok) {
-          const data = await response.json()
-          setDocument(data)
-          setTitle(data.title)
-          setContent(data.content)
-          setStatus(data.status)
+          const data = await response.json();
+          const doc = data.document;
+          setDocument(doc);
+          setTitle(doc.title);
+          let cleanContent = doc.content || "";
+          cleanContent = cleanContent.replace(
+            /```(?:html)?\n?([\s\S]*?)```/g,
+            "$1",
+          );
+          cleanContent = cleanContent.replace(/`/g, "");
+          cleanContent = cleanContent.trim();
+
+          if (editor) {
+            editor.commands.setContent(cleanContent);
+          }
+          setStatus(doc.status);
         } else {
           toast.error("Failed to load document", {
-            description: "The document could not be loaded. Please try again."
-          })
-          router.push("/documents")
+            description: "The document could not be loaded. Please try again.",
+          });
+          router.push("/documents");
         }
       } catch (error) {
-        console.error("Error loading document:", error)
+        console.error("Error loading document:", error);
         toast.error("Error loading document", {
-          description: "An unexpected error occurred while loading the document."
-        })
-        router.push("/documents")
+          description:
+            "An unexpected error occurred while loading the document.",
+        });
+        router.push("/documents");
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    if (params.id) {
-      fetchDocument()
+    if (params.id && editor) {
+      fetchDocument();
     }
-  }, [params.id, router])
+  }, [params.id, router, editor]);
 
-  const handleSave = async () => {
-    setSaving(true)
+  const handleSave = useCallback(async () => {
+    if (!editor) return;
+
+    setSaving(true);
     try {
+      const content = editor.getHTML();
       const response = await fetch(`/api/documents/${params.id}`, {
         method: "PATCH",
         headers: {
@@ -108,117 +170,81 @@ export default function DocumentEditorPreviewPage() {
           content,
           status,
         }),
-      })
+      });
 
       if (response.ok) {
-        const updated = await response.json()
-        setDocument(updated)
+        const data = await response.json();
+        setDocument(data.document);
         toast.success("Document saved successfully", {
-          description: "Your changes have been saved."
-        })
+          description: "Your changes have been saved.",
+        });
       } else {
         toast.error("Failed to save document", {
-          description: "Please check your connection and try again."
-        })
+          description: "Please check your connection and try again.",
+        });
       }
     } catch (error) {
-      console.error("Error saving document:", error)
+      console.error("Error saving document:", error);
       toast.error("Error saving document", {
-        description: "An unexpected error occurred while saving."
-      })
+        description: "An unexpected error occurred while saving.",
+      });
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
-  }
+  }, [editor, params.id, title, status]);
 
-  const handleDownload = () => {
-    const blob = new Blob([content], { type: "text/html" })
-    const url = URL.createObjectURL(blob)
-    const link = window.document.createElement("a")
-    link.href = url
-    link.download = `${title}.html`
-    window.document.body.appendChild(link)
-    link.click()
-    window.document.body.removeChild(link)
-    URL.revokeObjectURL(url)
-  }
-
-  useEffect(() => {
-    // Enable design mode for better contentEditable support
-    if (editorRef.current) {
-      document.execCommand('defaultParagraphSeparator', false, 'p')
-    }
-  }, [])
-
-  const execCommand = (command: string, value?: string) => {
-    document.execCommand(command, false, value)
-    if (editorRef.current) {
-      editorRef.current.focus()
-      // Update content state after command
-      setContent(editorRef.current.innerHTML)
-    }
-  }
-
-  const handleFontSizeChange = (size: string) => {
-    setFontSize(size)
-    // Use font size 7 then wrap selection in span
-    document.execCommand("fontSize", false, "7")
-    const fontElements = editorRef.current?.querySelectorAll('font[size="7"]')
-    fontElements?.forEach((element) => {
-      const span = document.createElement("span")
-      span.style.fontSize = `${size}px`
-      span.innerHTML = element.innerHTML
-      element.parentNode?.replaceChild(span, element)
-    })
-    if (editorRef.current) {
-      setContent(editorRef.current.innerHTML)
-    }
-  }
-
-  const handleFontFamilyChange = (family: string) => {
-    setFontFamily(family)
-    execCommand("fontName", family)
-  }
-
-  const handleTextColor = (color: string) => {
-    execCommand("foreColor", color)
-  }
-
-  const handleHighlight = (color: string) => {
-    execCommand("hiliteColor", color)
-  }
-
-  const insertLink = () => {
-    const url = prompt("Enter URL:")
+  const addLink = useCallback(() => {
+    if (!editor) return;
+    const url = window.prompt("Enter URL:");
     if (url) {
-      execCommand("createLink", url)
+      editor.chain().focus().setLink({ href: url }).run();
     }
-  }
+  }, [editor]);
 
-  const insertImage = () => {
-    const url = prompt("Enter image URL:")
+  const addImage = useCallback(() => {
+    if (!editor) return;
+    const url = window.prompt("Enter image URL:");
     if (url) {
-      execCommand("insertImage", url)
+      editor.chain().focus().setImage({ src: url }).run();
     }
-  }
+  }, [editor]);
 
-  const handleExportHTML = () => {
-    const blob = new Blob([content], { type: "text/html" })
-    const url = URL.createObjectURL(blob)
-    const link = window.document.createElement("a")
-    link.href = url
-    link.download = `${title}.html`
-    window.document.body.appendChild(link)
-    link.click()
-    window.document.body.removeChild(link)
-    URL.revokeObjectURL(url)
-  }
-
-  const handleExportPDF = async () => {
-    setExporting(true)
+  const handleExportDOCX = useCallback(() => {
+    if (!editor) return;
+    setExporting(true);
     try {
-      // Create a printable version
-      const printWindow = window.open("", "_blank")
+      const editorContent = editor.getHTML();
+      const blob = new Blob(
+        [
+          `
+        <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+        <head><meta charset='utf-8'><title>${title}</title></head>
+        <body>${editorContent}</body>
+        </html>
+      `,
+        ],
+        { type: "application/msword" },
+      );
+      const url = URL.createObjectURL(blob);
+      const link = window.document.createElement("a");
+      link.href = url;
+      link.download = `${title || "document"}.doc`;
+      window.document.body.appendChild(link);
+      link.click();
+      window.document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      toast.success("Exported as DOCX");
+    } finally {
+      setExporting(false);
+    }
+  }, [editor, title]);
+
+  const handleExportPDF = useCallback(() => {
+    if (!editor) return;
+    setExporting(true);
+    try {
+      const editorContent = editor.getHTML();
+      const printWindow = window.open("", "_blank");
       if (printWindow) {
         printWindow.document.write(`
           <!DOCTYPE html>
@@ -226,106 +252,142 @@ export default function DocumentEditorPreviewPage() {
             <head>
               <title>${title}</title>
               <style>
-                body { font-family: Arial, sans-serif; padding: 40px; line-height: 1.6; }
+                body { font-family: Arial, sans-serif; padding: 40px; line-height: 1.6; max-width: 800px; margin: 0 auto; }
                 h1 { font-size: 24px; margin-bottom: 20px; }
                 h2 { font-size: 20px; margin-top: 30px; margin-bottom: 15px; }
                 p { margin-bottom: 15px; }
-                hr { margin: 30px 0; border: none; border-top: 1px solid #ccc; }
               </style>
             </head>
             <body>
-              ${content}
+              ${editorContent}
             </body>
           </html>
-        `)
-        printWindow.document.close()
-        printWindow.print()
+        `);
+        printWindow.document.close();
+        printWindow.print();
+        toast.success("PDF export ready");
       }
     } finally {
-      setExporting(false)
+      setExporting(false);
     }
-  }
+  }, [editor, title]);
 
-  const handleExportDOCX = async () => {
-    setExporting(true)
+  const handleSendToDocuSign = useCallback(() => {
+    setExporting(true);
     try {
-      // For now, download as HTML with .doc extension (compatible with Word)
-      const blob = new Blob([`
-        <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
-        <head><meta charset='utf-8'><title>${title}</title></head>
-        <body>${content}</body>
-        </html>
-      `], { type: "application/msword" })
-      const url = URL.createObjectURL(blob)
-      const link = window.document.createElement("a")
-      link.href = url
-      link.download = `${title}.doc`
-      window.document.body.appendChild(link)
-      link.click()
-      window.document.body.removeChild(link)
-      URL.revokeObjectURL(url)
-    } finally {
-      setExporting(false)
-    }
-  }
-
-  const handleSendToDocuSign = async () => {
-    setExporting(true)
-    try {
-      // This would integrate with DocuSign API
       toast.info("DocuSign Integration", {
-        description: "DocuSign API integration is required. Contact your administrator to enable this feature."
-      })
+        description:
+          "DocuSign API integration is required. Contact your administrator to enable this feature.",
+      });
     } finally {
-      setExporting(false)
+      setExporting(false);
     }
-  }
+  }, []);
+
+  const handleRunComplianceCheck = useCallback(async () => {
+    if (!editor || !params.id) return;
+
+    setCheckingCompliance(true);
+    try {
+      const content = editor.getHTML();
+      const response = await fetch(`/api/documents/${params.id}/compliance`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          content,
+          documentType: document?.type || "Contract",
+          jurisdiction: document?.jurisdiction || "Nigeria",
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        toast.success("Compliance check completed", {
+          description: `Score: ${data.complianceCheck.overallScore}/100. Check your notifications for details.`,
+        });
+      } else if (response.status === 402) {
+        // Payment required - show upgrade modal
+        const data = await response.json();
+        upgradeModal.openUpgradeModal({
+          reason: data.error,
+          feature: "compliance",
+          currentPlan: data.currentPlan,
+        });
+      } else {
+        toast.error("Compliance check failed", {
+          description: "Failed to run compliance check. Please try again.",
+        });
+      }
+    } catch (error) {
+      console.error("Error running compliance check:", error);
+      toast.error("Compliance check error", {
+        description: "An unexpected error occurred.",
+      });
+    } finally {
+      setCheckingCompliance(false);
+    }
+  }, [editor, params.id, document, upgradeModal]);
 
   if (loading) {
     return (
       <div className="flex h-screen w-screen items-center justify-center">
         <Spinner size="sm" />
       </div>
-    )
+    );
+  }
+
+  if (!editor) {
+    return null;
   }
 
   return (
-    <div className="flex flex-col h-screen w-screen">
-      {/* Header */}
-      <div className="border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 sticky top-0 z-10">
-        <div className="flex items-center justify-between p-4 gap-4">
-          <div className="flex items-center gap-4 flex-1 min-w-0">
+    <div className="flex flex-col h-screen w-screen overflow-hidden">
+      {/* Header - Absolutely fixed height to prevent layout shifts */}
+      <div className="shrink-0 border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 sticky top-0 z-50">
+        {/* Title Bar - Fixed 52px height */}
+        <div
+          className="grid items-center px-3 gap-3 h-[52px]"
+          style={{ gridTemplateColumns: "auto 1fr auto" }}
+        >
+          {/* Left: Back button */}
+          <div className="flex items-center">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => router.push("/documents")}
-              className="shrink-0"
+              className="h-8 shrink-0"
             >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back
+              <ArrowLeft className="h-4 w-4 mr-1" />
+              <span className="hidden sm:inline">Back</span>
             </Button>
-            <div className="border-l h-6 shrink-0" />
+          </div>
+
+          {/* Center: Title input */}
+          <div className="flex items-center justify-center gap-2 min-w-0">
+            <Separator orientation="vertical" className="h-5" />
             <Input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="font-medium text-lg border-0 focus-visible:ring-0 px-0 h-auto flex-1 min-w-0"
-              placeholder="Document title"
+              className="font-semibold text-base border-0 focus-visible:ring-0 px-2 h-8 max-w-[180px] sm:max-w-[300px] text-center truncate"
+              placeholder="Untitled Document"
             />
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
-            <Select 
-              value={status} 
+          {/* Right: Action buttons */}
+          <div className="flex items-center gap-1.5 justify-end">
+            <Select
+              value={status}
               onValueChange={(val: any) => {
-                setStatus(val)
-                // Auto-save when status changes
-                setTimeout(() => handleSave(), 100)
+                setStatus(val);
+                setTimeout(() => handleSave(), 100);
               }}
             >
-              <SelectTrigger className="w-32 h-9 rounded-sm">
+              <SelectTrigger className="h-8 w-[90px] text-xs">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="z-50">
                 <SelectItem value="DRAFT">
                   <div className="flex items-center gap-2">
                     <div className="h-2 w-2 rounded-full bg-yellow-500" />
@@ -347,27 +409,52 @@ export default function DocumentEditorPreviewPage() {
               </SelectContent>
             </Select>
 
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8"
+              onClick={handleRunComplianceCheck}
+              disabled={checkingCompliance}
+            >
+              {checkingCompliance ? (
+                <>
+                  <Spinner size="sm" />
+                  <span className="hidden sm:inline sm:ml-1.5">Checking</span>
+                </>
+              ) : (
+                <>
+                  <ShieldCheck className="h-4 w-4" />
+                  <span className="hidden sm:inline sm:ml-1.5">
+                    Check Compliance
+                  </span>
+                </>
+              )}
+            </Button>
+
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" disabled={exporting} className="h-9 rounded-sm">
+                <Button
+                  variant="outline"
+                  disabled={exporting}
+                  size="sm"
+                  className="h-8"
+                >
                   {exporting ? (
                     <>
-                      <Spinner size="sm" className="mr-2" />
-                      Exporting
+                      <Spinner size="sm" />
+                      <span className="hidden sm:inline sm:ml-1.5">
+                        Exporting
+                      </span>
                     </>
                   ) : (
                     <>
-                      <Download className="h-4 w-4 mr-2" />
-                      Export
+                      <Download className="h-4 w-4" />
+                      <span className="hidden sm:inline sm:ml-1.5">Export</span>
                     </>
                   )}
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem onClick={handleExportHTML}>
-                  <FileText className="h-4 w-4 mr-2" />
-                  Export as HTML
-                </DropdownMenuItem>
+              <DropdownMenuContent align="end" className="w-48 z-50">
                 <DropdownMenuItem onClick={handleExportDOCX}>
                   <FileDown className="h-4 w-4 mr-2" />
                   Export as DOCX
@@ -383,287 +470,350 @@ export default function DocumentEditorPreviewPage() {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            <Button onClick={handleSave} disabled={saving} className="h-9 rounded-sm">
+            <Button
+              onClick={handleSave}
+              disabled={saving}
+              size="sm"
+              className="h-8"
+            >
               {saving ? (
                 <>
-                  <Spinner size="sm" className="mr-2" />
-                  Saving
+                  <Spinner size="sm" />
+                  <span className="hidden sm:inline sm:ml-1.5">Saving</span>
                 </>
               ) : (
                 <>
-                  <Save className="h-4 w-4 mr-2" />
-                  Save
+                  <Save className="h-4 w-4" />
+                  <span className="hidden sm:inline sm:ml-1.5">Save</span>
                 </>
               )}
             </Button>
           </div>
         </div>
 
-        {/* Formatting Toolbar */}
-        <div className="flex items-center gap-1 px-4 py-2 border-t bg-muted/30 overflow-x-auto">
+        {/* Formatting Toolbar - Fixed 48px height */}
+        <div className="flex items-center gap-1 px-3 border-t bg-muted/30 overflow-x-auto overflow-y-hidden scrollbar-thin h-12">
           {/* Undo/Redo */}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => execCommand("undo")}
-            className="h-8 w-8 p-0 rounded-sm shrink-0"
-            title="Undo"
-          >
-            <Undo className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => execCommand("redo")}
-            className="h-8 w-8 p-0 rounded-sm shrink-0"
-            title="Redo"
-          >
-            <Redo className="h-4 w-4" />
-          </Button>
+          <div className="flex items-center gap-0.5 shrink-0">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => editor.chain().focus().undo().run()}
+              className="h-8 w-8 p-0 shrink-0"
+              title="Undo (Ctrl+Z)"
+            >
+              <Undo className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => editor.chain().focus().redo().run()}
+              className="h-8 w-8 p-0 shrink-0"
+              title="Redo (Ctrl+Y)"
+            >
+              <Redo className="h-4 w-4" />
+            </Button>
+          </div>
 
-          <Separator orientation="vertical" className="h-6 mx-1" />
+          <Separator orientation="vertical" className="h-6 mx-1 shrink-0" />
 
-          {/* Font Family */}
-          <Select value={fontFamily} onValueChange={handleFontFamilyChange}>
-            <SelectTrigger className="w-36 h-8 rounded-sm text-xs shrink-0">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Arial">Arial</SelectItem>
-              <SelectItem value="Times New Roman">Times New Roman</SelectItem>
-              <SelectItem value="Courier New">Courier New</SelectItem>
-              <SelectItem value="Georgia">Georgia</SelectItem>
-              <SelectItem value="Verdana">Verdana</SelectItem>
-              <SelectItem value="Helvetica">Helvetica</SelectItem>
-            </SelectContent>
-          </Select>
+          {/* Font Controls */}
+          <div className="flex items-center gap-1 shrink-0">
+            <Select
+              value={editor.getAttributes("textStyle").fontFamily || "Arial"}
+              onValueChange={(value) =>
+                editor.chain().focus().setFontFamily(value).run()
+              }
+            >
+              <SelectTrigger className="w-32 h-8 text-xs shrink-0">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="z-50">
+                <SelectItem value="Arial">Arial</SelectItem>
+                <SelectItem value="Times New Roman">Times New Roman</SelectItem>
+                <SelectItem value="Courier New">Courier New</SelectItem>
+                <SelectItem value="Georgia">Georgia</SelectItem>
+                <SelectItem value="Verdana">Verdana</SelectItem>
+                <SelectItem value="Helvetica">Helvetica</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-          {/* Font Size */}
-          <Select value={fontSize} onValueChange={handleFontSizeChange}>
-            <SelectTrigger className="w-20 h-8 rounded-sm text-xs shrink-0">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="10">10</SelectItem>
-              <SelectItem value="12">12</SelectItem>
-              <SelectItem value="14">14</SelectItem>
-              <SelectItem value="16">16</SelectItem>
-              <SelectItem value="18">18</SelectItem>
-              <SelectItem value="20">20</SelectItem>
-              <SelectItem value="24">24</SelectItem>
-              <SelectItem value="28">28</SelectItem>
-              <SelectItem value="32">32</SelectItem>
-            </SelectContent>
-          </Select>
-
-          <Separator orientation="vertical" className="h-6 mx-1" />
+          <Separator orientation="vertical" className="h-6 mx-1 shrink-0" />
 
           {/* Text Formatting */}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => execCommand("bold")}
-            className="h-8 w-8 p-0 rounded-sm shrink-0"
-            title="Bold (Ctrl+B)"
-          >
-            <Bold className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => execCommand("italic")}
-            className="h-8 w-8 p-0 rounded-sm shrink-0"
-            title="Italic (Ctrl+I)"
-          >
-            <Italic className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => execCommand("underline")}
-            className="h-8 w-8 p-0 rounded-sm shrink-0"
-            title="Underline (Ctrl+U)"
-          >
-            <Underline className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => execCommand("strikeThrough")}
-            className="h-8 w-8 p-0 rounded-sm shrink-0"
-            title="Strikethrough"
-          >
-            <Strikethrough className="h-4 w-4" />
-          </Button>
+          <div className="flex items-center gap-0.5 shrink-0">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => editor.chain().focus().toggleBold().run()}
+              className={`h-8 w-8 p-0 shrink-0 ${editor.isActive("bold") ? "bg-muted" : ""}`}
+              title="Bold (Ctrl+B)"
+            >
+              <Bold className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => editor.chain().focus().toggleItalic().run()}
+              className={`h-8 w-8 p-0 shrink-0 ${editor.isActive("italic") ? "bg-muted" : ""}`}
+              title="Italic (Ctrl+I)"
+            >
+              <Italic className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => editor.chain().focus().toggleUnderline().run()}
+              className={`h-8 w-8 p-0 shrink-0 ${editor.isActive("underline") ? "bg-muted" : ""}`}
+              title="Underline (Ctrl+U)"
+            >
+              <UnderlineIcon className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => editor.chain().focus().toggleStrike().run()}
+              className={`h-8 w-8 p-0 shrink-0 ${editor.isActive("strike") ? "bg-muted" : ""}`}
+              title="Strikethrough"
+            >
+              <Strikethrough className="h-4 w-4" />
+            </Button>
+          </div>
 
-          <Separator orientation="vertical" className="h-6 mx-1" />
+          <Separator orientation="vertical" className="h-6 mx-1 shrink-0" />
 
-          {/* Text Color */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 p-0 rounded-sm shrink-0"
-                title="Text Color"
-              >
-                <Type className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-48">
-              <div className="grid grid-cols-6 gap-1 p-2">
-                {["#000000", "#434343", "#666666", "#999999", "#b7b7b7", "#cccccc",
-                  "#ff0000", "#ff9900", "#ffff00", "#00ff00", "#00ffff", "#0000ff",
-                  "#9900ff", "#ff00ff", "#990000", "#cc6600", "#cccc00", "#009900",
-                  "#009999", "#000099", "#660099", "#990099"].map((color) => (
-                  <button
-                    key={color}
-                    className="h-6 w-6 rounded-sm border border-border hover:scale-110 transition-transform"
-                    style={{ backgroundColor: color }}
-                    onClick={() => handleTextColor(color)}
-                  />
-                ))}
-              </div>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {/* Color Controls */}
+          <div className="flex items-center gap-0.5 shrink-0">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0 shrink-0"
+                  title="Text Color"
+                >
+                  <Type className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-48 z-50">
+                <div className="grid grid-cols-6 gap-1 p-2">
+                  {[
+                    "#000000",
+                    "#434343",
+                    "#666666",
+                    "#999999",
+                    "#b7b7b7",
+                    "#cccccc",
+                    "#ff0000",
+                    "#ff9900",
+                    "#ffff00",
+                    "#00ff00",
+                    "#00ffff",
+                    "#0000ff",
+                    "#9900ff",
+                    "#ff00ff",
+                    "#990000",
+                    "#cc6600",
+                    "#cccc00",
+                    "#009900",
+                    "#009999",
+                    "#000099",
+                    "#660099",
+                    "#990099",
+                  ].map((color) => (
+                    <button
+                      key={color}
+                      className="h-6 w-6 rounded-sm border border-border hover:scale-110 transition-transform"
+                      style={{ backgroundColor: color }}
+                      onClick={() =>
+                        editor.chain().focus().setColor(color).run()
+                      }
+                    />
+                  ))}
+                </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
 
-          {/* Highlight Color */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 p-0 rounded-sm shrink-0"
-                title="Highlight"
-              >
-                <Palette className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-48">
-              <div className="grid grid-cols-6 gap-1 p-2">
-                {["transparent", "#ffff00", "#00ff00", "#00ffff", "#ff00ff", "#ff0000",
-                  "#0000ff", "#ffcc99", "#ffff99", "#ccffcc", "#ccffff", "#ffccff"].map((color) => (
-                  <button
-                    key={color}
-                    className="h-6 w-6 rounded-sm border border-border hover:scale-110 transition-transform"
-                    style={{ backgroundColor: color }}
-                    onClick={() => handleHighlight(color)}
-                  />
-                ))}
-              </div>
-            </DropdownMenuContent>
-          </DropdownMenu>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0 shrink-0"
+                  title="Highlight Color"
+                >
+                  <Palette className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-48 z-50">
+                <div className="grid grid-cols-6 gap-1 p-2">
+                  {[
+                    "transparent",
+                    "#ffff00",
+                    "#00ff00",
+                    "#00ffff",
+                    "#ff00ff",
+                    "#ff0000",
+                    "#0000ff",
+                    "#ffcc99",
+                    "#ffff99",
+                    "#ccffcc",
+                    "#ccffff",
+                    "#ffccff",
+                  ].map((color) => (
+                    <button
+                      key={color}
+                      className="h-6 w-6 rounded-sm border border-border hover:scale-110 transition-transform"
+                      style={{ backgroundColor: color }}
+                      onClick={() =>
+                        color === "transparent"
+                          ? editor.chain().focus().unsetHighlight().run()
+                          : editor
+                              .chain()
+                              .focus()
+                              .toggleHighlight({ color })
+                              .run()
+                      }
+                    />
+                  ))}
+                </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
 
-          <Separator orientation="vertical" className="h-6 mx-1" />
+          <Separator orientation="vertical" className="h-6 mx-1 shrink-0" />
 
           {/* Alignment */}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => execCommand("justifyLeft")}
-            className="h-8 w-8 p-0 rounded-sm shrink-0"
-            title="Align Left"
-          >
-            <AlignLeft className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => execCommand("justifyCenter")}
-            className="h-8 w-8 p-0 rounded-sm shrink-0"
-            title="Align Center"
-          >
-            <AlignCenter className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => execCommand("justifyRight")}
-            className="h-8 w-8 p-0 rounded-sm shrink-0"
-            title="Align Right"
-          >
-            <AlignRight className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => execCommand("justifyFull")}
-            className="h-8 w-8 p-0 rounded-sm shrink-0"
-            title="Justify"
-          >
-            <AlignJustify className="h-4 w-4" />
-          </Button>
+          <div className="flex items-center gap-0.5 shrink-0">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => editor.chain().focus().setTextAlign("left").run()}
+              className={`h-8 w-8 p-0 shrink-0 ${editor.isActive({ textAlign: "left" }) ? "bg-muted" : ""}`}
+              title="Align Left"
+            >
+              <AlignLeft className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() =>
+                editor.chain().focus().setTextAlign("center").run()
+              }
+              className={`h-8 w-8 p-0 shrink-0 ${editor.isActive({ textAlign: "center" }) ? "bg-muted" : ""}`}
+              title="Align Center"
+            >
+              <AlignCenter className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => editor.chain().focus().setTextAlign("right").run()}
+              className={`h-8 w-8 p-0 shrink-0 ${editor.isActive({ textAlign: "right" }) ? "bg-muted" : ""}`}
+              title="Align Right"
+            >
+              <AlignRight className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() =>
+                editor.chain().focus().setTextAlign("justify").run()
+              }
+              className={`h-8 w-8 p-0 shrink-0 ${editor.isActive({ textAlign: "justify" }) ? "bg-muted" : ""}`}
+              title="Justify"
+            >
+              <AlignJustify className="h-4 w-4" />
+            </Button>
+          </div>
 
-          <Separator orientation="vertical" className="h-6 mx-1" />
+          <Separator orientation="vertical" className="h-6 mx-1 shrink-0" />
 
-          {/* Lists and Indentation */}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => execCommand("insertUnorderedList")}
-            className="h-8 w-8 p-0 rounded-sm shrink-0"
-            title="Bullet List"
-          >
-            <List className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => execCommand("insertOrderedList")}
-            className="h-8 w-8 p-0 rounded-sm shrink-0"
-            title="Numbered List"
-          >
-            <ListOrdered className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => execCommand("indent")}
-            className="h-8 w-8 p-0 rounded-sm shrink-0"
-            title="Increase Indent"
-          >
-            <Indent className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => execCommand("outdent")}
-            className="h-8 w-8 p-0 rounded-sm shrink-0"
-            title="Decrease Indent"
-          >
-            <Outdent className="h-4 w-4" />
-          </Button>
+          {/* Lists */}
+          <div className="flex items-center gap-0.5 shrink-0">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => editor.chain().focus().toggleBulletList().run()}
+              className={`h-8 w-8 p-0 shrink-0 ${editor.isActive("bulletList") ? "bg-muted" : ""}`}
+              title="Bullet List"
+            >
+              <List className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => editor.chain().focus().toggleOrderedList().run()}
+              className={`h-8 w-8 p-0 shrink-0 ${editor.isActive("orderedList") ? "bg-muted" : ""}`}
+              title="Numbered List"
+            >
+              <ListOrdered className="h-4 w-4" />
+            </Button>
+          </div>
 
-          <Separator orientation="vertical" className="h-6 mx-1" />
+          <Separator orientation="vertical" className="h-6 mx-1 shrink-0" />
 
-          {/* Insert Link/Image */}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={insertLink}
-            className="h-8 w-8 p-0 rounded-sm shrink-0"
-            title="Insert Link"
-          >
-            <Link className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={insertImage}
-            className="h-8 w-8 p-0 rounded-sm shrink-0"
-            title="Insert Image"
-          >
-            <Image className="h-4 w-4" />
-          </Button>
+          {/* Insert Controls */}
+          <div className="flex items-center gap-0.5 shrink-0">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={addLink}
+              className="h-8 w-8 p-0 shrink-0"
+              title="Insert Link"
+            >
+              <LinkIcon className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={addImage}
+              className="h-8 w-8 p-0 shrink-0"
+              title="Insert Image"
+            >
+              <ImageIcon className="h-4 w-4" />
+            </Button>
+          </div>
 
-          <Separator orientation="vertical" className="h-6 mx-1" />
+          <Separator orientation="vertical" className="h-6 mx-1 shrink-0" />
 
           {/* Heading Styles */}
-          <Select onValueChange={(value) => execCommand("formatBlock", value)}>
-            <SelectTrigger className="w-32 h-8 rounded-sm text-xs shrink-0">
+          <Select
+            value={
+              editor.isActive("heading", { level: 1 })
+                ? "h1"
+                : editor.isActive("heading", { level: 2 })
+                  ? "h2"
+                  : editor.isActive("heading", { level: 3 })
+                    ? "h3"
+                    : editor.isActive("heading", { level: 4 })
+                      ? "h4"
+                      : editor.isActive("heading", { level: 5 })
+                        ? "h5"
+                        : editor.isActive("heading", { level: 6 })
+                          ? "h6"
+                          : "p"
+            }
+            onValueChange={(value) => {
+              if (value === "p") {
+                editor.chain().focus().setParagraph().run();
+              } else {
+                const level = parseInt(value.replace("h", "")) as
+                  | 1
+                  | 2
+                  | 3
+                  | 4
+                  | 5
+                  | 6;
+                editor.chain().focus().toggleHeading({ level }).run();
+              }
+            }}
+          >
+            <SelectTrigger className="w-28 h-8 text-xs shrink-0">
               <SelectValue placeholder="Normal" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="z-50">
               <SelectItem value="p">Normal</SelectItem>
               <SelectItem value="h1">Heading 1</SelectItem>
               <SelectItem value="h2">Heading 2</SelectItem>
@@ -676,37 +826,55 @@ export default function DocumentEditorPreviewPage() {
         </div>
       </div>
 
-      {/* Editor */}
-      <div className="flex-1 overflow-auto p-8 bg-muted/30">
-        <div className="max-w-4xl mx-auto">
-          {/* Document Info Bar */}
-          <div className="mb-6 flex items-center justify-between text-sm text-muted-foreground">
-            <div className="flex items-center gap-4">
-              <span>Document ID: {params.id ? String(params.id).slice(0, 8) : 'N/A'}</span>
-              <span>•</span>
-              <span>Created: {document?.createdAt ? new Date(document.createdAt).toLocaleDateString() : new Date().toLocaleDateString()}</span>
+      {/* Editor Area - Calculated height based on fixed header (52px + 48px = 100px) */}
+      <div
+        className="overflow-y-auto overflow-x-hidden bg-muted/30"
+        style={{ height: "calc(100vh - 100px)" }}
+      >
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          {/* Document Metadata */}
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground">
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="font-mono text-xs">
+                ID: {params.id ? String(params.id).slice(0, 8) : "N/A"}
+              </span>
+              <Separator orientation="vertical" className="h-4" />
+              <span className="text-xs">
+                Created:{" "}
+                {document?.createdAt
+                  ? new Date(document.createdAt).toLocaleDateString()
+                  : new Date().toLocaleDateString()}
+              </span>
             </div>
             <div className="flex items-center gap-2">
-              <div className={`h-2 w-2 rounded-full ${
-                status === "DRAFT" ? "bg-yellow-500" :
-                status === "FINAL" ? "bg-green-500" :
-                "bg-gray-500"
-              }`} />
-              <span className="font-medium">{status}</span>
+              <div
+                className={`h-2 w-2 rounded-full shrink-0 ${
+                  status === "DRAFT"
+                    ? "bg-yellow-500"
+                    : status === "FINAL"
+                      ? "bg-green-500"
+                      : "bg-gray-500"
+                }`}
+              />
+              <span className="font-medium text-xs">{status}</span>
             </div>
           </div>
 
-          {/* HTML Preview/Editor */}
-          <div
-            ref={editorRef}
-            className="prose prose-sm max-w-none border rounded-sm p-12 bg-white shadow-sm min-h-[600px] focus:outline-none focus:ring-2 focus:ring-primary/20"
-            contentEditable
-            suppressContentEditableWarning
-            onInput={(e) => setContent(e.currentTarget.innerHTML)}
-            dangerouslySetInnerHTML={{ __html: content }}
-          />
+          {/* Document Editor - Fully contained */}
+          <div className="border rounded-sm bg-white min-h-[600px]">
+            <EditorContent editor={editor} />
+          </div>
         </div>
       </div>
+
+      {/* Upgrade Modal */}
+      <UpgradeModal
+        isOpen={upgradeModal.isOpen}
+        onClose={upgradeModal.closeUpgradeModal}
+        reason={upgradeModal.reason}
+        feature={upgradeModal.feature}
+        currentPlan={upgradeModal.currentPlan}
+      />
     </div>
-  )
+  );
 }

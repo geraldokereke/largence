@@ -7,10 +7,10 @@ interface SocialLoginProps {
   isLoading?: boolean;
 }
 
-export function SocialLogin({ 
-  onGoogleLogin, 
-  onMicrosoftLogin, 
-  isLoading 
+export function SocialLogin({
+  onGoogleLogin,
+  onMicrosoftLogin,
+  isLoading,
 }: SocialLoginProps) {
   return (
     <div className="space-y-3">
@@ -24,7 +24,7 @@ export function SocialLogin({
         <GoogleIcon className="mr-2 w-5 h-5" />
         Continue with Google
       </StyledButton>
-      
+
       <StyledButton
         variant="outline"
         type="button"

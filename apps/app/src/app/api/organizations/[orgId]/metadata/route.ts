@@ -3,11 +3,11 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: Promise<{ orgId: string }> }
+  { params }: { params: Promise<{ orgId: string }> },
 ) {
   try {
     const { userId } = await auth();
-    
+
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -26,7 +26,7 @@ export async function PATCH(
     console.error("Error updating organization metadata:", error);
     return NextResponse.json(
       { error: error?.message || "Failed to update metadata" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

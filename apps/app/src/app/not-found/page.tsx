@@ -1,6 +1,6 @@
-import { Building2 } from "lucide-react"
-import { Button } from "@largence/components/ui/button"
-import Link from "next/link"
+import { Building2 } from "lucide-react";
+import { Button } from "@largence/components/ui/button";
+import Link from "next/link";
 
 export default function NotFoundPage() {
   return (
@@ -13,9 +13,12 @@ export default function NotFoundPage() {
         </div>
 
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight">Organization Not Found</h1>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Organization Not Found
+          </h1>
           <p className="text-muted-foreground">
-            The organization you're looking for doesn't exist or has been removed.
+            The organization you're looking for doesn't exist or has been
+            removed.
           </p>
         </div>
 
@@ -30,5 +33,5 @@ export default function NotFoundPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

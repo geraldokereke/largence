@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { Button } from "@largence/components/ui/button"
+import { Button } from "@largence/components/ui/button";
 import {
   Bold,
   Italic,
@@ -14,7 +14,7 @@ import {
   Image as ImageIcon,
   Undo,
   Redo,
-} from "lucide-react"
+} from "lucide-react";
 
 export function EditorToolbar() {
   return (
@@ -62,5 +62,5 @@ export function EditorToolbar() {
         </Button>
       </div>
     </div>
-  )
+  );
 }

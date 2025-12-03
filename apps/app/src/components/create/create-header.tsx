@@ -1,12 +1,12 @@
-"use client"
+"use client";
 
-import { useRouter } from "next/navigation"
-import Image from "next/image"
-import { Button } from "@largence/components/ui/button"
-import { Home } from "lucide-react"
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+import { Button } from "@largence/components/ui/button";
+import { Home } from "lucide-react";
 
 export function CreateHeader() {
-  const router = useRouter()
+  const router = useRouter();
 
   return (
     <div className="border-b bg-card">
@@ -23,10 +23,10 @@ export function CreateHeader() {
           </Button>
         </div>
         <div className="flex items-center gap-2">
-          <Image 
-            src="/logo.png" 
-            alt="Largence Logo" 
-            width={24} 
+          <Image
+            src="/logo.png"
+            alt="Largence Logo"
+            width={24}
             height={24}
             className="shrink-0"
           />
@@ -37,5 +37,5 @@ export function CreateHeader() {
         <div className="w-32"></div>
       </div>
     </div>
-  )
+  );
 }

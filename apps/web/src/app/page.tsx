@@ -1,4 +1,6 @@
-import { Navbar } from "@/components/Navbar";
+"use client"
+
+import dynamic from "next/dynamic";
 import { Hero } from "@/components/Hero";
 import { FeaturesSection } from "@/components/landing/FeaturesSection";
 import { UseCasesSection } from "@/components/landing/UseCasesSection";
@@ -8,6 +10,11 @@ import { TestimonialsSection } from "@/components/landing/TestimonialsSection";
 import { Footer } from "@/components/landing/Footer";
 import { CookieConsent } from "@/components/landing/CookieConsent";
 
+// Import Navbar dynamically with no SSR since it uses useTheme
+const Navbar = dynamic(() => import("@/components/Navbar").then(mod => ({ default: mod.Navbar })), {
+  ssr: false,
+});
+
 export default function Home() {
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
@@ -16,9 +23,6 @@ export default function Home() {
       <div className="absolute inset-0 bg-linear-to-br from-primary/5 via-transparent to-accent/5 pointer-events-none" />
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-accent/10 rounded-full blur-3xl pointer-events-none" />
-
-      <div className="absolute top-0 bottom-0 left-4 sm:left-6 lg:left-8 xl:left-[calc((100%-1152px)/2)] border-l border-border/50 pointer-events-none" />
-      <div className="absolute top-0 bottom-0 right-4 sm:right-6 lg:right-8 xl:right-[calc((100%-1152px)/2)] border-r border-border/50 pointer-events-none" />
 
       <svg
         className="absolute inset-0 w-full h-full opacity-[0.02] pointer-events-none"

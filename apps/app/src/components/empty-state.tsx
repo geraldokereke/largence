@@ -19,9 +19,9 @@ const templates = [
     description: "Hire with confidence",
     type: "employment",
   },
-  { 
-    name: "NDA Agreement", 
-    icon: Shield, 
+  {
+    name: "NDA Agreement",
+    icon: Shield,
     description: "Protect your IP",
     type: "nda",
   },
@@ -31,9 +31,9 @@ const templates = [
     description: "Client contracts",
     type: "service",
   },
-  { 
-    name: "Privacy Policy", 
-    icon: Shield, 
+  {
+    name: "Privacy Policy",
+    icon: Shield,
     description: "GDPR compliant",
     type: "privacy",
   },
@@ -52,29 +52,96 @@ interface EmptyStateProps {
     onClick?: () => void;
   } | null;
   showTemplates?: boolean;
+  variant?: "default" | "documents" | "drafts" | "templates";
 }
 
 export function EmptyState({
-  icon: Icon = FileText,
-  title = "No documents yet",
-  description = "Get started by creating your first legal document with AI or uploading an existing one",
-  primaryAction = { label: "Generate with AI" },
-  secondaryAction = { label: "Upload Document" },
-  showTemplates = true,
+  icon: Icon,
+  title,
+  description,
+  primaryAction,
+  secondaryAction,
+  showTemplates,
+  variant = "default",
 }: EmptyStateProps = {}) {
   const router = useRouter();
 
+  // Dynamic content based on variant
+  const variantConfig = {
+    default: {
+      icon: FileText,
+      title: "No documents yet",
+      description:
+        "Get started by creating your first legal document with AI or uploading an existing one",
+      primaryAction: {
+        label: "Generate with AI",
+        onClick: undefined as (() => void) | undefined,
+      },
+      secondaryAction: {
+        label: "Upload Document",
+        onClick: undefined as (() => void) | undefined,
+      },
+      showTemplates: true,
+    },
+    documents: {
+      icon: FileText,
+      title: "No documents yet",
+      description:
+        "Generate your first AI-powered legal document to get started",
+      primaryAction: {
+        label: "Generate Document",
+        onClick: undefined as (() => void) | undefined,
+      },
+      secondaryAction: null,
+      showTemplates: true,
+    },
+    drafts: {
+      icon: FileText,
+      title: "No drafts yet",
+      description:
+        "Your draft documents will appear here. Start creating a document to see it in drafts.",
+      primaryAction: {
+        label: "Create Document",
+        onClick: undefined as (() => void) | undefined,
+      },
+      secondaryAction: null,
+      showTemplates: false,
+    },
+    templates: {
+      icon: BookOpen,
+      title: "No templates saved",
+      description:
+        "Save your frequently used documents as templates for quick access",
+      primaryAction: {
+        label: "Browse Documents",
+        onClick: undefined as (() => void) | undefined,
+      },
+      secondaryAction: null,
+      showTemplates: false,
+    },
+  };
+
+  const config = variantConfig[variant];
+  const FinalIcon = Icon || config.icon;
+  const finalTitle = title || config.title;
+  const finalDescription = description || config.description;
+  const finalPrimaryAction = primaryAction || config.primaryAction;
+  const finalSecondaryAction =
+    secondaryAction !== undefined ? secondaryAction : config.secondaryAction;
+  const finalShowTemplates =
+    showTemplates !== undefined ? showTemplates : config.showTemplates;
+
   const handleGenerateClick = () => {
-    if (primaryAction.onClick) {
-      primaryAction.onClick();
+    if (finalPrimaryAction.onClick) {
+      finalPrimaryAction.onClick();
     } else {
       router.push("/create");
     }
   };
 
   const handleUploadClick = () => {
-    if (secondaryAction?.onClick) {
-      secondaryAction.onClick();
+    if (finalSecondaryAction?.onClick) {
+      finalSecondaryAction.onClick();
     } else {
       // TODO: Implement upload functionality
       console.log("Upload document");
@@ -93,33 +160,40 @@ export function EmptyState({
           <div className="relative mb-6">
             <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full" />
             <div className="relative p-5 rounded-sm bg-muted/50 border">
-              <Icon className="h-16 w-16 text-muted-foreground" />
+              <FinalIcon className="h-16 w-16 text-muted-foreground" />
             </div>
           </div>
 
           <div className="max-w-2xl mb-8">
             <h2 className="text-3xl font-semibold mb-3 font-display tracking-tight">
-              {title}
+              {finalTitle}
             </h2>
-            <p className="text-muted-foreground">{description}</p>
+            <p className="text-muted-foreground">{finalDescription}</p>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3 w-full max-w-md">
-            <Button className="flex-1 h-10 rounded-sm cursor-pointer" onClick={handleGenerateClick}>
+            <Button
+              className="flex-1 h-10 rounded-sm cursor-pointer"
+              onClick={handleGenerateClick}
+            >
               <Sparkles className="h-5 w-5" />
-              {primaryAction.label}
+              {finalPrimaryAction.label}
             </Button>
-            {secondaryAction && (
-              <Button variant="outline" className="flex-1 h-10 rounded-sm cursor-pointer" onClick={handleUploadClick}>
+            {finalSecondaryAction && (
+              <Button
+                variant="outline"
+                className="flex-1 h-10 rounded-sm cursor-pointer"
+                onClick={handleUploadClick}
+              >
                 <Upload className="h-5 w-5" />
-                {secondaryAction.label}
+                {finalSecondaryAction.label}
               </Button>
             )}
           </div>
         </div>
       </div>
 
-      {showTemplates && (
+      {finalShowTemplates && (
         <div className="p-8">
           <div className="max-w-4xl mx-auto">
             <div className="mb-6">

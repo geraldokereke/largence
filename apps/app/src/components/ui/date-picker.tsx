@@ -1,23 +1,23 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { format } from "date-fns"
-import { Calendar as CalendarIcon } from "lucide-react"
+import * as React from "react";
+import { format } from "date-fns";
+import { Calendar as CalendarIcon } from "lucide-react";
 
-import { cn } from "@largence/lib/utils"
-import { Button } from "@largence/components/ui/button"
-import { Calendar } from "@largence/components/ui/calendar"
+import { cn } from "@largence/lib/utils";
+import { Button } from "@largence/components/ui/button";
+import { Calendar } from "@largence/components/ui/calendar";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@largence/components/ui/popover"
+} from "@largence/components/ui/popover";
 
 interface DatePickerProps {
-  date?: Date
-  onDateChange: (date: Date | undefined) => void
-  placeholder?: string
-  className?: string
+  date?: Date;
+  onDateChange: (date: Date | undefined) => void;
+  placeholder?: string;
+  className?: string;
 }
 
 export function DatePicker({
@@ -34,7 +34,7 @@ export function DatePicker({
           className={cn(
             "w-full h-10 rounded-sm justify-start text-left font-normal",
             !date && "text-muted-foreground",
-            className
+            className,
           )}
         >
           <CalendarIcon className="mr-2 h-4 w-4" />
@@ -50,5 +50,5 @@ export function DatePicker({
         />
       </PopoverContent>
     </Popover>
-  )
+  );
 }

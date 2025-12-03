@@ -2,10 +2,10 @@ import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { generateDocument } from "@largence/lib/openai";
 import prisma from "@largence/lib/prisma";
+import { canPerformAction, recordUsage } from "@/lib/stripe";
 
 export async function POST(request: Request) {
   try {
-    // Check environment variables
     if (!process.env.OPENAI_API_KEY) {
       console.error("OPENAI_API_KEY is not configured");
       return NextResponse.json(
@@ -13,7 +13,7 @@ export async function POST(request: Request) {
           error:
             "OpenAI API key is not configured. Please set OPENAI_API_KEY in your environment variables.",
         },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -24,7 +24,7 @@ export async function POST(request: Request) {
           error:
             "Database is not configured. Please set DATABASE_URL in your environment variables.",
         },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -40,7 +40,20 @@ export async function POST(request: Request) {
           error:
             "Organization required. Please create or join an organization first.",
         },
-        { status: 403 }
+        { status: 403 },
+      );
+    }
+
+    // Check usage limits before generating
+    const usageCheck = await canPerformAction(orgId, "document");
+    if (!usageCheck.allowed) {
+      return NextResponse.json(
+        {
+          error: usageCheck.reason,
+          requiresUpgrade: true,
+          currentPlan: usageCheck.subscription?.plan || "FREE",
+        },
+        { status: 402 }, // Payment Required
       );
     }
 
@@ -56,7 +69,7 @@ export async function POST(request: Request) {
     ) {
       return NextResponse.json(
         { error: "Missing required fields" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -87,6 +100,9 @@ export async function POST(request: Request) {
         generatedAt: new Date(),
       },
     });
+
+    // Record usage after successful generation
+    await recordUsage(orgId, "DOCUMENT_GENERATED", document.id);
 
     return NextResponse.json({
       success: true,

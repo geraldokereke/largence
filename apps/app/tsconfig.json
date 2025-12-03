@@ -19,7 +19,8 @@
       }
     ],
     "paths": {
-      "@largence/*": ["./src/*"]
+      "@largence/*": ["./src/*"],
+      "@/*": ["./src/*"]
     }
   },
   "include": [

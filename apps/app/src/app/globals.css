@@ -197,34 +197,91 @@ html {
 
 /* Feature slider animations */
 @keyframes slide-show {
-  0%, 22% { transform: translateX(0%); }
-  25%, 47% { transform: translateX(-100%); }
-  50%, 72% { transform: translateX(-200%); }
-  75%, 97% { transform: translateX(-300%); }
-  100% { transform: translateX(0%); }
+  0%,
+  22% {
+    transform: translateX(0%);
+  }
+  25%,
+  47% {
+    transform: translateX(-100%);
+  }
+  50%,
+  72% {
+    transform: translateX(-200%);
+  }
+  75%,
+  97% {
+    transform: translateX(-300%);
+  }
+  100% {
+    transform: translateX(0%);
+  }
 }
 
 @keyframes progress-1 {
-  0%, 22% { background-color: rgba(59, 130, 246, 0.8); width: 2rem; }
-  25%, 100% { background-color: rgba(255, 255, 255, 0.2); width: 2rem; }
+  0%,
+  22% {
+    background-color: rgba(59, 130, 246, 0.8);
+    width: 2rem;
+  }
+  25%,
+  100% {
+    background-color: rgba(255, 255, 255, 0.2);
+    width: 2rem;
+  }
 }
 
 @keyframes progress-2 {
-  0%, 24% { background-color: rgba(255, 255, 255, 0.2); width: 2rem; }
-  25%, 47% { background-color: rgba(99, 102, 241, 0.8); width: 2rem; }
-  50%, 100% { background-color: rgba(255, 255, 255, 0.2); width: 2rem; }
+  0%,
+  24% {
+    background-color: rgba(255, 255, 255, 0.2);
+    width: 2rem;
+  }
+  25%,
+  47% {
+    background-color: rgba(99, 102, 241, 0.8);
+    width: 2rem;
+  }
+  50%,
+  100% {
+    background-color: rgba(255, 255, 255, 0.2);
+    width: 2rem;
+  }
 }
 
 @keyframes progress-3 {
-  0%, 49% { background-color: rgba(255, 255, 255, 0.2); width: 2rem; }
-  50%, 72% { background-color: rgba(139, 92, 246, 0.8); width: 2rem; }
-  75%, 100% { background-color: rgba(255, 255, 255, 0.2); width: 2rem; }
+  0%,
+  49% {
+    background-color: rgba(255, 255, 255, 0.2);
+    width: 2rem;
+  }
+  50%,
+  72% {
+    background-color: rgba(139, 92, 246, 0.8);
+    width: 2rem;
+  }
+  75%,
+  100% {
+    background-color: rgba(255, 255, 255, 0.2);
+    width: 2rem;
+  }
 }
 
 @keyframes progress-4 {
-  0%, 74% { background-color: rgba(255, 255, 255, 0.2); width: 2rem; }
-  75%, 97% { background-color: rgba(52, 211, 153, 0.8); width: 2rem; }
-  100% { background-color: rgba(255, 255, 255, 0.2); width: 2rem; }
+  0%,
+  74% {
+    background-color: rgba(255, 255, 255, 0.2);
+    width: 2rem;
+  }
+  75%,
+  97% {
+    background-color: rgba(52, 211, 153, 0.8);
+    width: 2rem;
+  }
+  100% {
+    background-color: rgba(255, 255, 255, 0.2);
+    width: 2rem;
+  }
 }
 
 .animate-slide-show {
@@ -249,42 +306,94 @@ html {
 
 /* Text Fade Animations */
 @keyframes text-fade-1 {
-  0%, 22% { opacity: 1; }
-  25%, 100% { opacity: 0; }
+  0%,
+  22% {
+    opacity: 1;
+  }
+  25%,
+  100% {
+    opacity: 0;
+  }
 }
 
 @keyframes text-fade-2 {
-  0%, 24% { opacity: 0; }
-  25%, 47% { opacity: 1; }
-  50%, 100% { opacity: 0; }
+  0%,
+  24% {
+    opacity: 0;
+  }
+  25%,
+  47% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
 }
 
 @keyframes text-fade-3 {
-  0%, 49% { opacity: 0; }
-  50%, 72% { opacity: 1; }
-  75%, 100% { opacity: 0; }
+  0%,
+  49% {
+    opacity: 0;
+  }
+  50%,
+  72% {
+    opacity: 1;
+  }
+  75%,
+  100% {
+    opacity: 0;
+  }
 }
 
 @keyframes text-fade-4 {
-  0%, 74% { opacity: 0; }
-  75%, 97% { opacity: 1; }
-  100% { opacity: 0; }
+  0%,
+  74% {
+    opacity: 0;
+  }
+  75%,
+  97% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
 }
 
 /* Slide Up Animations */
 @keyframes slide-up {
-  0% { opacity: 0; transform: translateY(20px); }
-  100% { opacity: 1; transform: translateY(0); }
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes slide-up-delay {
-  0%, 10% { opacity: 0; transform: translateY(20px); }
-  100% { opacity: 1; transform: translateY(0); }
+  0%,
+  10% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes slide-up-delay-2 {
-  0%, 20% { opacity: 0; transform: translateY(20px); }
-  100% { opacity: 1; transform: translateY(0); }
+  0%,
+  20% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .animate-text-fade-1 {
@@ -304,39 +413,57 @@ html {
 }
 
 .animate-slide-up-1 {
-  animation: slide-up 1s ease-out, text-fade-1 16s infinite ease-in-out;
+  animation:
+    slide-up 1s ease-out,
+    text-fade-1 16s infinite ease-in-out;
 }
 
 .animate-slide-up-2 {
-  animation: slide-up 1s ease-out, text-fade-2 16s infinite ease-in-out;
+  animation:
+    slide-up 1s ease-out,
+    text-fade-2 16s infinite ease-in-out;
 }
 
 .animate-slide-up-3 {
-  animation: slide-up 1s ease-out, text-fade-3 16s infinite ease-in-out;
+  animation:
+    slide-up 1s ease-out,
+    text-fade-3 16s infinite ease-in-out;
 }
 
 .animate-slide-up-4 {
-  animation: slide-up 1s ease-out, text-fade-4 16s infinite ease-in-out;
+  animation:
+    slide-up 1s ease-out,
+    text-fade-4 16s infinite ease-in-out;
 }
 
 .animate-slide-up-delay-1 {
-  animation: slide-up-delay 1.2s ease-out, text-fade-1 16s infinite ease-in-out;
+  animation:
+    slide-up-delay 1.2s ease-out,
+    text-fade-1 16s infinite ease-in-out;
 }
 
 .animate-slide-up-delay-2 {
-  animation: slide-up-delay 1.4s ease-out, text-fade-1 16s infinite ease-in-out;
+  animation:
+    slide-up-delay 1.4s ease-out,
+    text-fade-1 16s infinite ease-in-out;
 }
 
 .animate-slide-up-delay-3 {
-  animation: slide-up-delay-2 1.6s ease-out, text-fade-2 16s infinite ease-in-out;
+  animation:
+    slide-up-delay-2 1.6s ease-out,
+    text-fade-2 16s infinite ease-in-out;
 }
 
 .animate-slide-up-delay-4 {
-  animation: slide-up-delay-2 1.8s ease-out, text-fade-3 16s infinite ease-in-out;
+  animation:
+    slide-up-delay-2 1.8s ease-out,
+    text-fade-3 16s infinite ease-in-out;
 }
 
 .animate-slide-up-delay-5 {
-  animation: slide-up-delay-2 2s ease-out, text-fade-4 16s infinite ease-in-out;
+  animation:
+    slide-up-delay-2 2s ease-out,
+    text-fade-4 16s infinite ease-in-out;
 }
 
 /* Sonner Toast Customization */
@@ -392,5 +519,7 @@ html {
   padding: 1rem;
   gap: 0.75rem;
   border-width: 1px;
-  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  box-shadow:
+    0 10px 15px -3px rgb(0 0 0 / 0.1),
+    0 4px 6px -4px rgb(0 0 0 / 0.1);
 }

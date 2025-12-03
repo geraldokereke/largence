@@ -4,21 +4,21 @@ import * as React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@largence/ui";
-import { Menu, X, Moon, Sun } from "lucide-react";
+import { Menu, X, Moon, Sun, Monitor } from "lucide-react";
 import { ScheduleDemoDialog } from "./schedule-demo-dialog";
+import { useTheme } from "./theme-provider";
 
 export const Navbar: React.FC = () => {
   const [scrolled, setScrolled] = React.useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const [activeSection, setActiveSection] = React.useState("");
-  const [darkMode, setDarkMode] = React.useState(true);
   const [demoDialogOpen, setDemoDialogOpen] = React.useState(false);
+  const { theme, setTheme } = useTheme();
 
   React.useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
       
-      // Detect active section
       const sections = menuItems.map(item => item.href.substring(1));
       for (const section of sections) {
         const element = document.getElementById(section);
@@ -35,7 +35,6 @@ export const Navbar: React.FC = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Close mobile menu when clicking outside
   React.useEffect(() => {
     if (mobileMenuOpen) {
       document.body.style.overflow = "hidden";
@@ -47,15 +46,15 @@ export const Navbar: React.FC = () => {
     };
   }, [mobileMenuOpen]);
 
-  React.useEffect(() => {
-    const html = document.documentElement;
-    if (darkMode) {
-      html.classList.add('dark');
+  const cycleTheme = () => {
+    if (theme === "system") {
+      setTheme("light");
+    } else if (theme === "light") {
+      setTheme("dark");
     } else {
-      html.classList.remove('dark');
+      setTheme("system");
     }
-  }, [darkMode]);
-
+  };
   const menuItems = [
     { href: "#features", label: "Features" },
     { href: "#usecases", label: "Use Cases" },
@@ -68,7 +67,7 @@ export const Navbar: React.FC = () => {
       <nav className="fixed top-0 left-0 right-0 z-50 py-2 px-4 touch-manipulation">
         <div className={`max-w-6xl mx-auto px-4 sm:px-6 transition-all duration-500 ease-in-out rounded-xl ${
           scrolled 
-            ? "rounded-xl bg-background/80 backdrop-blur-md border shadow-sm"
+            ? "rounded-xl bg-background/80 backdrop-blur-md border"
             : ""
         }`}>
           <div className="flex items-center justify-between h-12 sm:h-14">
@@ -109,43 +108,50 @@ export const Navbar: React.FC = () => {
             </div>
 
             {/* Desktop Actions */}
-              <div className="hidden md:flex items-center gap-2 ml-auto">
-                {/* Dark Mode Toggle */}
-                <button
-                  onClick={() => setDarkMode(!darkMode)}
-                  className="p-1.5 text-muted-foreground hover:text-foreground transition-colors duration-200"
-                  aria-label="Toggle dark mode"
-                >
-                  {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-                </button>
-                
-                <Link href="https://app.largence.com/login">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="font-medium rounded-sm transition-all duration-200 cursor-pointer text-sm"
-                  >
-                    Sign In
-                  </Button>
-                </Link>
+            <div className="hidden md:flex items-center gap-2 ml-auto">
+              {/* Dark Mode Toggle */}
+              <button
+                onClick={cycleTheme}
+                className="p-1.5 text-muted-foreground hover:text-foreground transition-colors duration-200"
+                aria-label="Toggle theme"
+                title={theme === "system" ? "System" : theme === "dark" ? "Dark" : "Light"}
+              >
+                {theme === "system" ? (
+                  <Monitor className="w-4 h-4" />
+                ) : theme === "dark" ? (
+                  <Moon className="w-4 h-4" />
+                ) : (
+                  <Sun className="w-4 h-4" />
+                )}
+              </button>
+              
+              <Link href="https://app.largence.com/login">
                 <Button
-                  onClick={() => setDemoDialogOpen(true)}
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
-                  className="font-medium rounded-sm transition-all duration-200 border-border/50 cursor-pointer text-sm"
+                  className="font-medium rounded-sm transition-all duration-200 cursor-pointer text-sm"
                 >
-                  Book Demo
+                  Sign In
                 </Button>
-                <Link href="https://app.largence.com/auth/signup">
-                  <Button
-                    variant="default"
-                    size="sm"
-                    className="font-medium rounded-sm transition-all duration-200 cursor-pointer text-sm"
-                  >
-                    Get Started
-                  </Button>
-                </Link>
-              </div>
+              </Link>
+              <Button
+                onClick={() => setDemoDialogOpen(true)}
+                variant="outline"
+                size="sm"
+                className="font-medium rounded-sm transition-all duration-200 border-border/50 cursor-pointer text-sm"
+              >
+                Book Demo
+              </Button>
+              <Link href="https://app.largence.com/auth/signup">
+                <Button
+                  variant="default"
+                  size="sm"
+                  className="font-medium rounded-sm transition-all duration-200 cursor-pointer text-sm"
+                >
+                  Get Started
+                </Button>
+              </Link>
+            </div>
 
             {/* Mobile Menu Button */}
             <button

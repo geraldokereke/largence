@@ -1,4 +1,4 @@
-import { FileText, Clock, AlertCircle, ShieldCheck } from "lucide-react"
+import { FileText, Clock, AlertCircle, ShieldCheck } from "lucide-react";
 
 const metrics = [
   {
@@ -33,13 +33,13 @@ const metrics = [
     trend: "+5% this quarter",
     trendUp: true,
   },
-]
+];
 
 export function MetricsCards() {
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       {metrics.map((metric) => {
-        const Icon = metric.icon
+        const Icon = metric.icon;
         return (
           <div
             key={metric.title}
@@ -62,13 +62,15 @@ export function MetricsCards() {
                   {metric.label}
                 </span>
               </div>
-              <p className={`text-xs ${metric.trendUp ? "text-emerald-600" : "text-amber-600"}`}>
+              <p
+                className={`text-xs ${metric.trendUp ? "text-emerald-600" : "text-amber-600"}`}
+              >
                 {metric.trend}
               </p>
             </div>
           </div>
-        )
+        );
       })}
     </div>
-  )
+  );
 }

@@ -44,12 +44,12 @@ export function TestimonialsSection() {
           viewport={{ once: true }}
           transition={{ duration: 0.5, delay: 0.3 }}
         >
-          <Button size="sm" variant="default" className="group" asChild>
-              View Pricing
-              <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+          <Button size="sm" variant="default" className="group">
+            View Pricing
+            <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
           </Button>
-          <Button size="sm" variant="outline" asChild>
-              Start Free Trial
+          <Button size="sm" variant="outline">
+            Start Free Trial
           </Button>
         </motion.div>
       </motion.div>

@@ -14,7 +14,7 @@ export const PLANS = {
     price: 0,
     priceId: null,
     maxTeamMembers: 1,
-    maxContracts: 1, // 1 free generation
+    maxContracts: 2, // 2 free generations/compliance checks
     maxStorage: 0,
     features: {
       hasAiDrafting: true,
@@ -324,8 +324,11 @@ export async function canPerformAction(
       r.type === (actionType === "document" ? "DOCUMENT_GENERATED" : "COMPLIANCE_CHECK")
   ).length;
 
-  // Check against limits
-  const limit = subscription.maxContracts;
+  // Check against limits - use PLANS config for FREE tier to ensure updates take effect
+  let limit = subscription.maxContracts;
+  if (subscription.plan === PlanType.FREE) {
+    limit = PLANS.FREE.maxContracts;
+  }
   
   // -1 means unlimited
   if (limit === -1) {
@@ -394,8 +397,8 @@ export async function getUsageStats(organizationId: string) {
     return {
       documentsGenerated: 0,
       complianceChecks: 0,
-      documentsLimit: 1,
-      complianceLimit: 1,
+      documentsLimit: 2,
+      complianceLimit: 2,
       plan: "FREE" as PlanType,
       status: "ACTIVE" as SubscriptionStatus,
     };
@@ -409,11 +412,19 @@ export async function getUsageStats(organizationId: string) {
     (r) => r.type === "COMPLIANCE_CHECK"
   ).length;
 
+  // Use PLANS config for FREE tier to ensure updates take effect immediately
+  let documentsLimit = subscription.maxContracts;
+  let complianceLimit = subscription.maxContracts;
+  if (subscription.plan === PlanType.FREE) {
+    documentsLimit = PLANS.FREE.maxContracts;
+    complianceLimit = PLANS.FREE.maxContracts;
+  }
+
   return {
     documentsGenerated,
     complianceChecks,
-    documentsLimit: subscription.maxContracts,
-    complianceLimit: subscription.maxContracts, // Same limit for both
+    documentsLimit,
+    complianceLimit,
     plan: subscription.plan,
     status: subscription.status,
     currentPeriodEnd: subscription.currentPeriodEnd,

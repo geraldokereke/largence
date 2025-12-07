@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import prisma from "@largence/lib/prisma";
+import { createAuditLog, getUserInitials } from "@/lib/audit";
 
 export async function GET(
   request: Request,
@@ -76,6 +77,36 @@ export async function PATCH(
         ...(status !== undefined && { status }),
       },
     });
+
+    // Log status change if status was changed
+    if (status !== undefined && status !== existing.status && orgId) {
+      const user = await currentUser();
+      const statusLabels: Record<string, string> = {
+        DRAFT: "Draft",
+        FINAL: "Final",
+        ARCHIVED: "Archived",
+      };
+
+      await createAuditLog({
+        userId,
+        organizationId: orgId,
+        action: "DOCUMENT_UPDATED",
+        actionLabel: `Changed status from ${statusLabels[existing.status]} to ${statusLabels[status]}`,
+        entityType: "Document",
+        entityId: id,
+        entityName: document.title,
+        metadata: {
+          previousStatus: existing.status,
+          newStatus: status,
+        },
+        userName: user
+          ? `${user.firstName || ""} ${user.lastName || ""}`.trim() ||
+            user.username ||
+            "User"
+          : "User",
+        userAvatar: getUserInitials(user?.firstName, user?.lastName),
+      });
+    }
 
     return NextResponse.json({ document });
   } catch (error: any) {

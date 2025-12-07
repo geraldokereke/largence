@@ -6,7 +6,6 @@ import { useOrganization, useOrganizationList, useAuth } from "@clerk/nextjs";
 import {
   Home,
   FileText,
-  Brain,
   ShieldCheck,
   Folder,
   Users,
@@ -51,7 +50,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   });
 
   const [documentCount, setDocumentCount] = React.useState<number | null>(null);
-  const [draftCount, setDraftCount] = React.useState<number | null>(null);
   const [plan, setPlan] = React.useState<string | null>(null);
   const upgradeModal = useUpgradeModal();
 
@@ -67,9 +65,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           const data = await response.json();
           const documents = data.documents || [];
           setDocumentCount(documents.length);
-          setDraftCount(
-            documents.filter((d: any) => d.status === "DRAFT").length,
-          );
         }
       } catch (error) {
         console.error("Failed to fetch document counts:", error);
@@ -104,12 +99,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         url: "/documents",
         icon: FileText,
         badge: documentCount !== null ? String(documentCount) : undefined,
-      },
-      {
-        title: "AI Drafts",
-        url: "/drafts",
-        icon: Brain,
-        badge: draftCount !== null ? String(draftCount) : undefined,
       },
       {
         title: "Compliance Checks",

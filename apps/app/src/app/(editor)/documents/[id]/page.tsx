@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { toast } from "sonner";
 import { useEditor, EditorContent } from "@tiptap/react";
@@ -19,6 +19,10 @@ import { Input } from "@largence/components/ui/input";
 import { Spinner } from "@largence/components/ui/spinner";
 import { UpgradeModal } from "@largence/components/upgrade-modal";
 import { useUpgradeModal } from "@/hooks/use-upgrade-modal";
+import {
+  AgenticComplianceModal,
+  useAgenticComplianceModal,
+} from "@largence/components/agentic-compliance-modal";
 import {
   Select,
   SelectContent,
@@ -58,6 +62,7 @@ import {
   Outdent,
   Heading,
   ShieldCheck,
+  Sparkles,
 } from "lucide-react";
 import { Separator } from "@largence/components/ui/separator";
 
@@ -68,10 +73,14 @@ export default function DocumentEditorPage() {
   const [saving, setSaving] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [checkingCompliance, setCheckingCompliance] = useState(false);
+  const [runningAgenticCompliance, setRunningAgenticCompliance] =
+    useState(false);
   const [title, setTitle] = useState("");
   const [status, setStatus] = useState<"DRAFT" | "FINAL" | "ARCHIVED">("DRAFT");
   const [document, setDocument] = useState<any>(null);
   const upgradeModal = useUpgradeModal();
+  const agenticModal = useAgenticComplianceModal();
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const editor = useEditor({
     extensions: [
@@ -105,7 +114,7 @@ export default function DocumentEditorPage() {
     editorProps: {
       attributes: {
         class:
-          "prose prose-sm max-w-none focus:outline-none min-h-[600px] p-6 sm:p-8 md:p-10",
+          "prose max-w-none focus:outline-none min-h-[600px] p-6 sm:p-8 md:p-10",
       },
     },
   });
@@ -330,6 +339,110 @@ export default function DocumentEditorPage() {
     }
   }, [editor, params.id, document, upgradeModal]);
 
+  const runAgenticCompliance = useCallback(async () => {
+    if (!editor || !params.id) return;
+
+    setRunningAgenticCompliance(true);
+    abortControllerRef.current = new AbortController();
+
+    try {
+      const content = editor.getHTML();
+      const response = await fetch(
+        `/api/documents/${params.id}/agentic-compliance`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ content }),
+          signal: abortControllerRef.current.signal,
+        },
+      );
+
+      if (response.status === 402) {
+        const data = await response.json();
+        upgradeModal.openUpgradeModal({
+          reason: data.error,
+          feature: "compliance",
+          currentPlan: data.currentPlan,
+        });
+        return;
+      }
+
+      if (!response.ok) {
+        toast.error("Agentic compliance failed", {
+          description: "Failed to run agentic compliance. Please try again.",
+        });
+        return;
+      }
+
+      // Clear the editor and start streaming
+      editor.commands.clearContent();
+
+      const reader = response.body?.getReader();
+      if (!reader) {
+        throw new Error("No response body");
+      }
+
+      const decoder = new TextDecoder();
+      let accumulatedContent = "";
+
+      toast.info("Agentic Compliance Running", {
+        description: "AI is analyzing and fixing your document...",
+      });
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+        accumulatedContent += chunk;
+
+        // Clean the content (remove markdown code blocks if present)
+        let cleanContent = accumulatedContent;
+        cleanContent = cleanContent.replace(/```(?:html)?\n?([\s\S]*?)```/g, "$1");
+        cleanContent = cleanContent.replace(/^```html?\s*/i, "");
+        cleanContent = cleanContent.trim();
+
+        // Update editor with accumulated content
+        editor.commands.setContent(cleanContent);
+
+        // Scroll to bottom of editor
+        const editorElement = window.document.querySelector(".ProseMirror");
+        if (editorElement) {
+          editorElement.scrollTop = editorElement.scrollHeight;
+        }
+      }
+
+      toast.success("Agentic Compliance Complete", {
+        description:
+          "Your document has been updated with compliance fixes. Review the changes.",
+      });
+    } catch (error: any) {
+      if (error.name === "AbortError") {
+        toast.info("Agentic compliance cancelled");
+      } else {
+        console.error("Error running agentic compliance:", error);
+        toast.error("Agentic compliance error", {
+          description: "An unexpected error occurred.",
+        });
+      }
+    } finally {
+      setRunningAgenticCompliance(false);
+      abortControllerRef.current = null;
+    }
+  }, [editor, params.id, upgradeModal]);
+
+  const handleAgenticComplianceClick = useCallback(() => {
+    agenticModal.openModal(runAgenticCompliance);
+  }, [agenticModal, runAgenticCompliance]);
+
+  const cancelAgenticCompliance = useCallback(() => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+  }, []);
+
   if (loading) {
     return (
       <div className="flex h-screen w-screen items-center justify-center">
@@ -379,9 +492,41 @@ export default function DocumentEditorPage() {
           <div className="flex items-center gap-1.5 justify-end">
             <Select
               value={status}
-              onValueChange={(val: any) => {
+              onValueChange={async (val: "DRAFT" | "FINAL" | "ARCHIVED") => {
+                const previousStatus = status;
                 setStatus(val);
-                setTimeout(() => handleSave(), 100);
+                
+                // Save status change immediately
+                try {
+                  const response = await fetch(`/api/documents/${params.id}`, {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ status: val }),
+                  });
+                  
+                  if (response.ok) {
+                    const data = await response.json();
+                    setDocument(data.document);
+                    const statusLabels = {
+                      DRAFT: "Draft",
+                      FINAL: "Final", 
+                      ARCHIVED: "Archived"
+                    };
+                    toast.success(`Status changed to ${statusLabels[val]}`, {
+                      description: val === "FINAL" 
+                        ? "Document has been finalized and is ready for use."
+                        : val === "ARCHIVED"
+                        ? "Document has been archived."
+                        : "Document is now in draft mode."
+                    });
+                  } else {
+                    setStatus(previousStatus);
+                    toast.error("Failed to update status");
+                  }
+                } catch (error) {
+                  setStatus(previousStatus);
+                  toast.error("Failed to update status");
+                }
               }}
             >
               <SelectTrigger className="h-8 w-[90px] text-xs">
@@ -414,7 +559,7 @@ export default function DocumentEditorPage() {
               size="sm"
               className="h-8"
               onClick={handleRunComplianceCheck}
-              disabled={checkingCompliance}
+              disabled={checkingCompliance || runningAgenticCompliance}
             >
               {checkingCompliance ? (
                 <>
@@ -426,6 +571,32 @@ export default function DocumentEditorPage() {
                   <ShieldCheck className="h-4 w-4" />
                   <span className="hidden sm:inline sm:ml-1.5">
                     Check Compliance
+                  </span>
+                </>
+              )}
+            </Button>
+
+            <Button
+              variant={runningAgenticCompliance ? "destructive" : "default"}
+              size="sm"
+              className="h-8"
+              onClick={
+                runningAgenticCompliance
+                  ? cancelAgenticCompliance
+                  : handleAgenticComplianceClick
+              }
+              disabled={checkingCompliance}
+            >
+              {runningAgenticCompliance ? (
+                <>
+                  <Spinner size="sm" />
+                  <span className="hidden sm:inline sm:ml-1.5">Cancel</span>
+                </>
+              ) : (
+                <>
+                  <Sparkles className="h-4 w-4" />
+                  <span className="hidden sm:inline sm:ml-1.5">
+                    Agentic Compliance
                   </span>
                 </>
               )}
@@ -861,7 +1032,7 @@ export default function DocumentEditorPage() {
           </div>
 
           {/* Document Editor - Fully contained */}
-          <div className="border rounded-sm bg-white min-h-[600px]">
+          <div className="border rounded-sm bg-background min-h-[600px]">
             <EditorContent editor={editor} />
           </div>
         </div>
@@ -874,6 +1045,13 @@ export default function DocumentEditorPage() {
         reason={upgradeModal.reason}
         feature={upgradeModal.feature}
         currentPlan={upgradeModal.currentPlan}
+      />
+
+      {/* Agentic Compliance Modal */}
+      <AgenticComplianceModal
+        isOpen={agenticModal.isOpen}
+        onClose={agenticModal.closeModal}
+        onProceed={agenticModal.handleProceed}
       />
     </div>
   );

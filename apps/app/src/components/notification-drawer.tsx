@@ -102,14 +102,14 @@ export function NotificationDrawer() {
   const getNotificationIcon = (type: string) => {
     switch (type) {
       case "COMPLIANCE_COMPLETED":
-        return <CheckCheck className="h-5 w-5 text-green-500" />;
+        return <CheckCheck className="h-5 w-5 text-green-600 dark:text-green-400" />;
       case "COMPLIANCE_FAILED":
-        return <AlertTriangle className="h-5 w-5 text-red-500" />;
+        return <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />;
       case "DOCUMENT_CREATED":
       case "DOCUMENT_UPDATED":
-        return <FileText className="h-5 w-5 text-blue-600" />;
+        return <FileText className="h-5 w-5 text-blue-600 dark:text-blue-400" />;
       default:
-        return <Info className="h-5 w-5 text-gray-600" />;
+        return <Info className="h-5 w-5 text-muted-foreground" />;
     }
   };
 
@@ -127,11 +127,11 @@ export function NotificationDrawer() {
           )}
         </Button>
       </SheetTrigger>
-      <SheetContent side="right" className="w-full sm:max-w-md p-0">
-        <SheetHeader className="border-b px-6 py-4">
+      <SheetContent side="right" className="w-full sm:max-w-md p-0 bg-card">
+        <SheetHeader className="border-b border-border px-6 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <SheetTitle className="text-lg font-semibold">
+              <SheetTitle className="text-lg font-semibold text-foreground">
                 Notifications
               </SheetTitle>
               <SheetDescription className="text-sm text-muted-foreground">
@@ -154,7 +154,7 @@ export function NotificationDrawer() {
         </SheetHeader>
 
         <ScrollArea className="h-[calc(100vh-120px)]">
-          <div className="divide-y">
+          <div className="divide-y divide-border">
             {loading ? (
               <div className="flex flex-col items-center justify-center py-12">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -165,7 +165,7 @@ export function NotificationDrawer() {
             ) : notifications.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center px-6">
                 <Bell className="h-12 w-12 text-muted-foreground/50 mb-4" />
-                <p className="text-sm font-medium mb-1">No notifications yet</p>
+                <p className="text-sm font-medium text-foreground mb-1">No notifications yet</p>
                 <p className="text-xs text-muted-foreground">
                   We'll notify you when something important happens
                 </p>
@@ -176,16 +176,16 @@ export function NotificationDrawer() {
                   key={notification.id}
                   onClick={() => handleNotificationClick(notification)}
                   className={`p-4 hover:bg-accent transition-colors cursor-pointer ${
-                    !notification.read ? "bg-blue-50/50" : ""
+                    !notification.read ? "bg-primary/5 dark:bg-primary/10" : ""
                   }`}
                 >
                   <div className="flex gap-3">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm bg-primary/10">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm bg-muted">
                       {getNotificationIcon(notification.type)}
                     </div>
                     <div className="flex-1 space-y-1">
                       <div className="flex items-start justify-between gap-2">
-                        <p className="text-sm font-medium leading-tight">
+                        <p className="text-sm font-medium leading-tight text-foreground">
                           {notification.title}
                         </p>
                         {!notification.read && (

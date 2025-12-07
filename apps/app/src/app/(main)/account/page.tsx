@@ -573,7 +573,7 @@ export default function AccountPage() {
                               /
                               {billingData?.usage?.documentsLimit === -1
                                 ? "∞"
-                                : billingData?.usage?.documentsLimit || 1}
+                                : billingData?.usage?.documentsLimit || 2}
                             </span>
                           </div>
                           <Progress
@@ -582,7 +582,7 @@ export default function AccountPage() {
                                 ? 0
                                 : ((billingData?.usage?.documentsGenerated ||
                                     0) /
-                                    (billingData?.usage?.documentsLimit || 1)) *
+                                    (billingData?.usage?.documentsLimit || 2)) *
                                   100
                             }
                             className="h-1.5 mt-2"
@@ -601,7 +601,7 @@ export default function AccountPage() {
                               /
                               {billingData?.usage?.complianceLimit === -1
                                 ? "∞"
-                                : billingData?.usage?.complianceLimit || 1}
+                                : billingData?.usage?.complianceLimit || 2}
                             </span>
                           </div>
                           <Progress
@@ -610,7 +610,7 @@ export default function AccountPage() {
                                 ? 0
                                 : ((billingData?.usage?.complianceChecks || 0) /
                                     (billingData?.usage?.complianceLimit ||
-                                      1)) *
+                                      2)) *
                                   100
                             }
                             className="h-1.5 mt-2"
@@ -672,7 +672,7 @@ export default function AccountPage() {
                     {(!billingData?.subscription?.plan ||
                       billingData.subscription.plan === "FREE") &&
                       (billingData?.usage?.documentsGenerated || 0) >=
-                        (billingData?.usage?.documentsLimit || 1) && (
+                        (billingData?.usage?.documentsLimit || 2) && (
                         <div className="flex items-start gap-3 p-4 bg-amber-500/10 border border-amber-500/20 rounded-sm">
                           <AlertCircle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
                           <div>

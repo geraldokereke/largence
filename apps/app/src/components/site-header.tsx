@@ -91,7 +91,7 @@ const commands = [
         shortcut: "⌘D",
         path: "/documents",
       },
-      { icon: Brain, label: "AI Drafts", shortcut: "⌘B", path: "/drafts" },
+      // { icon: Brain, label: "AI Drafts", shortcut: "⌘B", path: "/drafts" },
       {
         icon: ShieldCheck,
         label: "Compliance",
@@ -139,6 +139,12 @@ export function SiteHeader() {
   const [logoutDialogOpen, setLogoutDialogOpen] = React.useState(false);
   const [showBanner, setShowBanner] = React.useState(true);
   const [isLoggingOut, setIsLoggingOut] = React.useState(false);
+  const [mounted, setMounted] = React.useState(false);
+
+  // Avoid hydration mismatch for theme
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleLogout = async () => {
     setLogoutDialogOpen(true);
@@ -430,7 +436,7 @@ export function SiteHeader() {
                               </span>
                             </div>
                           </div>
-                          {theme === "light" && (
+                          {mounted && theme === "light" && (
                             <Check className="h-4 w-4 ml-2 text-primary" />
                           )}
                         </DropdownMenuItem>
@@ -449,7 +455,7 @@ export function SiteHeader() {
                               </span>
                             </div>
                           </div>
-                          {theme === "dark" && (
+                          {mounted && theme === "dark" && (
                             <Check className="h-4 w-4 ml-2 text-primary" />
                           )}
                         </DropdownMenuItem>
@@ -470,7 +476,7 @@ export function SiteHeader() {
                               </span>
                             </div>
                           </div>
-                          {theme === "system" && (
+                          {mounted && theme === "system" && (
                             <Check className="h-4 w-4 ml-2 text-primary" />
                           )}
                         </DropdownMenuItem>

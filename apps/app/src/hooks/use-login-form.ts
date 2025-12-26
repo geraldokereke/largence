@@ -43,9 +43,6 @@ export function useLoginForm() {
           if (result.status === "complete") {
             await setActive({ session: result.createdSessionId });
             router.push("/onboarding");
-          } else {
-            // Handle other statuses if needed
-            console.log("Sign in status:", result.status);
           }
         }
       } catch (err: any) {

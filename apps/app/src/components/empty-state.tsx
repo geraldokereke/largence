@@ -142,10 +142,8 @@ export function EmptyState({
   const handleUploadClick = () => {
     if (finalSecondaryAction?.onClick) {
       finalSecondaryAction.onClick();
-    } else {
-      // TODO: Implement upload functionality
-      console.log("Upload document");
     }
+    // TODO: Implement upload functionality
   };
 
   const handleTemplateClick = (templateType: string) => {

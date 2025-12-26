@@ -136,7 +136,6 @@ export function SignupForm({ className }: SignupFormProps) {
         await setActive({ session: completeSignUp.createdSessionId });
         router.push("/onboarding");
       } else {
-        console.log("Verification status:", completeSignUp.status);
         setError("Verification incomplete. Please try again.");
       }
     } catch (err: any) {

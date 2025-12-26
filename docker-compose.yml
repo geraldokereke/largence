@@ -1,0 +1,107 @@
+version: "3.8"
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: largence-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-largence}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-largence_secret}
+      POSTGRES_DB: ${POSTGRES_DB:-largence}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-largence}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - largence-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: largence-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - largence-network
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+        - NEXT_PUBLIC_CLERK_SIGN_IN_URL=/login
+        - NEXT_PUBLIC_CLERK_SIGN_UP_URL=/auth/signup
+    container_name: largence-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-largence}:${POSTGRES_PASSWORD:-largence_secret}@db:5432/${POSTGRES_DB:-largence}
+      - NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+      - CLERK_SECRET_KEY=${CLERK_SECRET_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
+      - STRIPE_STARTER_PRICE_ID=${STRIPE_STARTER_PRICE_ID}
+      - STRIPE_PROFESSIONAL_PRICE_ID=${STRIPE_PROFESSIONAL_PRICE_ID}
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - largence-network
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    container_name: largence-web
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+    networks:
+      - largence-network
+
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: deps
+    container_name: largence-migrate
+    command: pnpm --filter @largence/app prisma migrate deploy
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-largence}:${POSTGRES_PASSWORD:-largence_secret}@db:5432/${POSTGRES_DB:-largence}
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - largence-network
+    profiles:
+      - migrate
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  largence-network:
+    driver: bridge

@@ -131,7 +131,7 @@ export default function DocumentEditorPage() {
           let cleanContent = doc.content || "";
           cleanContent = cleanContent.replace(
             /```(?:html)?\n?([\s\S]*?)```/g,
-            "$1",
+            "$1"
           );
           cleanContent = cleanContent.replace(/`/g, "");
           cleanContent = cleanContent.trim();
@@ -162,7 +162,6 @@ export default function DocumentEditorPage() {
       fetchDocument();
     }
   }, [params.id, router, editor]);
-
 
   const handleSave = useCallback(async () => {
     if (!editor) return;
@@ -233,7 +232,7 @@ export default function DocumentEditorPage() {
         </html>
       `,
         ],
-        { type: "application/msword" },
+        { type: "application/msword" }
       );
       const url = URL.createObjectURL(blob);
       const link = window.document.createElement("a");
@@ -357,7 +356,7 @@ export default function DocumentEditorPage() {
           },
           body: JSON.stringify({ content }),
           signal: abortControllerRef.current.signal,
-        },
+        }
       );
 
       if (response.status === 402) {
@@ -401,7 +400,10 @@ export default function DocumentEditorPage() {
 
         // Clean the content (remove markdown code blocks if present)
         let cleanContent = accumulatedContent;
-        cleanContent = cleanContent.replace(/```(?:html)?\n?([\s\S]*?)```/g, "$1");
+        cleanContent = cleanContent.replace(
+          /```(?:html)?\n?([\s\S]*?)```/g,
+          "$1"
+        );
         cleanContent = cleanContent.replace(/^```html?\s*/i, "");
         cleanContent = cleanContent.trim();
 
@@ -496,7 +498,7 @@ export default function DocumentEditorPage() {
               onValueChange={async (val: "DRAFT" | "FINAL" | "ARCHIVED") => {
                 const previousStatus = status;
                 setStatus(val);
-                
+
                 // Save status change immediately
                 try {
                   const response = await fetch(`/api/documents/${params.id}`, {
@@ -504,21 +506,22 @@ export default function DocumentEditorPage() {
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ status: val }),
                   });
-                  
+
                   if (response.ok) {
                     const data = await response.json();
                     setDocument(data.document);
                     const statusLabels = {
                       DRAFT: "Draft",
-                      FINAL: "Final", 
-                      ARCHIVED: "Archived"
+                      FINAL: "Final",
+                      ARCHIVED: "Archived",
                     };
                     toast.success(`Status changed to ${statusLabels[val]}`, {
-                      description: val === "FINAL" 
-                        ? "Document has been finalized and is ready for use."
-                        : val === "ARCHIVED"
-                        ? "Document has been archived."
-                        : "Document is now in draft mode."
+                      description:
+                        val === "FINAL"
+                          ? "Document has been finalized and is ready for use."
+                          : val === "ARCHIVED"
+                            ? "Document has been archived."
+                            : "Document is now in draft mode.",
                     });
                   } else {
                     setStatus(previousStatus);

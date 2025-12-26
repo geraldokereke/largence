@@ -1,0 +1,58 @@
+version: "3.8"
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: largence-db-dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: largence
+      POSTGRES_PASSWORD: largence_dev
+      POSTGRES_DB: largence_dev
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U largence"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - largence-dev
+
+  redis:
+    image: redis:7-alpine
+    container_name: largence-redis-dev
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    networks:
+      - largence-dev
+
+  prisma-studio:
+    image: node:20-alpine
+    container_name: largence-prisma-studio
+    working_dir: /app
+    command: sh -c "corepack enable && pnpm install && pnpm --filter @largence/app prisma studio"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/apps/app/node_modules
+    ports:
+      - "5555:5555"
+    environment:
+      - DATABASE_URL=postgresql://largence:largence_dev@db:5432/largence_dev
+    depends_on:
+      - db
+    networks:
+      - largence-dev
+    profiles:
+      - studio
+
+volumes:
+  postgres_data_dev:
+
+networks:
+  largence-dev:
+    driver: bridge

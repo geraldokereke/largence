@@ -184,10 +184,68 @@ largence/
 
 ### Docker
 
+#### Quick Start
+
 ```bash
-docker build -t largence .
-docker run -p 3000:3000 largence
+# Copy environment file and configure
+cp .env.docker.example .env
+
+# Build and start all services
+make build
+make migrate
+make up
 ```
+
+#### Development with Docker
+
+```bash
+# Start database and redis for local development
+make dev
+
+# Open Prisma Studio
+make studio
+
+# Stop development services
+make dev-down
+```
+
+#### Production Deployment
+
+```bash
+# Build images
+docker-compose build
+
+# Run migrations
+docker-compose --profile migrate run --rm migrate
+
+# Start all services
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+```
+
+#### Docker Commands
+
+| Command | Description |
+|---------|-------------|
+| `make build` | Build all Docker images |
+| `make up` | Start all production services |
+| `make down` | Stop all services |
+| `make migrate` | Run database migrations |
+| `make logs` | View logs from all services |
+| `make shell` | Open shell in app container |
+| `make clean` | Remove all containers and volumes |
+| `make dev` | Start dev database & redis |
+
+#### Services
+
+| Service | Port | Description |
+|---------|------|-------------|
+| app | 3000 | Main application |
+| web | 3001 | Marketing website |
+| db | 5432 | PostgreSQL database |
+| redis | 6379 | Redis cache |
 
 ## Contributing
 

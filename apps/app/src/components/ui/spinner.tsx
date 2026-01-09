@@ -2,7 +2,7 @@ import { cn } from "@largence/lib/utils";
 
 interface SpinnerProps extends React.HTMLAttributes<HTMLDivElement> {
   size?: "sm" | "md" | "lg";
-  variant?: "default" | "white";
+  variant?: "default" | "white" | "destructive";
 }
 
 export function Spinner({
@@ -20,6 +20,7 @@ export function Spinner({
   const variantClasses = {
     default: "border-primary border-r-transparent",
     white: "border-white border-r-transparent",
+    destructive: "border-destructive-foreground border-r-transparent",
   };
 
   return (

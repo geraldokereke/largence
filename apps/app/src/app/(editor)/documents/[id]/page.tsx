@@ -282,15 +282,11 @@ export default function DocumentEditorPage() {
   }, [editor, title]);
 
   const handleSendToDocuSign = useCallback(() => {
-    setExporting(true);
-    try {
-      toast.info("DocuSign Integration", {
-        description:
-          "DocuSign API integration is required. Contact your administrator to enable this feature.",
-      });
-    } finally {
-      setExporting(false);
-    }
+    toast("Coming Soon", {
+      description:
+        "DocuSign integration is coming soon! Stay tuned for e-signature capabilities.",
+      icon: "🚀",
+    });
   }, []);
 
   const handleRunComplianceCheck = useCallback(async () => {
@@ -593,7 +589,7 @@ export default function DocumentEditorPage() {
             >
               {runningAgenticCompliance ? (
                 <>
-                  <Spinner size="sm" />
+                  <Spinner size="sm" variant="white" />
                   <span className="hidden sm:inline sm:ml-1.5">Cancel</span>
                 </>
               ) : (

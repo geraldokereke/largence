@@ -40,6 +40,15 @@ import {
   Users,
   HardDrive,
   Sparkles,
+  Receipt,
+  Plus,
+  Trash2,
+  Pause,
+  Play,
+  RefreshCw,
+  Download,
+  Calendar,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -80,6 +89,28 @@ interface BillingData {
     plan: string;
     status: string;
   };
+}
+
+interface Invoice {
+  id: string;
+  number: string;
+  status: string;
+  amountDue: number;
+  amountPaid: number;
+  currency: string;
+  created: number;
+  paid: boolean;
+  hostedInvoiceUrl: string | null;
+  invoicePdf: string | null;
+}
+
+interface PaymentMethod {
+  id: string;
+  brand: string;
+  last4: string;
+  expMonth: number;
+  expYear: number;
+  isDefault: boolean;
 }
 
 const planDetails = {
@@ -211,6 +242,147 @@ export default function AccountPage() {
     },
     onError: () => {
       toast.error("Failed to open billing portal. Please try again.");
+    },
+  });
+
+  // Fetch invoices
+  const { data: invoicesData, isLoading: invoicesLoading } = useQuery<{
+    invoices: Invoice[];
+    hasMore: boolean;
+  }>({
+    queryKey: ["invoices"],
+    queryFn: async () => {
+      const res = await fetch("/api/billing/invoices?limit=5");
+      if (!res.ok) throw new Error("Failed to fetch invoices");
+      return res.json();
+    },
+    enabled: activeTab === "billing",
+  });
+
+  // Fetch payment methods
+  const {
+    data: paymentMethodsData,
+    isLoading: paymentMethodsLoading,
+    refetch: refetchPaymentMethods,
+  } = useQuery<{
+    paymentMethods: PaymentMethod[];
+    defaultPaymentMethodId: string | null;
+  }>({
+    queryKey: ["payment-methods"],
+    queryFn: async () => {
+      const res = await fetch("/api/billing/payment-methods");
+      if (!res.ok) throw new Error("Failed to fetch payment methods");
+      return res.json();
+    },
+    enabled: activeTab === "billing" && !!billingData?.subscription,
+  });
+
+  // Cancel subscription mutation
+  const cancelMutation = useMutation({
+    mutationFn: async (immediately: boolean = false) => {
+      const res = await fetch(
+        `/api/billing/subscription${immediately ? "?immediately=true" : ""}`,
+        { method: "DELETE" }
+      );
+      if (!res.ok) throw new Error("Failed to cancel subscription");
+      return res.json();
+    },
+    onSuccess: (data) => {
+      toast.success(data.message);
+      refetchBilling();
+    },
+    onError: () => {
+      toast.error("Failed to cancel subscription. Please try again.");
+    },
+  });
+
+  // Reactivate subscription mutation
+  const reactivateMutation = useMutation({
+    mutationFn: async () => {
+      const res = await fetch("/api/billing/subscription", { method: "POST" });
+      if (!res.ok) throw new Error("Failed to reactivate subscription");
+      return res.json();
+    },
+    onSuccess: () => {
+      toast.success("Subscription reactivated successfully!");
+      refetchBilling();
+    },
+    onError: () => {
+      toast.error("Failed to reactivate subscription. Please try again.");
+    },
+  });
+
+  // Retry payment mutation
+  const retryPaymentMutation = useMutation({
+    mutationFn: async () => {
+      const res = await fetch("/api/billing/retry-payment", { method: "POST" });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Failed to retry payment");
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      toast.success("Payment successful!");
+      refetchBilling();
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Payment failed. Please update your payment method.");
+    },
+  });
+
+  // Add payment method mutation
+  const addPaymentMethodMutation = useMutation({
+    mutationFn: async () => {
+      const res = await fetch("/api/billing/payment-methods", { method: "POST" });
+      if (!res.ok) throw new Error("Failed to add payment method");
+      return res.json();
+    },
+    onSuccess: (data) => {
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    },
+    onError: () => {
+      toast.error("Failed to add payment method. Please try again.");
+    },
+  });
+
+  // Set default payment method mutation
+  const setDefaultPaymentMethodMutation = useMutation({
+    mutationFn: async (paymentMethodId: string) => {
+      const res = await fetch("/api/billing/payment-methods", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ paymentMethodId }),
+      });
+      if (!res.ok) throw new Error("Failed to update payment method");
+      return res.json();
+    },
+    onSuccess: () => {
+      toast.success("Default payment method updated!");
+      refetchPaymentMethods();
+    },
+    onError: () => {
+      toast.error("Failed to update payment method. Please try again.");
+    },
+  });
+
+  // Remove payment method mutation
+  const removePaymentMethodMutation = useMutation({
+    mutationFn: async (paymentMethodId: string) => {
+      const res = await fetch(`/api/billing/payment-methods?id=${paymentMethodId}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) throw new Error("Failed to remove payment method");
+      return res.json();
+    },
+    onSuccess: () => {
+      toast.success("Payment method removed!");
+      refetchPaymentMethods();
+    },
+    onError: () => {
+      toast.error("Failed to remove payment method. Please try again.");
     },
   });
 
@@ -652,21 +824,251 @@ export default function AccountPage() {
                       {/* Manage Subscription Button */}
                       {billingData?.subscription?.plan &&
                         billingData.subscription.plan !== "FREE" && (
-                          <Button
-                            variant="outline"
-                            className="mt-4 rounded-sm"
-                            onClick={() => portalMutation.mutate()}
-                            disabled={portalMutation.isPending}
-                          >
-                            {portalMutation.isPending ? (
-                              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                          <div className="flex flex-wrap gap-2 mt-4">
+                            <Button
+                              variant="outline"
+                              className="rounded-sm"
+                              onClick={() => portalMutation.mutate()}
+                              disabled={portalMutation.isPending}
+                            >
+                              {portalMutation.isPending ? (
+                                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                              ) : (
+                                <ExternalLink className="h-4 w-4 mr-2" />
+                              )}
+                              Manage Subscription
+                            </Button>
+                            
+                            {billingData.subscription.cancelAtPeriodEnd ? (
+                              <Button
+                                variant="outline"
+                                className="rounded-sm"
+                                onClick={() => reactivateMutation.mutate()}
+                                disabled={reactivateMutation.isPending}
+                              >
+                                {reactivateMutation.isPending ? (
+                                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                ) : (
+                                  <Play className="h-4 w-4 mr-2" />
+                                )}
+                                Reactivate
+                              </Button>
                             ) : (
-                              <ExternalLink className="h-4 w-4 mr-2" />
+                              <Button
+                                variant="outline"
+                                className="rounded-sm text-destructive hover:text-destructive"
+                                onClick={() => cancelMutation.mutate(false)}
+                                disabled={cancelMutation.isPending}
+                              >
+                                {cancelMutation.isPending ? (
+                                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                ) : (
+                                  <X className="h-4 w-4 mr-2" />
+                                )}
+                                Cancel Plan
+                              </Button>
                             )}
-                            Manage Subscription
-                          </Button>
+                          </div>
                         )}
                     </div>
+
+                    {/* Past Due Warning */}
+                    {billingData?.subscription?.status === "PAST_DUE" && (
+                      <div className="flex items-start gap-3 p-4 bg-red-500/10 border border-red-500/20 rounded-sm">
+                        <AlertCircle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
+                        <div className="flex-1">
+                          <p className="font-medium text-red-700">
+                            Payment Failed
+                          </p>
+                          <p className="text-sm text-red-600 mt-1">
+                            Your last payment failed. Please update your payment method or retry the payment to avoid service interruption.
+                          </p>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="mt-3 rounded-sm"
+                            onClick={() => retryPaymentMutation.mutate()}
+                            disabled={retryPaymentMutation.isPending}
+                          >
+                            {retryPaymentMutation.isPending ? (
+                              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                            ) : (
+                              <RefreshCw className="h-4 w-4 mr-2" />
+                            )}
+                            Retry Payment
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Payment Methods Section */}
+                    {billingData?.subscription?.plan &&
+                      billingData.subscription.plan !== "FREE" && (
+                        <div className="border rounded-sm p-5">
+                          <div className="flex items-center justify-between mb-4">
+                            <h3 className="font-semibold font-heading">
+                              Payment Methods
+                            </h3>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="rounded-sm"
+                              onClick={() => addPaymentMethodMutation.mutate()}
+                              disabled={addPaymentMethodMutation.isPending}
+                            >
+                              {addPaymentMethodMutation.isPending ? (
+                                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                              ) : (
+                                <Plus className="h-4 w-4 mr-2" />
+                              )}
+                              Add Card
+                            </Button>
+                          </div>
+                          
+                          {paymentMethodsLoading ? (
+                            <div className="space-y-2">
+                              <Skeleton className="h-16 w-full" />
+                            </div>
+                          ) : paymentMethodsData?.paymentMethods?.length ? (
+                            <div className="space-y-2">
+                              {paymentMethodsData.paymentMethods.map((pm) => (
+                                <div
+                                  key={pm.id}
+                                  className="flex items-center justify-between p-3 bg-muted/30 rounded-sm border"
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <CreditCard className="h-5 w-5 text-muted-foreground" />
+                                    <div>
+                                      <p className="font-medium capitalize">
+                                        {pm.brand} •••• {pm.last4}
+                                      </p>
+                                      <p className="text-xs text-muted-foreground">
+                                        Expires {pm.expMonth}/{pm.expYear}
+                                      </p>
+                                    </div>
+                                    {pm.isDefault && (
+                                      <span className="px-2 py-0.5 bg-primary/10 text-primary text-xs rounded-sm">
+                                        Default
+                                      </span>
+                                    )}
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    {!pm.isDefault && (
+                                      <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        className="h-8 rounded-sm"
+                                        onClick={() =>
+                                          setDefaultPaymentMethodMutation.mutate(pm.id)
+                                        }
+                                        disabled={setDefaultPaymentMethodMutation.isPending}
+                                      >
+                                        Set Default
+                                      </Button>
+                                    )}
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      className="h-8 rounded-sm text-destructive hover:text-destructive"
+                                      onClick={() =>
+                                        removePaymentMethodMutation.mutate(pm.id)
+                                      }
+                                      disabled={removePaymentMethodMutation.isPending}
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="text-sm text-muted-foreground">
+                              No payment methods on file.
+                            </p>
+                          )}
+                        </div>
+                      )}
+
+                    {/* Invoice History Section */}
+                    {billingData?.subscription?.plan &&
+                      billingData.subscription.plan !== "FREE" && (
+                        <div className="border rounded-sm p-5">
+                          <div className="flex items-center justify-between mb-4">
+                            <h3 className="font-semibold font-heading">
+                              Invoice History
+                            </h3>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="rounded-sm"
+                              onClick={() => portalMutation.mutate()}
+                            >
+                              View All
+                              <ExternalLink className="h-3 w-3 ml-2" />
+                            </Button>
+                          </div>
+                          
+                          {invoicesLoading ? (
+                            <div className="space-y-2">
+                              <Skeleton className="h-12 w-full" />
+                              <Skeleton className="h-12 w-full" />
+                            </div>
+                          ) : invoicesData?.invoices?.length ? (
+                            <div className="space-y-2">
+                              {invoicesData.invoices.map((invoice) => (
+                                <div
+                                  key={invoice.id}
+                                  className="flex items-center justify-between p-3 bg-muted/30 rounded-sm border"
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <Receipt className="h-5 w-5 text-muted-foreground" />
+                                    <div>
+                                      <p className="font-medium">
+                                        {invoice.number || "Invoice"}
+                                      </p>
+                                      <p className="text-xs text-muted-foreground">
+                                        {new Date(invoice.created * 1000).toLocaleDateString()}
+                                      </p>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-3">
+                                    <div className="text-right">
+                                      <p className="font-medium">
+                                        ${(invoice.amountPaid / 100).toFixed(2)}
+                                      </p>
+                                      <span
+                                        className={`text-xs ${
+                                          invoice.paid
+                                            ? "text-emerald-600"
+                                            : "text-amber-600"
+                                        }`}
+                                      >
+                                        {invoice.paid ? "Paid" : invoice.status}
+                                      </span>
+                                    </div>
+                                    {invoice.invoicePdf && (
+                                      <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        className="h-8 rounded-sm"
+                                        onClick={() =>
+                                          window.open(invoice.invoicePdf!, "_blank")
+                                        }
+                                      >
+                                        <Download className="h-4 w-4" />
+                                      </Button>
+                                    )}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="text-sm text-muted-foreground">
+                              No invoices yet.
+                            </p>
+                          )}
+                        </div>
+                      )}
 
                     {/* Free Tier Warning */}
                     {(!billingData?.subscription?.plan ||

@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { runComplianceChecks } from "@largence/lib/compliance-rules";
 import prisma from "@largence/lib/prisma";
 import { canPerformAction, recordUsage } from "@/lib/stripe";
+import { createAuditLog, getUserInitials } from "@/lib/audit";
 
 export async function POST(
   request: NextRequest,
@@ -101,6 +102,33 @@ export async function POST(
     // Record usage after successful compliance check
     if (orgId) {
       await recordUsage(orgId, "COMPLIANCE_CHECK", updatedCheck.id);
+
+      // Log audit event for compliance check
+      const user = await currentUser();
+      await createAuditLog({
+        userId,
+        organizationId: orgId,
+        action: "COMPLIANCE_CHECK_COMPLETED",
+        actionLabel: `Ran compliance check (Score: ${results.score}/100)`,
+        entityType: "Compliance",
+        entityId: updatedCheck.id,
+        entityName: document.title,
+        metadata: {
+          documentId,
+          score: results.score,
+          issuesCount: results.issues.length,
+          warningsCount: results.warnings.length,
+          suggestionsCount: results.suggestions.length,
+          jurisdiction: document.jurisdiction,
+          documentType: document.documentType,
+        },
+        userName: user
+          ? `${user.firstName || ""} ${user.lastName || ""}`.trim() ||
+            user.username ||
+            "User"
+          : "User",
+        userAvatar: getUserInitials(user?.firstName, user?.lastName),
+      });
     }
 
     return NextResponse.json({

@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { EmptyState } from "@largence/components/empty-state";
 import { Button } from "@largence/components/ui/button";
 import {
@@ -22,6 +22,8 @@ import {
   ExternalLink,
   Clock,
   Sparkles,
+  AlertCircle,
+  RefreshCw,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -47,54 +49,53 @@ interface Draft {
   updatedAt: string;
 }
 
+async function fetchDrafts(): Promise<{ drafts: Draft[] }> {
+  const response = await fetch("/api/documents/drafts");
+  if (!response.ok) throw new Error("Failed to fetch drafts");
+  return response.json();
+}
+
+async function deleteDraft(id: string): Promise<void> {
+  const response = await fetch(`/api/documents/${id}`, { method: "DELETE" });
+  if (!response.ok) throw new Error("Failed to delete draft");
+}
+
 export default function DraftsPage() {
   const { userId } = useAuth();
   const router = useRouter();
-  const [drafts, setDrafts] = useState<Draft[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    if (userId) {
-      fetchDrafts();
-    } else {
-      setLoading(false);
-    }
-  }, [userId]);
+  const {
+    data,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ["drafts"],
+    queryFn: fetchDrafts,
+    enabled: !!userId,
+  });
 
-  const fetchDrafts = async () => {
-    try {
-      const response = await fetch("/api/documents/drafts");
-      if (response.ok) {
-        const data = await response.json();
-        setDrafts(data.drafts || []);
-      }
-    } catch (error) {
-      console.error("Failed to fetch drafts:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDelete = async (id: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    try {
-      const response = await fetch(`/api/documents/${id}`, {
-        method: "DELETE",
-      });
-      if (response.ok) {
-        setDrafts((prev) => prev.filter((d) => d.id !== id));
-        toast.success("Draft deleted successfully");
-      } else {
-        toast.error("Failed to delete draft");
-      }
-    } catch (error) {
-      console.error("Failed to delete draft:", error);
+  const deleteMutation = useMutation({
+    mutationFn: deleteDraft,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["drafts"] });
+      queryClient.invalidateQueries({ queryKey: ["documents"] });
+      toast.success("Draft deleted successfully");
+    },
+    onError: () => {
       toast.error("Failed to delete draft");
-    }
+    },
+  });
+
+  const drafts = data?.drafts || [];
+
+  const handleDelete = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    deleteMutation.mutate(id);
   };
 
   const getPreviewText = (content: string) => {
-    // Strip HTML tags and get first 150 characters
     const text = content.replace(/<[^>]*>/g, "").trim();
     return text.length > 150 ? text.substring(0, 150) + "..." : text;
   };
@@ -103,7 +104,7 @@ export default function DraftsPage() {
     return type.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex flex-1 flex-col gap-4 p-4">
         <div className="mb-2">
@@ -122,6 +123,30 @@ export default function DraftsPage() {
               </CardContent>
             </Card>
           ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-1 flex-col gap-4 p-4">
+        <div className="mb-2">
+          <h1 className="text-2xl font-semibold font-heading">AI Drafts</h1>
+          <p className="text-sm text-muted-foreground">
+            Review and manage your AI-generated document drafts
+          </p>
+        </div>
+        <div className="flex flex-col items-center justify-center py-16">
+          <AlertCircle className="h-12 w-12 text-destructive mb-4" />
+          <h2 className="text-lg font-semibold mb-2">Failed to load drafts</h2>
+          <p className="text-sm text-muted-foreground mb-4">
+            There was an error loading your drafts.
+          </p>
+          <Button onClick={() => refetch()} variant="outline" className="rounded-sm">
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Try Again
+          </Button>
         </div>
       </div>
     );
@@ -224,9 +249,10 @@ export default function DraftsPage() {
                     <DropdownMenuItem
                       className="text-destructive focus:text-destructive"
                       onClick={(e) => handleDelete(draft.id, e)}
+                      disabled={deleteMutation.isPending}
                     >
                       <Trash2 className="h-4 w-4 mr-2" />
-                      Delete
+                      {deleteMutation.isPending ? "Deleting..." : "Delete"}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>

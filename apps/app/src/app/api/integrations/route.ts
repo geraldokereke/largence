@@ -1,5 +1,6 @@
-import { auth } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
+import { createAuditLog, getUserInitials } from "@/lib/audit";
 
 // Integration provider type
 type IntegrationProviderType =
@@ -284,6 +285,28 @@ export async function POST(request: Request) {
     };
 
     orgIntegrations.set(provider, integration);
+
+    // Log audit event for integration connection
+    const user = await currentUser();
+    await createAuditLog({
+      userId,
+      organizationId: orgId,
+      action: "INTEGRATION_CONNECTED",
+      actionLabel: `Connected ${catalog.name} integration`,
+      entityType: "Integration",
+      entityId: integration.id,
+      entityName: catalog.name,
+      metadata: {
+        provider,
+        category: catalog.category,
+      },
+      userName: user
+        ? `${user.firstName || ""} ${user.lastName || ""}`.trim() ||
+          user.username ||
+          "User"
+        : "User",
+      userAvatar: getUserInitials(user?.firstName, user?.lastName),
+    });
 
     return NextResponse.json({
       success: true,

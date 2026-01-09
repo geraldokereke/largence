@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
+import { useQuery } from "@tanstack/react-query";
 import { WelcomeCTA } from "@largence/components/welcome-cta";
 import { EmptyState } from "@largence/components/empty-state";
 import { Button } from "@largence/components/ui/button";
@@ -13,7 +13,7 @@ import {
   CardTitle,
 } from "@largence/components/ui/card";
 import { Skeleton } from "@largence/components/ui/skeleton";
-import { FileText, Sparkles, ArrowRight } from "lucide-react";
+import { FileText, AlertCircle, ArrowRight, RefreshCw } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
 
@@ -28,33 +28,28 @@ interface Document {
   updatedAt: string;
 }
 
+async function fetchDocuments(): Promise<{ documents: Document[] }> {
+  const response = await fetch("/api/documents");
+  if (!response.ok) throw new Error("Failed to fetch documents");
+  return response.json();
+}
+
 export default function Home() {
   const { userId } = useAuth();
   const router = useRouter();
-  const [documents, setDocuments] = useState<Document[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (userId) {
-      fetchDocuments();
-    } else {
-      setLoading(false);
-    }
-  }, [userId]);
+  const {
+    data,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ["documents"],
+    queryFn: fetchDocuments,
+    enabled: !!userId,
+  });
 
-  const fetchDocuments = async () => {
-    try {
-      const response = await fetch("/api/documents");
-      if (response.ok) {
-        const data = await response.json();
-        setDocuments(data.documents || []);
-      }
-    } catch (error) {
-      console.error("Failed to fetch documents:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const documents = data?.documents || [];
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -69,11 +64,30 @@ export default function Home() {
     }
   };
 
+  if (error) {
+    return (
+      <div className="flex flex-1 flex-col gap-4 p-4">
+        <WelcomeCTA />
+        <div className="flex flex-col items-center justify-center py-16">
+          <AlertCircle className="h-12 w-12 text-destructive mb-4" />
+          <h2 className="text-lg font-semibold mb-2">Failed to load documents</h2>
+          <p className="text-sm text-muted-foreground mb-4">
+            There was an error loading your recent documents.
+          </p>
+          <Button onClick={() => refetch()} variant="outline" className="rounded-sm">
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Try Again
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-1 flex-col gap-4 p-4">
       <WelcomeCTA />
 
-      {loading ? (
+      {isLoading ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {[1, 2, 3].map((i) => (
             <Card key={i} className="rounded-sm">

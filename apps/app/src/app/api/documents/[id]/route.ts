@@ -78,8 +78,8 @@ export async function PATCH(
       },
     });
 
-    // Log status change if status was changed
-    if (status !== undefined && status !== existing.status && orgId) {
+    // Log document update to audit trail
+    if (orgId) {
       const user = await currentUser();
       const statusLabels: Record<string, string> = {
         DRAFT: "Draft",
@@ -87,25 +87,42 @@ export async function PATCH(
         ARCHIVED: "Archived",
       };
 
-      await createAuditLog({
-        userId,
-        organizationId: orgId,
-        action: "DOCUMENT_UPDATED",
-        actionLabel: `Changed status from ${statusLabels[existing.status]} to ${statusLabels[status]}`,
-        entityType: "Document",
-        entityId: id,
-        entityName: document.title,
-        metadata: {
-          previousStatus: existing.status,
-          newStatus: status,
-        },
-        userName: user
-          ? `${user.firstName || ""} ${user.lastName || ""}`.trim() ||
-            user.username ||
-            "User"
-          : "User",
-        userAvatar: getUserInitials(user?.firstName, user?.lastName),
-      });
+      // Determine what changed
+      const changes: string[] = [];
+      if (title !== undefined && title !== existing.title) changes.push("title");
+      if (content !== undefined && content !== existing.content) changes.push("content");
+      if (status !== undefined && status !== existing.status) changes.push("status");
+
+      let actionLabel = "Updated document";
+      const metadata: Record<string, any> = {};
+
+      if (status !== undefined && status !== existing.status) {
+        actionLabel = `Changed status from ${statusLabels[existing.status]} to ${statusLabels[status]}`;
+        metadata.previousStatus = existing.status;
+        metadata.newStatus = status;
+      } else if (changes.length > 0) {
+        actionLabel = `Updated document ${changes.join(", ")}`;
+        metadata.fieldsChanged = changes;
+      }
+
+      if (changes.length > 0) {
+        await createAuditLog({
+          userId,
+          organizationId: orgId,
+          action: "DOCUMENT_UPDATED",
+          actionLabel,
+          entityType: "Document",
+          entityId: id,
+          entityName: document.title,
+          metadata,
+          userName: user
+            ? `${user.firstName || ""} ${user.lastName || ""}`.trim() ||
+              user.username ||
+              "User"
+            : "User",
+          userAvatar: getUserInitials(user?.firstName, user?.lastName),
+        });
+      }
     }
 
     return NextResponse.json({ document });
@@ -146,6 +163,30 @@ export async function DELETE(
     }
 
     await prisma.document.delete({ where: { id } });
+
+    // Log audit event for document deletion
+    if (orgId) {
+      const user = await currentUser();
+      await createAuditLog({
+        userId,
+        organizationId: orgId,
+        action: "DOCUMENT_DELETED",
+        actionLabel: `Deleted document`,
+        entityType: "Document",
+        entityId: id,
+        entityName: existing.title,
+        metadata: {
+          documentType: existing.documentType,
+          jurisdiction: existing.jurisdiction,
+        },
+        userName: user
+          ? `${user.firstName || ""} ${user.lastName || ""}`.trim() ||
+            user.username ||
+            "User"
+          : "User",
+        userAvatar: getUserInitials(user?.firstName, user?.lastName),
+      });
+    }
 
     return NextResponse.json({ success: true });
   } catch (error: any) {

@@ -46,6 +46,11 @@ import {
   DropdownMenuTrigger,
 } from "@largence/components/ui/dropdown-menu";
 import { formatDistanceToNow } from "date-fns";
+import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
+
+// Only show these integrations (all coming soon)
+const AVAILABLE_PROVIDERS = ["NOTION", "GOOGLE_DRIVE", "DROPBOX", "DOCUSIGN"];
 
 // Icon mapping for integration providers
 const PROVIDER_ICONS: Record<
@@ -153,6 +158,9 @@ export default function IntegrationsPage() {
   const [integrationToDisconnect, setIntegrationToDisconnect] =
     useState<Integration | null>(null);
 
+  const [showComingSoonDialog, setShowComingSoonDialog] = useState(false);
+  const [comingSoonIntegration, setComingSoonIntegration] = useState<string | null>(null);
+
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["integrations"],
     queryFn: fetchIntegrations,
@@ -160,12 +168,18 @@ export default function IntegrationsPage() {
 
   const connectMutation = useMutation({
     mutationFn: connectIntegration,
-    onSuccess: () => {
+    onSuccess: (_, provider) => {
       queryClient.invalidateQueries({ queryKey: ["integrations"] });
       setConnectingProvider(null);
+      toast.success("Integration connected", {
+        description: `Successfully connected to ${provider.replace(/_/g, " ").toLowerCase()}`,
+      });
     },
-    onError: () => {
+    onError: (_, provider) => {
       setConnectingProvider(null);
+      toast.error("Connection failed", {
+        description: `Failed to connect to ${provider.replace(/_/g, " ").toLowerCase()}`,
+      });
     },
   });
 
@@ -174,7 +188,15 @@ export default function IntegrationsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["integrations"] });
       setShowDisconnectDialog(false);
+      toast.success("Integration disconnected", {
+        description: `${integrationToDisconnect?.name} has been disconnected`,
+      });
       setIntegrationToDisconnect(null);
+    },
+    onError: () => {
+      toast.error("Disconnection failed", {
+        description: "Please try again later",
+      });
     },
   });
 
@@ -182,6 +204,11 @@ export default function IntegrationsPage() {
     if (!data?.integrations) return [];
 
     return data.integrations.filter((integration) => {
+      // Only show available providers (Notion, Google Drive, Dropbox, DocuSign)
+      if (!AVAILABLE_PROVIDERS.includes(integration.provider)) {
+        return false;
+      }
+
       // Category filter
       if (activeCategory !== "all") {
         if (activeCategory === "connected") {
@@ -205,9 +232,10 @@ export default function IntegrationsPage() {
     });
   }, [data?.integrations, activeCategory, search]);
 
-  const handleConnect = (provider: string) => {
-    setConnectingProvider(provider);
-    connectMutation.mutate(provider);
+  const handleConnect = (provider: string, integrationName: string) => {
+    // Show coming soon dialog instead of connecting
+    setComingSoonIntegration(integrationName);
+    setShowComingSoonDialog(true);
   };
 
   const handleDisconnectClick = (integration: Integration) => {
@@ -341,7 +369,7 @@ export default function IntegrationsPage() {
       </div>
 
       {/* Integration Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
         {filteredIntegrations.map((integration) => {
           const Icon = PROVIDER_ICONS[integration.provider] || Zap;
           const colors = PROVIDER_COLORS[integration.provider] || {
@@ -354,51 +382,40 @@ export default function IntegrationsPage() {
           return (
             <div
               key={integration.id}
-              className="group flex flex-col h-80 rounded-sm border bg-card p-6 hover:border-primary/50 transition-all"
+              className="group flex flex-col rounded-sm border bg-card p-4 hover:border-primary/50 transition-all"
             >
               {/* Header */}
-              <div className="flex items-start gap-3 mb-4">
-                <div className={`p-3 rounded-sm ${colors.bg} shrink-0`}>
-                  <Icon className={`h-8 w-8 ${colors.text}`} />
+              <div className="flex items-start gap-3 mb-3">
+                <div className={`p-2 rounded-sm ${colors.bg} shrink-0`}>
+                  <Icon className={`h-6 w-6 ${colors.text}`} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3 className="text-lg font-semibold font-heading">
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <h3 className="text-sm font-semibold font-heading truncate">
                       {integration.name}
                     </h3>
-                    {isConnected && (
-                      <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
-                    )}
+                    <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+                      Soon
+                    </Badge>
                   </div>
-                  <div className="flex items-center gap-1.5">
-                    <span
-                      className={`inline-flex px-2 py-0.5 rounded-sm text-xs font-medium ${
-                        isConnected
-                          ? "bg-emerald-500/10 text-emerald-700 border border-emerald-500/20"
-                          : "bg-muted text-muted-foreground"
-                      }`}
-                    >
-                      {isConnected ? "Connected" : "Available"}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      {integration.category}
-                    </span>
-                  </div>
+                  <span className="text-xs text-muted-foreground">
+                    {integration.category}
+                  </span>
                 </div>
               </div>
 
               {/* Description */}
-              <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+              <p className="text-xs text-muted-foreground mb-3 line-clamp-2">
                 {integration.description}
               </p>
 
               {/* Features */}
-              <div className="flex-1">
-                <div className="space-y-1.5 mb-4">
-                  {integration.features.slice(0, 3).map((feature, idx) => (
-                    <div key={idx} className="flex items-center gap-2 text-xs">
+              <div className="flex-1 mb-3">
+                <div className="space-y-1">
+                  {integration.features.slice(0, 2).map((feature, idx) => (
+                    <div key={idx} className="flex items-center gap-1.5 text-xs">
                       <CheckCircle2 className="h-3 w-3 text-primary shrink-0" />
-                      <span className="text-muted-foreground">{feature}</span>
+                      <span className="text-muted-foreground truncate">{feature}</span>
                     </div>
                   ))}
                 </div>
@@ -406,7 +423,7 @@ export default function IntegrationsPage() {
 
               {/* Stats (only for connected) */}
               {isConnected && integration.lastSyncAt && (
-                <div className="mb-4 pb-4 border-b space-y-2">
+                <div className="mb-3 pb-3 border-b space-y-1">
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-muted-foreground">Last sync</span>
                     <div className="flex items-center gap-1">
@@ -418,69 +435,19 @@ export default function IntegrationsPage() {
                       </span>
                     </div>
                   </div>
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground">Items synced</span>
-                    <span className="font-medium">
-                      {integration.syncedItemsCount.toLocaleString()}
-                    </span>
-                  </div>
                 </div>
               )}
 
-              {/* Actions */}
-              <div className="flex gap-2 mt-auto">
-                {isConnected ? (
-                  <>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className="flex-1 h-9 rounded-sm text-sm"
-                        >
-                          <Settings className="h-4 w-4 mr-2" />
-                          Manage
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="start" className="w-48">
-                        <DropdownMenuItem>
-                          <RefreshCw className="h-4 w-4 mr-2" />
-                          Sync Now
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Settings className="h-4 w-4 mr-2" />
-                          Settings
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <ExternalLink className="h-4 w-4 mr-2" />
-                          View on {integration.name}
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                          className="text-red-600"
-                          onClick={() => handleDisconnectClick(integration)}
-                        >
-                          <Trash2 className="h-4 w-4 mr-2" />
-                          Disconnect
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </>
-                ) : (
-                  <Button
-                    className="flex-1 h-9 rounded-sm text-sm"
-                    onClick={() => handleConnect(integration.provider)}
-                    disabled={isConnecting}
-                  >
-                    {isConnecting ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Connecting...
-                      </>
-                    ) : (
-                      "Connect"
-                    )}
-                  </Button>
-                )}
+              {/* Actions - All integrations show Coming Soon */}
+              <div className="mt-auto">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full h-8 rounded-sm text-xs"
+                  onClick={() => handleConnect(integration.provider, integration.name)}
+                >
+                  Coming Soon
+                </Button>
               </div>
             </div>
           );
@@ -508,44 +475,35 @@ export default function IntegrationsPage() {
         </div>
       )}
 
-      {/* Disconnect Confirmation Dialog */}
+      {/* Coming Soon Dialog */}
       <Dialog
-        open={showDisconnectDialog}
-        onOpenChange={setShowDisconnectDialog}
+        open={showComingSoonDialog}
+        onOpenChange={setShowComingSoonDialog}
       >
-        <DialogContent className="rounded-sm">
+        <DialogContent className="rounded-sm sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>
-              Disconnect {integrationToDisconnect?.name}?
-            </DialogTitle>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 rounded-full bg-amber-500/10">
+                <Zap className="h-5 w-5 text-amber-600" />
+              </div>
+              <DialogTitle>Coming Soon</DialogTitle>
+            </div>
             <DialogDescription>
-              This will disconnect the {integrationToDisconnect?.name}{" "}
-              integration from your organization. You can reconnect it at any
-              time.
+              <span className="font-medium text-foreground">{comingSoonIntegration}</span> integration is coming soon! 
+              We&apos;re working hard to bring you seamless integrations with your favorite tools.
             </DialogDescription>
           </DialogHeader>
+          <div className="bg-muted/50 rounded-sm p-4 mt-2">
+            <p className="text-sm text-muted-foreground">
+              Want to be notified when this integration launches? Stay tuned to our updates!
+            </p>
+          </div>
           <DialogFooter>
             <Button
-              variant="outline"
-              onClick={() => setShowDisconnectDialog(false)}
+              onClick={() => setShowComingSoonDialog(false)}
               className="rounded-sm"
             >
-              Cancel
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={handleDisconnectConfirm}
-              disabled={disconnectMutation.isPending}
-              className="rounded-sm"
-            >
-              {disconnectMutation.isPending ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Disconnecting...
-                </>
-              ) : (
-                "Disconnect"
-              )}
+              Got it
             </Button>
           </DialogFooter>
         </DialogContent>

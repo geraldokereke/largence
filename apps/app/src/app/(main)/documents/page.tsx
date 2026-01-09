@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { EmptyState } from "@largence/components/empty-state";
 import { Button } from "@largence/components/ui/button";
 import {
@@ -19,6 +20,8 @@ import {
   Edit,
   Trash2,
   Sparkles,
+  RefreshCw,
+  AlertTriangle,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -26,8 +29,17 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@largence/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@largence/components/ui/dialog";
 import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
+import { useState } from "react";
 
 interface Document {
   id: string;
@@ -40,33 +52,63 @@ interface Document {
   updatedAt: string;
 }
 
+interface DocumentsResponse {
+  documents: Document[];
+}
+
+async function fetchDocuments(): Promise<DocumentsResponse> {
+  const response = await fetch("/api/documents");
+  if (!response.ok) {
+    throw new Error("Failed to fetch documents");
+  }
+  return response.json();
+}
+
+async function deleteDocument(id: string): Promise<void> {
+  const response = await fetch(`/api/documents/${id}`, {
+    method: "DELETE",
+  });
+  if (!response.ok) {
+    throw new Error("Failed to delete document");
+  }
+}
+
 export default function DocumentsPage() {
   const { userId } = useAuth();
   const router = useRouter();
-  const [documents, setDocuments] = useState<Document[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [documentToDelete, setDocumentToDelete] = useState<Document | null>(null);
 
-  useEffect(() => {
-    if (userId) {
-      fetchDocuments();
-    } else {
-      setLoading(false);
-    }
-  }, [userId]);
+  const {
+    data,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ["documents"],
+    queryFn: fetchDocuments,
+    enabled: !!userId,
+  });
 
-  const fetchDocuments = async () => {
-    try {
-      const response = await fetch("/api/documents");
-      if (response.ok) {
-        const data = await response.json();
-        setDocuments(data.documents || []);
-      }
-    } catch (error) {
-      console.error("Failed to fetch documents:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const deleteMutation = useMutation({
+    mutationFn: deleteDocument,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["documents"] });
+      toast.success("Document deleted", {
+        description: "The document has been permanently deleted.",
+      });
+      setDeleteDialogOpen(false);
+      setDocumentToDelete(null);
+    },
+    onError: () => {
+      toast.error("Failed to delete document", {
+        description: "Please try again.",
+      });
+    },
+  });
+
+  const documents = data?.documents || [];
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -81,7 +123,43 @@ export default function DocumentsPage() {
     }
   };
 
-  if (loading) {
+  const handleDeleteClick = (doc: Document, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setDocumentToDelete(doc);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (documentToDelete) {
+      deleteMutation.mutate(documentToDelete.id);
+    }
+  };
+
+  const handleExport = (doc: Document, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const blob = new Blob(
+      [
+        `<html>
+        <head><meta charset='utf-8'><title>${doc.title}</title></head>
+        <body>${doc.content}</body>
+        </html>`,
+      ],
+      { type: "application/msword" }
+    );
+    const url = URL.createObjectURL(blob);
+    const link = window.document.createElement("a");
+    link.href = url;
+    link.download = `${doc.title || "document"}.doc`;
+    window.document.body.appendChild(link);
+    link.click();
+    window.document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    toast.success("Document exported", {
+      description: "Your document has been downloaded.",
+    });
+  };
+
+  if (isLoading) {
     return (
       <div className="flex flex-1 flex-col gap-4 p-4">
         <div className="mb-2">
@@ -101,6 +179,22 @@ export default function DocumentsPage() {
             </Card>
           ))}
         </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-1 flex-col items-center justify-center p-4">
+        <AlertTriangle className="h-12 w-12 text-destructive mb-4" />
+        <h2 className="text-lg font-semibold mb-2">Failed to load documents</h2>
+        <p className="text-sm text-muted-foreground mb-4">
+          There was an error loading your documents.
+        </p>
+        <Button onClick={() => refetch()} variant="outline" className="rounded-sm">
+          <RefreshCw className="h-4 w-4 mr-2" />
+          Try Again
+        </Button>
       </div>
     );
   }
@@ -139,10 +233,15 @@ export default function DocumentsPage() {
             Manage and organize your legal documents
           </p>
         </div>
-        <Button onClick={() => router.push("/create")}>
-          <Sparkles className="h-4 w-4 mr-2" />
-          Generate Document
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" size="icon" onClick={() => refetch()} className="rounded-sm">
+            <RefreshCw className="h-4 w-4" />
+          </Button>
+          <Button onClick={() => router.push("/create")}>
+            <Sparkles className="h-4 w-4 mr-2" />
+            Generate Document
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -188,20 +287,12 @@ export default function DocumentsPage() {
                         <Edit className="h-4 w-4 mr-2" />
                         Edit
                       </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          // TODO: Implement download
-                        }}
-                      >
+                      <DropdownMenuItem onClick={(e) => handleExport(doc, e)}>
                         <Download className="h-4 w-4 mr-2" />
                         Download
                       </DropdownMenuItem>
                       <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          // TODO: Implement delete
-                        }}
+                        onClick={(e) => handleDeleteClick(doc, e)}
                         className="text-destructive"
                       >
                         <Trash2 className="h-4 w-4 mr-2" />
@@ -222,68 +313,71 @@ export default function DocumentsPage() {
               <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
                 {(() => {
                   let cleanText = doc.content || "";
-
-                  // Remove style tags and their content
-                  cleanText = cleanText.replace(
-                    /<style[^>]*>[\s\S]*?<\/style>/gi,
-                    "",
-                  );
-
-                  // Remove script tags and their content
-                  cleanText = cleanText.replace(
-                    /<script[^>]*>[\s\S]*?<\/script>/gi,
-                    "",
-                  );
-
-                  // Remove markdown code blocks
+                  cleanText = cleanText.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "");
+                  cleanText = cleanText.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "");
                   cleanText = cleanText.replace(/```[\s\S]*?```/g, "");
-
-                  // Remove inline code backticks
                   cleanText = cleanText.replace(/`[^`]*`/g, "");
-
-                  // Remove CSS selectors and rules (body, h1, .class, etc.)
-                  cleanText = cleanText.replace(
-                    /\b(?:body|html|h[1-6]|p|div|span|\.[\w-]+|#[\w-]+)\s*\{[^}]*\}/g,
-                    "",
-                  );
-
-                  // Remove JSON-like content
+                  cleanText = cleanText.replace(/\b(?:body|html|h[1-6]|p|div|span|\.[\w-]+|#[\w-]+)\s*\{[^}]*\}/g, "");
                   cleanText = cleanText.replace(/\{[^}]*\}/g, "");
-
-                  // Remove all HTML tags
                   cleanText = cleanText.replace(/<[^>]*>/g, " ");
-
-                  // Remove extra whitespace, newlines, and normalize spaces
                   cleanText = cleanText.replace(/\s+/g, " ").trim();
-
-                  // Remove the title if it appears at the start
                   const titleLower = doc.title.toLowerCase();
                   const cleanLower = cleanText.toLowerCase();
                   if (cleanLower.startsWith(titleLower)) {
                     cleanText = cleanText.substring(doc.title.length).trim();
                   }
-
-                  // If still no content, return placeholder
                   if (!cleanText || cleanText.length === 0) {
                     return "No preview available";
                   }
-
-                  // Return truncated text with ellipsis
-                  return cleanText.length > 120
-                    ? cleanText.substring(0, 120) + "..."
-                    : cleanText;
+                  return cleanText.length > 120 ? cleanText.substring(0, 120) + "..." : cleanText;
                 })()}
               </p>
               <p className="text-xs text-muted-foreground">
-                Updated{" "}
-                {formatDistanceToNow(new Date(doc.updatedAt), {
-                  addSuffix: true,
-                })}
+                Updated {formatDistanceToNow(new Date(doc.updatedAt), { addSuffix: true })}
               </p>
             </CardContent>
           </Card>
         ))}
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 rounded-full bg-destructive/10">
+                <AlertTriangle className="h-5 w-5 text-destructive" />
+              </div>
+              <DialogTitle>Delete Document</DialogTitle>
+            </div>
+            <DialogDescription>
+              Are you sure you want to delete{" "}
+              <span className="font-medium text-foreground">
+                {documentToDelete?.title}
+              </span>
+              ? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setDeleteDialogOpen(false);
+                setDocumentToDelete(null);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteConfirm}
+              disabled={deleteMutation.isPending}
+            >
+              {deleteMutation.isPending ? "Deleting..." : "Delete Document"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

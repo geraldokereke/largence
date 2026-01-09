@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Button } from "@largence/components/ui/button";
 import { Input } from "@largence/components/ui/input";
 import { toast } from "sonner";
@@ -18,6 +19,7 @@ import {
   Award,
   Mail,
   Trash2,
+  AlertTriangle,
 } from "lucide-react";
 import { useOrganization } from "@clerk/nextjs";
 import { InviteMemberDialog } from "@largence/components/invite-member-dialog";
@@ -33,10 +35,23 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@largence/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@largence/components/ui/dialog";
 
 export default function TeamsPage() {
   const queryClient = useQueryClient();
   const { organization, membership: currentMembership } = useOrganization();
+  const [revokeModalOpen, setRevokeModalOpen] = useState(false);
+  const [invitationToRevoke, setInvitationToRevoke] = useState<{
+    id: string;
+    email: string;
+  } | null>(null);
 
   // Fetch memberships with React Query
   const { data: membershipsData, isLoading: membershipsLoading } = useQuery({
@@ -49,12 +64,15 @@ export default function TeamsPage() {
     enabled: !!organization,
   });
 
-  // Fetch invitations with React Query
+  // Fetch invitations with React Query - only pending ones
   const { data: invitationsData, isLoading: invitationsLoading } = useQuery({
     queryKey: ["organization-invitations", organization?.id],
     queryFn: async () => {
       if (!organization) return null;
-      const invitations = await organization.getInvitations({ pageSize: 20 });
+      const invitations = await organization.getInvitations({ 
+        pageSize: 20,
+        status: ["pending"],
+      });
       return invitations;
     },
     enabled: !!organization,
@@ -94,12 +112,30 @@ export default function TeamsPage() {
       toast.success("Invitation revoked", {
         description: "The invitation has been revoked.",
       });
+      setRevokeModalOpen(false);
+      setInvitationToRevoke(null);
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error("Error revoking invitation:", error);
-      toast.error("Failed to revoke invitation", {
-        description: "Please try again.",
-      });
+      // Check for specific Clerk error codes
+      const errorCode = error?.errors?.[0]?.code || error?.code;
+      const isExpiredOrNotPending = 
+        errorCode === "organization_invitation_not_pending" ||
+        error?.message?.includes("not pending");
+      
+      if (isExpiredOrNotPending) {
+        toast.error("Invitation expired or already used", {
+          description: "This invitation is no longer pending. Refreshing the list...",
+        });
+        // Refresh the invitations list to remove stale invitations
+        queryClient.invalidateQueries({ queryKey: ["organization-invitations"] });
+      } else {
+        toast.error("Failed to revoke invitation", {
+          description: "Please try again.",
+        });
+      }
+      setRevokeModalOpen(false);
+      setInvitationToRevoke(null);
     },
   });
 
@@ -115,9 +151,15 @@ export default function TeamsPage() {
     removeMemberMutation.mutate(membershipId);
   };
 
-  const handleRevokeInvitation = async (invitationId: string) => {
-    if (!confirm("Are you sure you want to revoke this invitation?")) return;
-    revokeInvitationMutation.mutate(invitationId);
+  const handleRevokeInvitation = (invitationId: string, email: string) => {
+    setInvitationToRevoke({ id: invitationId, email });
+    setRevokeModalOpen(true);
+  };
+
+  const confirmRevokeInvitation = () => {
+    if (invitationToRevoke) {
+      revokeInvitationMutation.mutate(invitationToRevoke.id);
+    }
   };
 
   if (isLoading) {
@@ -436,7 +478,7 @@ export default function TeamsPage() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => handleRevokeInvitation(invitation.id)}
+                      onClick={() => handleRevokeInvitation(invitation.id, invitation.emailAddress)}
                       className="text-destructive hover:text-destructive"
                     >
                       Revoke
@@ -448,6 +490,45 @@ export default function TeamsPage() {
           </div>
         </div>
       )}
+
+      {/* Revoke Invitation Confirmation Modal */}
+      <Dialog open={revokeModalOpen} onOpenChange={setRevokeModalOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 rounded-full bg-destructive/10">
+                <AlertTriangle className="h-5 w-5 text-destructive" />
+              </div>
+              <DialogTitle>Revoke Invitation</DialogTitle>
+            </div>
+            <DialogDescription>
+              Are you sure you want to revoke the invitation sent to{" "}
+              <span className="font-medium text-foreground">
+                {invitationToRevoke?.email}
+              </span>
+              ? This action cannot be undone and they will need to be invited again.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setRevokeModalOpen(false);
+                setInvitationToRevoke(null);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={confirmRevokeInvitation}
+              disabled={revokeInvitationMutation.isPending}
+            >
+              {revokeInvitationMutation.isPending ? "Revoking..." : "Revoke Invitation"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

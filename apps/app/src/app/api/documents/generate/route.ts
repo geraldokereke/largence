@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { generateDocument } from "@largence/lib/openai";
 import prisma from "@largence/lib/prisma";
 import { canPerformAction, recordUsage } from "@/lib/stripe";
+import { createAuditLog, getUserInitials } from "@/lib/audit";
 
 export async function POST(request: Request) {
   try {
@@ -103,6 +104,30 @@ export async function POST(request: Request) {
 
     // Record usage after successful generation
     await recordUsage(orgId, "DOCUMENT_GENERATED", document.id);
+
+    // Log audit event for document creation
+    const user = await currentUser();
+    await createAuditLog({
+      userId,
+      organizationId: orgId,
+      action: "DOCUMENT_CREATED",
+      actionLabel: `Created new ${documentType}`,
+      entityType: "Document",
+      entityId: document.id,
+      entityName: document.title,
+      metadata: {
+        documentType,
+        jurisdiction,
+        parties: { party1: parties.party1, party2: parties.party2 },
+        template: documentType,
+      },
+      userName: user
+        ? `${user.firstName || ""} ${user.lastName || ""}`.trim() ||
+          user.username ||
+          "User"
+        : "User",
+      userAvatar: getUserInitials(user?.firstName, user?.lastName),
+    });
 
     return NextResponse.json({
       success: true,

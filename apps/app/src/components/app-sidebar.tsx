@@ -76,10 +76,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         const response = await fetch("/api/billing");
         if (response.ok) {
           const data = await response.json();
-          setPlan(data.plan);
+          // Plan is inside subscription object, default to FREE if no subscription
+          setPlan(data.subscription?.plan || "FREE");
+        } else {
+          // If billing API fails (e.g., no org), default to FREE
+          setPlan("FREE");
         }
       } catch (error) {
         console.error("Failed to fetch billing:", error);
+        // Default to FREE plan on error
+        setPlan("FREE");
       }
     };
 
@@ -193,30 +199,31 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarContent className="gap-0 px-2 py-4">
         <NavMain items={data.navMain} currentPath={pathname} />
       </SidebarContent>
-
-      <SidebarFooter className="border-t gap-0 px-4 py-4">
-        {plan === "FREE" && (
-          <div className="mb-4 p-4 rounded-sm border bg-primary/5 group-data-[collapsible=icon]:hidden">
+       {(plan === "FREE" || plan === null) && (
+          <div className="mb-4 mx-4 p-4 rounded-sm border bg-gradient-to-br from-primary/5 to-primary/10 group-data-[collapsible=icon]:hidden">
             <div className="flex items-center gap-2 mb-2">
               <Sparkles className="h-4 w-4 text-primary" />
               <span className="font-semibold text-sm">Free Plan</span>
             </div>
             <p className="text-xs text-muted-foreground mb-3">
-              Upgrade to unlock unlimited documents and compliance checks.
+              Upgrade to Pro for unlimited documents, compliance checks, and team collaboration.
             </p>
             <Button
               size="sm"
-              className="w-full h-8 text-xs rounded-sm"
+              className="w-full h-8 text-xs rounded-sm cursor-pointer"
               onClick={() =>
                 upgradeModal.openUpgradeModal({
                   reason: "Upgrade to unlock all features",
                 })
               }
             >
-              Upgrade
+              Upgrade to Pro
             </Button>
           </div>
         )}
+
+      <SidebarFooter className="border-t gap-0 px-4 py-4">
+       
         <SidebarMenu className="gap-1 px-0">
           <SidebarMenuItem>
             <SidebarMenuButton

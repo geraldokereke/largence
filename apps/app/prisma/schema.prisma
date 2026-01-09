@@ -319,18 +319,10 @@ model UsageRecord {
   subscriptionId String
   subscription   Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
   
-  // Usage tracking
   type           UsageType
-  count          Int      @default(1)
+  resourceType   String?
+  resourceId     String?
   
-  // Reference to the resource
-  resourceId     String?  // Document ID or Compliance Check ID
-  resourceType   String?  // "document" or "compliance"
-  
-  // Metadata
-  metadata       Json?
-  
-  // Period tracking (for monthly reset)
   periodStart    DateTime
   periodEnd      DateTime
   
@@ -339,6 +331,21 @@ model UsageRecord {
   @@index([subscriptionId])
   @@index([type])
   @@index([periodStart, periodEnd])
+}
+
+model WebhookEvent {
+  id            String   @id @default(cuid())
+  eventId       String   @unique  // Stripe event ID for idempotency
+  eventType     String
+  processed     Boolean  @default(false)
+  attempts      Int      @default(0)
+  lastError     String?  @db.Text
+  payload       Json
+  createdAt     DateTime @default(now())
+  processedAt   DateTime?
+  
+  @@index([eventId])
+  @@index([processed])
   @@index([createdAt])
 }
 

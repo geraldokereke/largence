@@ -118,16 +118,16 @@ export default function MainLayout({
           </div>
         </div>
       )}
-      <div className="[--header-height:calc(--spacing(14))]">
+      <div className="[--header-height:calc(--spacing(14))] h-screen flex flex-col">
         <SidebarProvider
           open={open}
           onOpenChange={handleOpenChange}
-          className="flex flex-col"
+          className="flex flex-col flex-1 overflow-hidden"
         >
           <SiteHeader />
-          <div className="flex flex-1">
+          <div className="flex flex-1 overflow-hidden">
             <AppSidebar />
-            <SidebarInset>
+            <SidebarInset className="overflow-y-auto">
               <PageTransition>{children}</PageTransition>
             </SidebarInset>
           </div>

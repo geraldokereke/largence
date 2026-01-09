@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@largence/components/ui/button";
 import { Input } from "@largence/components/ui/input";
 import { Spinner } from "@largence/components/ui/spinner";
@@ -27,6 +28,7 @@ import {
   Clock,
   TrendingUp,
   Search,
+  RefreshCw,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
@@ -51,79 +53,94 @@ interface Document {
   updatedAt: string;
 }
 
+async function fetchComplianceChecks(): Promise<{ complianceChecks: ComplianceCheck[] }> {
+  const response = await fetch("/api/compliance");
+  if (!response.ok) throw new Error("Failed to fetch compliance checks");
+  return response.json();
+}
+
+async function fetchDocuments(): Promise<{ documents: Document[] }> {
+  const response = await fetch("/api/documents");
+  if (!response.ok) throw new Error("Failed to fetch documents");
+  return response.json();
+}
+
+async function runComplianceCheck({
+  documentId,
+  documentType,
+}: {
+  documentId: string;
+  documentType: string;
+}): Promise<{ complianceCheck: ComplianceCheck }> {
+  const response = await fetch(`/api/documents/${documentId}/compliance`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      documentType: documentType || "Contract",
+      jurisdiction: "Nigeria",
+    }),
+  });
+  if (!response.ok) throw new Error("Failed to run compliance check");
+  return response.json();
+}
+
 export default function CompliancePage() {
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
-  const [complianceChecks, setComplianceChecks] = useState<ComplianceCheck[]>(
-    [],
-  );
-  const [documents, setDocuments] = useState<Document[]>([]);
+  const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [runningCheckFor, setRunningCheckFor] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
-  useEffect(() => {
-    fetchComplianceChecks();
-    fetchDocuments();
-  }, []);
+  // Fetch compliance checks
+  const {
+    data: complianceData,
+    isLoading: complianceLoading,
+    error: complianceError,
+    refetch: refetchCompliance,
+  } = useQuery({
+    queryKey: ["compliance-checks"],
+    queryFn: fetchComplianceChecks,
+  });
 
-  const fetchComplianceChecks = async () => {
-    try {
-      const response = await fetch("/api/compliance");
-      if (response.ok) {
-        const data = await response.json();
-        setComplianceChecks(data.complianceChecks || []);
-      }
-    } catch (error) {
-      console.error("Error fetching compliance checks:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Fetch documents
+  const { data: documentsData, isLoading: documentsLoading } = useQuery({
+    queryKey: ["documents"],
+    queryFn: fetchDocuments,
+  });
 
-  const fetchDocuments = async () => {
-    try {
-      const response = await fetch("/api/documents");
-      if (response.ok) {
-        const data = await response.json();
-        setDocuments(data.documents || []);
-      }
-    } catch (error) {
-      console.error("Error fetching documents:", error);
-    }
-  };
-
-  const handleRunComplianceCheck = async (documentId: string) => {
-    setRunningCheckFor(documentId);
-    try {
-      const document = documents.find((d) => d.id === documentId);
-      const response = await fetch(`/api/documents/${documentId}/compliance`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          documentType: document?.documentType || "Contract",
-          jurisdiction: "Nigeria",
-        }),
+  // Run compliance check mutation
+  const runCheckMutation = useMutation({
+    mutationFn: runComplianceCheck,
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["compliance-checks"] });
+      toast.success("Compliance check completed", {
+        description: `Score: ${data.complianceCheck.overallScore}/100`,
       });
+      setDialogOpen(false);
+    },
+    onError: () => {
+      toast.error("Compliance check failed", {
+        description: "Please try again later",
+      });
+    },
+  });
 
-      if (response.ok) {
-        const data = await response.json();
-        toast.success("Compliance check completed", {
-          description: `Score: ${data.complianceCheck.overallScore}/100`,
-        });
-        setDialogOpen(false);
-        fetchComplianceChecks();
-      } else {
-        toast.error("Compliance check failed");
-      }
-    } catch (error) {
-      console.error("Error running compliance check:", error);
-      toast.error("An error occurred");
-    } finally {
-      setRunningCheckFor(null);
-    }
+  const complianceChecks = complianceData?.complianceChecks || [];
+  const documents = documentsData?.documents || [];
+  const isLoading = complianceLoading || documentsLoading;
+
+  const filteredDocuments = useMemo(() => {
+    return documents.filter(
+      (doc) =>
+        doc.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (doc.documentType?.toLowerCase() || "").includes(searchQuery.toLowerCase())
+    );
+  }, [documents, searchQuery]);
+
+  const handleRunComplianceCheck = (doc: Document) => {
+    runCheckMutation.mutate({
+      documentId: doc.id,
+      documentType: doc.documentType,
+    });
   };
 
   const getScoreBadge = (score: number) => {
@@ -132,15 +149,7 @@ export default function CompliancePage() {
     return { variant: "destructive" as const, label: "Needs Work" };
   };
 
-  const filteredDocuments = documents.filter(
-    (doc) =>
-      doc.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (doc.documentType?.toLowerCase() || "").includes(
-        searchQuery.toLowerCase(),
-      ),
-  );
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex flex-1 flex-col gap-4 p-4">
         <div className="flex items-center justify-between mb-2">
@@ -164,192 +173,119 @@ export default function CompliancePage() {
     );
   }
 
+  if (complianceError) {
+    return (
+      <div className="flex flex-1 flex-col items-center justify-center p-4">
+        <AlertTriangle className="h-12 w-12 text-destructive mb-4" />
+        <h2 className="text-lg font-semibold mb-2">Failed to load compliance data</h2>
+        <p className="text-sm text-muted-foreground mb-4">
+          There was an error loading your compliance checks.
+        </p>
+        <Button onClick={() => refetchCompliance()} variant="outline" className="rounded-sm">
+          <RefreshCw className="h-4 w-4 mr-2" />
+          Try Again
+        </Button>
+      </div>
+    );
+  }
+
+  const DocumentSelectionDialog = () => (
+    <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      <DialogTrigger asChild>
+        <Button className="gap-2">
+          <Play className="h-4 w-4" />
+          Run Compliance Check
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[600px]">
+        <DialogHeader>
+          <DialogTitle>Select Document to Audit</DialogTitle>
+          <DialogDescription>
+            Choose a document to run compliance checks against NDPR, GDPR, and other regulations
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="relative mb-4">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="Search documents..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9 rounded-sm"
+          />
+        </div>
+
+        <ScrollArea className="max-h-[400px] pr-4">
+          <div className="space-y-2">
+            {filteredDocuments.length === 0 ? (
+              <div className="text-center py-8">
+                <FileText className="h-12 w-12 text-muted-foreground/50 mx-auto mb-3" />
+                <p className="text-sm text-muted-foreground">
+                  {searchQuery ? "No documents match your search" : "No documents found"}
+                </p>
+                {!searchQuery && (
+                  <Button
+                    variant="link"
+                    className="mt-2"
+                    onClick={() => router.push("/documents")}
+                  >
+                    Create a document first
+                  </Button>
+                )}
+              </div>
+            ) : (
+              filteredDocuments.map((doc) => (
+                <Card
+                  key={doc.id}
+                  className="rounded-sm p-4 hover:border-primary transition-colors cursor-pointer"
+                  onClick={() => !runCheckMutation.isPending && handleRunComplianceCheck(doc)}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-start gap-3 flex-1">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm bg-primary/10">
+                        <FileText className="h-5 w-5 text-primary" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm truncate">{doc.title}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {doc.documentType || "Document"} • Updated{" "}
+                          {formatDistanceToNow(new Date(doc.updatedAt), { addSuffix: true })}
+                        </p>
+                      </div>
+                    </div>
+                    {runCheckMutation.isPending &&
+                    runCheckMutation.variables?.documentId === doc.id ? (
+                      <Spinner size="sm" />
+                    ) : (
+                      <Button size="sm" variant="ghost">
+                        <Play className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                </Card>
+              ))
+            )}
+          </div>
+        </ScrollArea>
+      </DialogContent>
+    </Dialog>
+  );
+
   return (
     <div className="flex flex-1 flex-col gap-4 p-4">
       <div className="flex items-center justify-between mb-2">
         <div>
-          <h1 className="text-2xl font-semibold font-heading">
-            Compliance Center
-          </h1>
+          <h1 className="text-2xl font-semibold font-heading">Compliance Center</h1>
           <p className="text-sm text-muted-foreground">
             Monitor regulatory compliance and audit your documents
           </p>
         </div>
-        {complianceChecks.length > 0 && (
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="gap-2">
-                <Play className="h-4 w-4" />
-                Run Compliance Check
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[600px]">
-              <DialogHeader>
-                <DialogTitle>Select Document to Audit</DialogTitle>
-                <DialogDescription>
-                  Choose a document to run compliance checks against NDPR, GDPR,
-                  and other regulations
-                </DialogDescription>
-              </DialogHeader>
-
-              <div className="relative mb-4">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  placeholder="Search documents..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9"
-                />
-              </div>
-
-              <ScrollArea className="max-h-[400px] pr-4">
-                <div className="space-y-2">
-                  {filteredDocuments.length === 0 ? (
-                    <div className="text-center py-8">
-                      <FileText className="h-12 w-12 text-muted-foreground/50 mx-auto mb-3" />
-                      <p className="text-sm text-muted-foreground">
-                        {searchQuery
-                          ? "No documents match your search"
-                          : "No documents found"}
-                      </p>
-                      {!searchQuery && (
-                        <Button
-                          variant="link"
-                          className="mt-2"
-                          onClick={() => router.push("/documents")}
-                        >
-                          Create a document first
-                        </Button>
-                      )}
-                    </div>
-                  ) : (
-                    filteredDocuments.map((doc) => (
-                      <Card
-                        key={doc.id}
-                        className="rounded-sm p-4 hover:border-primary transition-colors cursor-pointer"
-                        onClick={() =>
-                          !runningCheckFor && handleRunComplianceCheck(doc.id)
-                        }
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-start gap-3 flex-1">
-                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm bg-primary/10">
-                              <FileText className="h-5 w-5 text-primary" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="font-medium text-sm truncate">
-                                {doc.title}
-                              </p>
-                              <p className="text-xs text-muted-foreground">
-                                {doc.documentType || "Document"} • Updated{" "}
-                                {formatDistanceToNow(new Date(doc.updatedAt), {
-                                  addSuffix: true,
-                                })}
-                              </p>
-                            </div>
-                          </div>
-                          {runningCheckFor === doc.id ? (
-                            <Spinner size="sm" />
-                          ) : (
-                            <Button size="sm" variant="ghost">
-                              <Play className="h-4 w-4" />
-                            </Button>
-                          )}
-                        </div>
-                      </Card>
-                    ))
-                  )}
-                </div>
-              </ScrollArea>
-            </DialogContent>
-          </Dialog>
-        )}
+        {complianceChecks.length > 0 && <DocumentSelectionDialog />}
       </div>
 
       {complianceChecks.length === 0 ? (
         <>
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogContent className="sm:max-w-[600px]">
-              <DialogHeader>
-                <DialogTitle>Select Document to Audit</DialogTitle>
-                <DialogDescription>
-                  Choose a document to run compliance checks against NDPR, GDPR,
-                  and other regulations
-                </DialogDescription>
-              </DialogHeader>
-
-              <div className="relative mb-4">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  placeholder="Search documents..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9 rounded-sm"
-                />
-              </div>
-
-              <ScrollArea className="max-h-[400px] pr-4">
-                <div className="space-y-2">
-                  {filteredDocuments.length === 0 ? (
-                    <div className="text-center py-8">
-                      <FileText className="h-12 w-12 text-muted-foreground/50 mx-auto mb-3" />
-                      <p className="text-sm text-muted-foreground">
-                        {searchQuery
-                          ? "No documents match your search"
-                          : "No documents found"}
-                      </p>
-                      {!searchQuery && (
-                        <Button
-                          variant="link"
-                          className="mt-2"
-                          onClick={() => router.push("/documents")}
-                        >
-                          Create a document first
-                        </Button>
-                      )}
-                    </div>
-                  ) : (
-                    filteredDocuments.map((doc) => (
-                      <Card
-                        key={doc.id}
-                        className="p-4 hover:border-primary transition-colors cursor-pointer"
-                        onClick={() =>
-                          !runningCheckFor && handleRunComplianceCheck(doc.id)
-                        }
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-start gap-3 flex-1">
-                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm bg-primary/10">
-                              <FileText className="h-5 w-5 text-primary" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="font-medium text-sm truncate">
-                                {doc.title}
-                              </p>
-                              <p className="text-xs text-muted-foreground">
-                                {doc.documentType || "Document"} • Updated{" "}
-                                {formatDistanceToNow(new Date(doc.updatedAt), {
-                                  addSuffix: true,
-                                })}
-                              </p>
-                            </div>
-                          </div>
-                          {runningCheckFor === doc.id ? (
-                            <Spinner size="sm" />
-                          ) : (
-                            <Button size="sm" variant="ghost">
-                              <Play className="h-4 w-4" />
-                            </Button>
-                          )}
-                        </div>
-                      </Card>
-                    ))
-                  )}
-                </div>
-              </ScrollArea>
-            </DialogContent>
-          </Dialog>
-
+          <DocumentSelectionDialog />
           <EmptyState
             icon={ShieldCheck}
             title="No compliance audits yet"
@@ -378,12 +314,8 @@ export default function CompliancePage() {
               </div>
               <div className="space-y-1">
                 <p className="text-sm text-muted-foreground">Total Checks</p>
-                <p className="text-3xl font-semibold font-heading">
-                  {complianceChecks.length}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  All compliance audits
-                </p>
+                <p className="text-3xl font-semibold font-heading">{complianceChecks.length}</p>
+                <p className="text-xs text-muted-foreground">All compliance audits</p>
               </div>
             </div>
             <div className="rounded-sm border bg-card p-6 hover:bg-accent/5 transition-colors">
@@ -464,25 +396,16 @@ export default function CompliancePage() {
                               <div className="mt-2 text-xs text-muted-foreground">
                                 <span>
                                   Jurisdiction:{" "}
-                                  <span className="font-medium">
-                                    {check.jurisdiction}
-                                  </span>
+                                  <span className="font-medium">{check.jurisdiction}</span>
                                 </span>
                               </div>
                             </div>
                             <div className="text-right shrink-0">
                               <div className="flex items-baseline gap-1 mb-1">
-                                <span className="text-2xl font-bold">
-                                  {check.overallScore}
-                                </span>
-                                <span className="text-sm text-muted-foreground">
-                                  /100
-                                </span>
+                                <span className="text-2xl font-bold">{check.overallScore}</span>
+                                <span className="text-sm text-muted-foreground">/100</span>
                               </div>
-                              <Badge
-                                variant={scoreBadge.variant}
-                                className="text-xs"
-                              >
+                              <Badge variant={scoreBadge.variant} className="text-xs">
                                 {scoreBadge.label}
                               </Badge>
                             </div>
@@ -491,12 +414,9 @@ export default function CompliancePage() {
                             <div className="flex items-center gap-1.5">
                               <Clock className="h-3 w-3" />
                               <span>
-                                {formatDistanceToNow(
-                                  new Date(check.createdAt),
-                                  {
-                                    addSuffix: true,
-                                  },
-                                )}
+                                {formatDistanceToNow(new Date(check.createdAt), {
+                                  addSuffix: true,
+                                })}
                               </span>
                             </div>
                             <div className="flex items-center gap-1.5">

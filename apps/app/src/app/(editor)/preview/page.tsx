@@ -272,16 +272,11 @@ export default function DocumentEditorPreviewPage() {
   };
 
   const handleSendToDocuSign = async () => {
-    setExporting(true);
-    try {
-      // This would integrate with DocuSign API
-      toast.info("DocuSign Integration", {
-        description:
-          "DocuSign API integration is required. Contact your administrator to enable this feature.",
-      });
-    } finally {
-      setExporting(false);
-    }
+    toast("Coming Soon", {
+      description:
+        "DocuSign integration is coming soon! Stay tuned for e-signature capabilities.",
+      icon: "🚀",
+    });
   };
 
   if (loading) {

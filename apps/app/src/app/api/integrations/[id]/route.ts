@@ -1,10 +1,11 @@
-import { auth } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import {
   connectedIntegrationsStore,
   INTEGRATION_CATALOG,
   type IntegrationProviderType,
 } from "../route";
+import { createAuditLog, getUserInitials } from "@/lib/audit";
 
 export async function GET(
   request: Request,
@@ -140,8 +141,34 @@ export async function DELETE(
       );
     }
 
+    // Get integration info before deleting for audit log
+    const catalog =
+      INTEGRATION_CATALOG[foundProvider as IntegrationProviderType];
+
     // Remove the integration
     orgIntegrations.delete(foundProvider);
+
+    // Log audit event for integration disconnection
+    const user = await currentUser();
+    await createAuditLog({
+      userId,
+      organizationId: orgId,
+      action: "INTEGRATION_DISCONNECTED",
+      actionLabel: `Disconnected ${catalog?.name || foundProvider} integration`,
+      entityType: "Integration",
+      entityId: id,
+      entityName: catalog?.name || foundProvider,
+      metadata: {
+        provider: foundProvider,
+        category: catalog?.category,
+      },
+      userName: user
+        ? `${user.firstName || ""} ${user.lastName || ""}`.trim() ||
+          user.username ||
+          "User"
+        : "User",
+      userAvatar: getUserInitials(user?.firstName, user?.lastName),
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {

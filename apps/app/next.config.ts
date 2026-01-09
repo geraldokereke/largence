@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
-  reactCompiler: true,
+  transpilePackages: ["@largence/ui"],
 
   // Enable standalone output for Docker
   output: "standalone",
@@ -14,6 +14,7 @@ const nextConfig: NextConfig = {
       "framer-motion",
       "@radix-ui/react-dropdown-menu",
       "@radix-ui/react-dialog",
+      "@largence/ui",
     ],
     scrollRestoration: true,
     // Enable faster navigation with staleTimes

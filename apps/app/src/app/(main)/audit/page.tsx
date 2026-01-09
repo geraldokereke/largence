@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@largence/components/ui/button";
 import { Input } from "@largence/components/ui/input";
 import { Skeleton } from "@largence/components/ui/skeleton";
@@ -15,7 +15,6 @@ import {
   Edit,
   Check,
   UserPlus,
-  Upload,
   Eye,
   Activity,
   Users,
@@ -26,7 +25,6 @@ import {
   Globe,
   Bot,
   Archive,
-  Send,
   Trash2,
   LogIn,
   LogOut,
@@ -34,6 +32,14 @@ import {
   PenTool,
   XCircle,
   Settings,
+  RefreshCw,
+  History,
+  Loader2,
+  Sparkles,
+  Link,
+  Unlink,
+  RefreshCcw,
+  AlertTriangle,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
@@ -72,6 +78,7 @@ interface AuditResponse {
     compliance: number;
     user: number;
     system: number;
+    integration: number;
   };
   stats: {
     eventsThisWeek: number;
@@ -85,6 +92,7 @@ interface AuditResponse {
 
 const getActionIcon = (action: string) => {
   switch (action) {
+    // Document actions
     case "DOCUMENT_CREATED":
       return { icon: FileText, color: "text-primary bg-primary/10" };
     case "DOCUMENT_UPDATED":
@@ -103,9 +111,14 @@ const getActionIcon = (action: string) => {
       return { icon: Check, color: "text-emerald-600 bg-emerald-500/10" };
     case "DOCUMENT_REJECTED":
       return { icon: XCircle, color: "text-red-600 bg-red-500/10" };
+    // Compliance actions
     case "COMPLIANCE_CHECK_RUN":
     case "COMPLIANCE_CHECK_COMPLETED":
       return { icon: ShieldCheck, color: "text-blue-600 bg-blue-500/10" };
+    case "AGENTIC_COMPLIANCE_RUN":
+    case "AGENTIC_COMPLIANCE_COMPLETED":
+      return { icon: Sparkles, color: "text-purple-600 bg-purple-500/10" };
+    // User actions
     case "USER_INVITED":
       return { icon: UserPlus, color: "text-emerald-600 bg-emerald-500/10" };
     case "USER_REMOVED":
@@ -116,12 +129,22 @@ const getActionIcon = (action: string) => {
       return { icon: LogIn, color: "text-emerald-600 bg-emerald-500/10" };
     case "USER_LOGOUT":
       return { icon: LogOut, color: "text-slate-600 bg-slate-500/10" };
+    // System actions
     case "SYSTEM_BACKUP":
       return { icon: Archive, color: "text-slate-600 bg-slate-500/10" };
     case "SYSTEM_RESTORE":
       return { icon: Archive, color: "text-blue-600 bg-blue-500/10" };
     case "SETTINGS_CHANGED":
       return { icon: Settings, color: "text-amber-600 bg-amber-500/10" };
+    // Integration actions
+    case "INTEGRATION_CONNECTED":
+      return { icon: Link, color: "text-emerald-600 bg-emerald-500/10" };
+    case "INTEGRATION_DISCONNECTED":
+      return { icon: Unlink, color: "text-red-600 bg-red-500/10" };
+    case "INTEGRATION_SYNCED":
+      return { icon: RefreshCcw, color: "text-blue-600 bg-blue-500/10" };
+    case "INTEGRATION_ERROR":
+      return { icon: AlertTriangle, color: "text-red-600 bg-red-500/10" };
     default:
       return { icon: Activity, color: "text-primary bg-primary/10" };
   }
@@ -142,6 +165,8 @@ export default function AuditPage() {
   const [eventType, setEventType] = useState("all");
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [backfillMessage, setBackfillMessage] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
   // Debounce search
   useEffect(() => {
@@ -151,7 +176,29 @@ export default function AuditPage() {
     return () => clearTimeout(timer);
   }, [search]);
 
-  const { data, isLoading, error } = useQuery<AuditResponse>({
+  // Backfill historical data mutation
+  const backfillMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch("/api/audit/backfill", {
+        method: "POST",
+      });
+      if (!response.ok) throw new Error("Failed to sync historical data");
+      return response.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["audit-logs"] });
+      if (data.backfilled?.documents > 0 || data.backfilled?.complianceChecks > 0) {
+        setBackfillMessage(
+          `Synced ${data.backfilled.documents} documents and ${data.backfilled.complianceChecks} compliance checks`
+        );
+      } else {
+        setBackfillMessage("All historical data already synced");
+      }
+      setTimeout(() => setBackfillMessage(null), 5000);
+    },
+  });
+
+  const { data, isLoading, refetch } = useQuery<AuditResponse>({
     queryKey: ["audit-logs", page, eventType, debouncedSearch],
     queryFn: async () => {
       const params = new URLSearchParams({
@@ -213,6 +260,7 @@ export default function AuditPage() {
       count: data?.eventCounts.compliance || 0,
     },
     { id: "user", name: "User", count: data?.eventCounts.user || 0 },
+    { id: "integration", name: "Integration", count: data?.eventCounts.integration || 0 },
     { id: "system", name: "System", count: data?.eventCounts.system || 0 },
   ];
 
@@ -295,12 +343,44 @@ export default function AuditPage() {
               across your organization
             </p>
           </div>
-          <Button variant="outline" className="h-10 rounded-sm">
-            <Download className="h-5 w-5" />
-            Export Report
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              className="h-10 rounded-sm"
+              onClick={() => backfillMutation.mutate()}
+              disabled={backfillMutation.isPending}
+            >
+              {backfillMutation.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <History className="h-4 w-4" />
+              )}
+              Sync Historical Data
+            </Button>
+            <Button
+              variant="outline"
+              className="h-10 rounded-sm"
+              onClick={() => refetch()}
+              disabled={isLoading}
+            >
+              <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
+              Refresh
+            </Button>
+            <Button variant="outline" className="h-10 rounded-sm">
+              <Download className="h-5 w-5" />
+              Export Report
+            </Button>
+          </div>
         </div>
       </div>
+
+      {/* Backfill Success Message */}
+      {backfillMessage && (
+        <div className="mb-4 p-3 rounded-sm bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 text-sm">
+          <Check className="inline h-4 w-4 mr-2" />
+          {backfillMessage}
+        </div>
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">

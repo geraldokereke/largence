@@ -1,8 +1,9 @@
 import { NextRequest } from "next/server";
-import { auth } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import OpenAI from "openai";
 import prisma from "@largence/lib/prisma";
 import { canPerformAction, recordUsage } from "@/lib/stripe";
+import { createAuditLog, getUserInitials } from "@/lib/audit";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY || "dummy-key",
@@ -169,6 +170,31 @@ Rewrite the document with all compliance issues fixed, maintaining the original 
           // Record usage after successful compliance check
           if (orgId) {
             await recordUsage(orgId, "COMPLIANCE_CHECK", complianceCheck.id);
+
+            // Log audit event for agentic compliance
+            const user = await currentUser();
+            await createAuditLog({
+              userId,
+              organizationId: orgId,
+              action: "AGENTIC_COMPLIANCE_COMPLETED",
+              actionLabel: `Ran agentic compliance (Auto-fixed document)`,
+              entityType: "Compliance",
+              entityId: complianceCheck.id,
+              entityName: document.title,
+              metadata: {
+                documentId,
+                score: 95,
+                jurisdiction: document.jurisdiction,
+                documentType: document.documentType,
+                type: "agentic",
+              },
+              userName: user
+                ? `${user.firstName || ""} ${user.lastName || ""}`.trim() ||
+                  user.username ||
+                  "User"
+                : "User",
+              userAvatar: getUserInitials(user?.firstName, user?.lastName),
+            });
           }
 
           controller.close();

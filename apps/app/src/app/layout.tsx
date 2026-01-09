@@ -1,12 +1,8 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { Geist_Mono } from "next/font/google";
-import { ThemeProvider } from "@largence/components/theme-provider";
-import { RouteLoading } from "@largence/components/route-loading";
-import { Toaster } from "@largence/components/ui/sonner";
-import { QueryProvider } from "@largence/components/query-provider";
+import { Providers } from "@largence/components/providers";
 import "./globals.css";
-import { ClerkProvider } from "@clerk/nextjs";
 
 const generalSans = localFont({
   src: [
@@ -168,29 +164,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <ClerkProvider>
-        <body
-          className={`${generalSans.variable} ${polySans.variable} ${satoshi.variable} ${geistMono.variable} font-sans antialiased overflow-hidden`}
-        >
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <QueryProvider>
-              <RouteLoading />
-              {children}
-              <Toaster
-                position="top-right"
-                expand={false}
-                richColors
-                closeButton
-              />
-            </QueryProvider>
-          </ThemeProvider>
-        </body>
-      </ClerkProvider>
+      <body
+        className={`${generalSans.variable} ${polySans.variable} ${satoshi.variable} ${geistMono.variable} font-sans antialiased overflow-hidden`}
+      >
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 }

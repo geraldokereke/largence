@@ -135,7 +135,7 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL("https://largence.com"),
   title: {
-    default: "Largence - Enterprise Legal Intelligence for Africa",
+    default: "Largence - Legal Intelligence for Enterprises",
     template: "%s | Largence",
   },
   description:
@@ -165,7 +165,7 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: "https://largence.com",
     siteName: "Largence",
-    title: "Largence - Enterprise Legal Intelligence for Africa",
+    title: "Largence - Legal Intelligence for Enterprises",
     description:
       "Automate contract drafting, ensure regulatory compliance, and streamline governance for African enterprises with AI-powered legal intelligence.",
     images: [
@@ -179,7 +179,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Largence - Enterprise Legal Intelligence for Africa",
+    title: "Largence - Legal Intelligence for Enterprises",
     description:
       "Automate contract drafting, ensure regulatory compliance, and streamline governance for African enterprises.",
     images: ["/og-image.png"],

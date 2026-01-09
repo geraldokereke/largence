@@ -20,7 +20,7 @@ export function Footer() {
               </span>
             </div>
             <p className="text-sm text-muted-foreground">
-              Enterprise Legal Intelligence for Africa
+              Legal Intelligence for Enterprises
             </p>
           </div>
           <div>

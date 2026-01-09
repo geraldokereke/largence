@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 
 export const runtime = "edge";
-export const alt = "Largence - Enterprise Legal Intelligence for Africa";
+export const alt = "Largence - Legal Intelligence for Enterprises";
 export const size = {
   width: 1200,
   height: 630,
@@ -70,7 +70,7 @@ export default async function Image() {
               fontWeight: 600,
             }}
           >
-            Enterprise Legal Intelligence for Africa
+            Legal Intelligence for Enterprises
           </div>
 
           <div

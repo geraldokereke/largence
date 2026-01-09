@@ -4,16 +4,14 @@ import * as React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@largence/ui";
-import { Menu, X, Moon, Sun, Monitor } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { ScheduleDemoDialog } from "./schedule-demo-dialog";
-import { useTheme } from "./theme-provider";
 
 export const Navbar: React.FC = () => {
   const [scrolled, setScrolled] = React.useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const [activeSection, setActiveSection] = React.useState("");
   const [demoDialogOpen, setDemoDialogOpen] = React.useState(false);
-  const { theme, setTheme } = useTheme();
 
   React.useEffect(() => {
     const handleScroll = () => {
@@ -46,19 +44,8 @@ export const Navbar: React.FC = () => {
     };
   }, [mobileMenuOpen]);
 
-  const cycleTheme = () => {
-    if (theme === "system") {
-      setTheme("light");
-    } else if (theme === "light") {
-      setTheme("dark");
-    } else {
-      setTheme("system");
-    }
-  };
   const menuItems = [
     { href: "#features", label: "Features" },
-    { href: "#usecases", label: "Use Cases" },
-    { href: "#solutions", label: "Solutions" },
     { href: "#pricing", label: "Pricing" },
   ];
 
@@ -85,7 +72,7 @@ export const Navbar: React.FC = () => {
                 height={28}
                 className="shrink-0 sm:w-7 sm:h-7"
               />
-              <span className="text-base sm:text-lg font-semibold font-display tracking-tight group-hover:text-primary transition-colors duration-200">
+              <span className="text-base sm:text-lg font-semibold font-heading tracking-tight group-hover:text-primary transition-colors duration-200">
                 Largence
               </span>
             </Link>
@@ -116,28 +103,6 @@ export const Navbar: React.FC = () => {
 
             {/* Desktop Actions */}
             <div className="hidden md:flex items-center gap-2 ml-auto">
-              {/* Dark Mode Toggle */}
-              <button
-                onClick={cycleTheme}
-                className="p-1.5 text-muted-foreground hover:text-foreground transition-colors duration-200"
-                aria-label="Toggle theme"
-                title={
-                  theme === "system"
-                    ? "System"
-                    : theme === "dark"
-                      ? "Dark"
-                      : "Light"
-                }
-              >
-                {theme === "system" ? (
-                  <Monitor className="w-4 h-4" />
-                ) : theme === "dark" ? (
-                  <Moon className="w-4 h-4" />
-                ) : (
-                  <Sun className="w-4 h-4" />
-                )}
-              </button>
-
               <Link href="https://app.largence.com/login">
                 <Button
                   variant="ghost"
@@ -278,7 +243,7 @@ export const Navbar: React.FC = () => {
           >
             <p>© {new Date().getFullYear()} Largence</p>
             <p className="text-xs mt-1">
-              Enterprise Legal Intelligence for Africa
+              Legal Intelligence for Enterprises
             </p>
           </div>
         </div>

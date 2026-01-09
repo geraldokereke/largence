@@ -9,8 +9,10 @@ import {
   Shield,
   Briefcase,
   Users,
+  CheckCircle2,
+  ArrowRight,
 } from "lucide-react";
-import Image from "next/image";
+import { Button } from "@largence/ui";
 
 const useCases = [
   {
@@ -18,7 +20,6 @@ const useCases = [
     icon: Building2,
     title: "Corporate Legal Teams",
     description: "Streamline legal operations for enterprise organizations",
-    screenshot: "/screenshot.png",
     features: [
       "Centralized contract repository",
       "Automated compliance tracking",
@@ -31,7 +32,6 @@ const useCases = [
     icon: Scale,
     title: "Law Firms",
     description: "Enhance client service with AI-powered tools",
-    screenshot: "/screenshot.png",
     features: [
       "Client matter management",
       "Document automation",
@@ -44,7 +44,6 @@ const useCases = [
     icon: FileText,
     title: "Contract Management",
     description: "Complete lifecycle management for all contracts",
-    screenshot: "/screenshot.png",
     features: [
       "AI-powered drafting",
       "Version control",
@@ -57,7 +56,6 @@ const useCases = [
     icon: Shield,
     title: "Compliance Teams",
     description: "Stay compliant across African jurisdictions",
-    screenshot: "/screenshot.png",
     features: [
       "Real-time regulatory updates",
       "Automated audit trails",
@@ -70,7 +68,6 @@ const useCases = [
     icon: Briefcase,
     title: "Procurement",
     description: "Manage vendor contracts and agreements",
-    screenshot: "/screenshot.png",
     features: [
       "Vendor contract library",
       "Approval workflows",
@@ -83,7 +80,6 @@ const useCases = [
     icon: Users,
     title: "HR Teams",
     description: "Streamline employment documentation",
-    screenshot: "/screenshot.png",
     features: [
       "Employment contract templates",
       "Policy management",
@@ -140,7 +136,7 @@ export function UseCasesSection() {
                 {isSelected && (
                   <motion.div
                     layoutId="selectedBorder"
-                    className="absolute inset-0 rounded-2xl bg-linear-to-br from-primary/20 to-primary/10 blur-xl -z-10"
+                    className="absolute inset-0 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/10 blur-xl -z-10"
                     transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                   />
                 )}
@@ -149,7 +145,7 @@ export function UseCasesSection() {
                   className={`w-14 h-14 rounded-xl flex items-center justify-center mb-4 transition-all ${
                     isSelected
                       ? "bg-primary text-primary-foreground shadow-lg shadow-primary/30"
-                      : "bg-linear-to-br from-muted to-muted/50 text-muted-foreground group-hover:from-primary/20 group-hover:to-primary/10 group-hover:text-primary"
+                      : "bg-gradient-to-br from-muted to-muted/50 text-muted-foreground group-hover:from-primary/20 group-hover:to-primary/10 group-hover:text-primary"
                   }`}
                 >
                   <Icon className="w-7 h-7" />
@@ -173,6 +169,7 @@ export function UseCasesSection() {
           })}
         </div>
 
+        {/* Selected Use Case Details */}
         <AnimatePresence mode="wait">
           <motion.div
             key={selectedCase.id}
@@ -180,9 +177,9 @@ export function UseCasesSection() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.4 }}
-            className="rounded-2xl border border-primary/20 bg-linear-to-br from-primary/5 via-background/50 to-primary/5 backdrop-blur-sm p-6 md:p-8"
+            className="rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/5 via-background/50 to-primary/5 backdrop-blur-sm p-6 md:p-8"
           >
-            <div className="grid lg:grid-cols-[1fr_400px] gap-8 items-start">
+            <div className="grid lg:grid-cols-2 gap-8 items-start">
               {/* Left: Details */}
               <div className="space-y-6">
                 <div>
@@ -212,7 +209,7 @@ export function UseCasesSection() {
                         className="flex items-start gap-3 group"
                       >
                         <div className="shrink-0 w-6 h-6 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center mt-0.5 group-hover:bg-primary/20 transition-colors">
-                          <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                          <CheckCircle2 className="w-3.5 h-3.5 text-primary" />
                         </div>
                         <span className="text-sm text-foreground leading-relaxed">
                           {feature}
@@ -223,30 +220,43 @@ export function UseCasesSection() {
                 </div>
               </div>
 
-              {/* Right: Screenshot */}
+              {/* Right: Stats & CTA */}
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.4, delay: 0.2 }}
                 className="relative"
               >
-                <div className="absolute -inset-4 bg-linear-to-br from-primary/30 via-primary/20 to-primary/30 rounded-3xl blur-2xl opacity-60" />
-                <div className="relative rounded-xl border border-primary/30 bg-linear-to-b from-background/90 to-background/60 backdrop-blur-md p-2 overflow-hidden">
-                  {/* Window Controls */}
-                  <div className="flex items-center gap-1.5 mb-2 px-2 py-1.5 bg-muted/40 rounded-t-lg">
-                    <div className="w-2.5 h-2.5 rounded-full bg-red-500/70" />
-                    <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/70" />
-                    <div className="w-2.5 h-2.5 rounded-full bg-green-500/70" />
+                <div className="rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm p-6">
+                  {/* Stats Grid */}
+                  <div className="grid grid-cols-2 gap-4 mb-6">
+                    <div className="p-4 rounded-lg bg-primary/5 border border-primary/10 text-center">
+                      <div className="text-3xl font-bold text-primary mb-1">50%</div>
+                      <div className="text-xs text-muted-foreground">Time Saved</div>
+                    </div>
+                    <div className="p-4 rounded-lg bg-primary/5 border border-primary/10 text-center">
+                      <div className="text-3xl font-bold text-primary mb-1">90%</div>
+                      <div className="text-xs text-muted-foreground">Accuracy</div>
+                    </div>
+                    <div className="p-4 rounded-lg bg-primary/5 border border-primary/10 text-center">
+                      <div className="text-3xl font-bold text-primary mb-1">24/7</div>
+                      <div className="text-xs text-muted-foreground">Availability</div>
+                    </div>
+                    <div className="p-4 rounded-lg bg-primary/5 border border-primary/10 text-center">
+                      <div className="text-3xl font-bold text-primary mb-1">100+</div>
+                      <div className="text-xs text-muted-foreground">Templates</div>
+                    </div>
                   </div>
 
-                  {/* Screenshot */}
-                  <div className="relative aspect-4/3 bg-linear-to-br from-muted/40 to-muted/20 rounded-lg overflow-hidden border border-border/30">
-                    <Image
-                      src={selectedCase.screenshot}
-                      alt={selectedCase.title}
-                      fill
-                      className="object-cover object-top"
-                    />
+                  {/* CTA */}
+                  <div className="space-y-3">
+                    <Button className="w-full group" size="sm">
+                      Get Started
+                      <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                    </Button>
+                    <p className="text-xs text-center text-muted-foreground">
+                      14-day free trial • No credit card required
+                    </p>
                   </div>
                 </div>
               </motion.div>

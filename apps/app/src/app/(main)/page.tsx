@@ -3,8 +3,9 @@
 import { useAuth } from "@clerk/nextjs";
 import { useQuery } from "@tanstack/react-query";
 import { WelcomeCTA } from "@largence/components/welcome-cta";
+import { OnboardingChecklist } from "@largence/components/onboarding-checklist";
 import { EmptyState } from "@largence/components/empty-state";
-import { Button } from "@largence/components/ui/button";
+import { Button } from "@largence/components/ui/button";;
 import {
   Card,
   CardContent,
@@ -86,6 +87,9 @@ export default function Home() {
   return (
     <div className="flex flex-1 flex-col gap-4 p-4">
       <WelcomeCTA />
+      
+      {/* Onboarding Checklist - shows only once */}
+      <OnboardingChecklist />
 
       {isLoading ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">

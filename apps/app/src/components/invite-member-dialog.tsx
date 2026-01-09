@@ -58,6 +58,12 @@ export function InviteMemberDialog() {
       setSuccess(true);
       setEmail("");
 
+      // Mark onboarding item as complete
+      if (typeof window !== "undefined") {
+        localStorage.setItem("onboarding:invited_team", "true");
+        window.dispatchEvent(new CustomEvent("onboarding:progress"));
+      }
+
       // Auto close after 2 seconds
       setTimeout(() => {
         setOpen(false);

@@ -116,6 +116,12 @@ export default function CompliancePage() {
         description: `Score: ${data.complianceCheck.overallScore}/100`,
       });
       setDialogOpen(false);
+      
+      // Mark onboarding item as complete
+      if (typeof window !== "undefined") {
+        localStorage.setItem("onboarding:ran_compliance", "true");
+        window.dispatchEvent(new CustomEvent("onboarding:progress"));
+      }
     },
     onError: () => {
       toast.error("Compliance check failed", {

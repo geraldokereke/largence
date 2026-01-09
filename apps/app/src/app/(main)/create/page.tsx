@@ -22,6 +22,7 @@ import { ReviewStep } from "@largence/components/create/review-step";
 import { Spinner } from "@largence/components/ui/spinner";
 import { UpgradeModal } from "@largence/components/upgrade-modal";
 import { useUpgradeModal } from "@/hooks/use-upgrade-modal";
+import { useOnboardingProgress } from "@largence/components/onboarding-checklist";
 
 const documentTypes = [
   { id: "employment", name: "Employment Contract", icon: Users },
@@ -257,6 +258,12 @@ Please generate a comprehensive, legally sound document with:
       toast.success("Document generated successfully", {
         description: "Your legal document has been created.",
       });
+      
+      // Mark onboarding item as complete
+      if (typeof window !== "undefined") {
+        localStorage.setItem("onboarding:created_document", "true");
+        window.dispatchEvent(new CustomEvent("onboarding:progress"));
+      }
     } catch (err: any) {
       console.error("Generate error:", err);
       setError(err.message || "Failed to generate document. Please try again.");

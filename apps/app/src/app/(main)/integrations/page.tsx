@@ -15,6 +15,9 @@ import {
   Loader2,
   ExternalLink,
   Zap,
+  Bell,
+  Sparkles,
+  BellRing,
 } from "lucide-react";
 import {
   SiNotion,
@@ -160,6 +163,25 @@ export default function IntegrationsPage() {
 
   const [showComingSoonDialog, setShowComingSoonDialog] = useState(false);
   const [comingSoonIntegration, setComingSoonIntegration] = useState<string | null>(null);
+  const [notifiedIntegrations, setNotifiedIntegrations] = useState<Set<string>>(new Set());
+
+  const handleNotifyMe = (provider: string, integrationName: string) => {
+    setNotifiedIntegrations(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(provider)) {
+        newSet.delete(provider);
+        toast.success("Notification removed", {
+          description: `You won't be notified when ${integrationName} launches`,
+        });
+      } else {
+        newSet.add(provider);
+        toast.success("You'll be notified!", {
+          description: `We'll let you know when ${integrationName} is available`,
+        });
+      }
+      return newSet;
+    });
+  };
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["integrations"],
@@ -200,21 +222,54 @@ export default function IntegrationsPage() {
     },
   });
 
-  const filteredIntegrations = useMemo(() => {
+  // Get only available integrations (the ones we're showing as "coming soon")
+  const availableIntegrations = useMemo(() => {
     if (!data?.integrations) return [];
+    return data.integrations.filter((integration) =>
+      AVAILABLE_PROVIDERS.includes(integration.provider)
+    );
+  }, [data?.integrations]);
 
-    return data.integrations.filter((integration) => {
-      // Only show available providers (Notion, Google Drive, Dropbox, DocuSign)
-      if (!AVAILABLE_PROVIDERS.includes(integration.provider)) {
-        return false;
+  // Calculate accurate category counts based on available integrations only
+  const calculatedCategories = useMemo(() => {
+    const categoryMap = new Map<string, { id: string; name: string; count: number }>();
+    
+    // Add "all" category
+    categoryMap.set("all", { id: "all", name: "All", count: availableIntegrations.length });
+    
+    // Count integrations per category
+    availableIntegrations.forEach((integration) => {
+      const categoryId = integration.category.toLowerCase().replace(/\s+/g, "-");
+      const existing = categoryMap.get(categoryId);
+      if (existing) {
+        existing.count++;
+      } else {
+        categoryMap.set(categoryId, {
+          id: categoryId,
+          name: integration.category,
+          count: 1,
+        });
       }
+    });
+    
+    // Add "connected" category
+    const connectedCount = availableIntegrations.filter(i => i.status === "CONNECTED").length;
+    categoryMap.set("connected", { id: "connected", name: "Connected", count: connectedCount });
+    
+    return Array.from(categoryMap.values());
+  }, [availableIntegrations]);
 
+  const filteredIntegrations = useMemo(() => {
+    if (!availableIntegrations.length) return [];
+
+    return availableIntegrations.filter((integration) => {
       // Category filter
       if (activeCategory !== "all") {
         if (activeCategory === "connected") {
           if (integration.status !== "CONNECTED") return false;
-        } else if (integration.category !== activeCategory) {
-          return false;
+        } else {
+          const categoryId = integration.category.toLowerCase().replace(/\s+/g, "-");
+          if (categoryId !== activeCategory) return false;
         }
       }
 
@@ -230,7 +285,7 @@ export default function IntegrationsPage() {
 
       return true;
     });
-  }, [data?.integrations, activeCategory, search]);
+  }, [availableIntegrations, activeCategory, search]);
 
   const handleConnect = (provider: string, integrationName: string) => {
     // Show coming soon dialog instead of connecting
@@ -291,11 +346,28 @@ export default function IntegrationsPage() {
     );
   }
 
-  const categories = data?.categories || [];
   const stats = data?.stats;
 
   return (
     <div className="flex flex-1 flex-col p-4">
+      {/* Coming Soon Banner */}
+      <div className="mb-6 p-4 rounded-sm border border-amber-200 bg-amber-50 dark:border-amber-900/50 dark:bg-amber-950/20">
+        <div className="flex items-start gap-3">
+          <div className="p-2 rounded-sm bg-amber-100 dark:bg-amber-900/30">
+            <Sparkles className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+          </div>
+          <div className="flex-1">
+            <h3 className="font-semibold font-heading text-amber-800 dark:text-amber-300">
+              Integrations Coming Soon
+            </h3>
+            <p className="text-sm text-amber-700 dark:text-amber-400/80 mt-1">
+              We&apos;re building powerful integrations to connect Largence with your favorite tools. 
+              Click &quot;Notify Me&quot; on any integration to be the first to know when it launches!
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* Header */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
@@ -352,7 +424,7 @@ export default function IntegrationsPage() {
 
       {/* Category Pills */}
       <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
-        {categories.map((category) => (
+        {calculatedCategories.map((category) => (
           <button
             key={category.id}
             onClick={() => setActiveCategory(category.id)}
@@ -438,16 +510,29 @@ export default function IntegrationsPage() {
                 </div>
               )}
 
-              {/* Actions - All integrations show Coming Soon */}
+              {/* Actions - Notify Me Toggle */}
               <div className="mt-auto">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full h-8 rounded-sm text-xs"
-                  onClick={() => handleConnect(integration.provider, integration.name)}
-                >
-                  Coming Soon
-                </Button>
+                {notifiedIntegrations.has(integration.provider) ? (
+                  <Button
+                    variant="default"
+                    size="sm"
+                    className="w-full h-8 rounded-sm text-xs bg-primary"
+                    onClick={() => handleNotifyMe(integration.provider, integration.name)}
+                  >
+                    <BellRing className="h-3.5 w-3.5 mr-1.5" />
+                    Subscribed
+                  </Button>
+                ) : (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full h-8 rounded-sm text-xs hover:border-primary/50 hover:bg-primary/5"
+                    onClick={() => handleNotifyMe(integration.provider, integration.name)}
+                  >
+                    <Bell className="h-3.5 w-3.5 mr-1.5" />
+                    Notify Me
+                  </Button>
+                )}
               </div>
             </div>
           );
@@ -475,35 +560,39 @@ export default function IntegrationsPage() {
         </div>
       )}
 
-      {/* Coming Soon Dialog */}
+      {/* Disconnect Dialog - kept for future use */}
       <Dialog
-        open={showComingSoonDialog}
-        onOpenChange={setShowComingSoonDialog}
+        open={showDisconnectDialog}
+        onOpenChange={setShowDisconnectDialog}
       >
         <DialogContent className="rounded-sm sm:max-w-[425px]">
           <DialogHeader>
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 rounded-full bg-amber-500/10">
-                <Zap className="h-5 w-5 text-amber-600" />
-              </div>
-              <DialogTitle>Coming Soon</DialogTitle>
-            </div>
+            <DialogTitle>Disconnect Integration</DialogTitle>
             <DialogDescription>
-              <span className="font-medium text-foreground">{comingSoonIntegration}</span> integration is coming soon! 
-              We&apos;re working hard to bring you seamless integrations with your favorite tools.
+              Are you sure you want to disconnect {integrationToDisconnect?.name}? 
+              This will stop syncing and remove access to this integration.
             </DialogDescription>
           </DialogHeader>
-          <div className="bg-muted/50 rounded-sm p-4 mt-2">
-            <p className="text-sm text-muted-foreground">
-              Want to be notified when this integration launches? Stay tuned to our updates!
-            </p>
-          </div>
           <DialogFooter>
             <Button
-              onClick={() => setShowComingSoonDialog(false)}
+              variant="outline"
+              onClick={() => setShowDisconnectDialog(false)}
               className="rounded-sm"
             >
-              Got it
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDisconnectConfirm}
+              disabled={disconnectMutation.isPending}
+              className="rounded-sm"
+            >
+              {disconnectMutation.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : (
+                <Trash2 className="h-4 w-4 mr-2" />
+              )}
+              Disconnect
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Button } from "@largence/components/ui/button";
 import { Input } from "@largence/components/ui/input";
 import { useRouter } from "next/navigation";
@@ -33,6 +33,14 @@ export default function TemplatesPage() {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [displayCount, setDisplayCount] = useState(ITEMS_PER_PAGE);
   const [jurisdictionFilter, setJurisdictionFilter] = useState<string[]>([]);
+
+  // Mark onboarding item as complete when visiting templates
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("onboarding:explored_templates", "true");
+      window.dispatchEvent(new CustomEvent("onboarding:progress"));
+    }
+  }, []);
 
   // Get unique jurisdictions from all templates
   const allJurisdictions = useMemo(() => {

@@ -50,7 +50,14 @@ export function Hero() {
                 src="/hero.png"
                 alt="Largence Dashboard"
                 fill
-                className="object-cover"
+                className="object-cover dark:hidden"
+                priority
+              />
+              <Image
+                src="/hero-dark.png"
+                alt="Largence Dashboard"
+                fill
+                className="object-cover hidden dark:block"
                 priority
               />
             </div>

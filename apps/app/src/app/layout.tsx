@@ -125,7 +125,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Largence - Enterprise Legal Intelligence for Africa",
+  title: "Largence - Legal Intelligence for Enterprises",
   description:
     "Automate contract drafting, ensure regulatory compliance, and streamline governance for African enterprises.",
   icons: {
@@ -136,7 +136,7 @@ export const metadata: Metadata = {
     apple: "/logo.png",
   },
   openGraph: {
-    title: "Largence - Enterprise Legal Intelligence for Africa",
+    title: "Largence - Legal Intelligence for Enterprises",
     description:
       "Automate contract drafting, ensure regulatory compliance, and streamline governance for African enterprises.",
     url: "https://largence.com",
@@ -154,7 +154,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Largence - Enterprise Legal Intelligence for Africa",
+    title: "Largence - Legal Intelligence for Enterprises",
     description:
       "Automate contract drafting, ensure regulatory compliance, and streamline governance for African enterprises.",
     images: ["/logo.png"],

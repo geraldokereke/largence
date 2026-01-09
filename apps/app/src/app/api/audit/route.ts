@@ -38,11 +38,26 @@ export async function GET(request: Request) {
           break;
         case "compliance":
           where.action = {
-            in: ["COMPLIANCE_CHECK_RUN", "COMPLIANCE_CHECK_COMPLETED"],
+            in: [
+              "COMPLIANCE_CHECK_RUN",
+              "COMPLIANCE_CHECK_COMPLETED",
+              "AGENTIC_COMPLIANCE_RUN",
+              "AGENTIC_COMPLIANCE_COMPLETED",
+            ],
           };
           break;
         case "user":
           where.entityType = "User";
+          break;
+        case "integration":
+          where.action = {
+            in: [
+              "INTEGRATION_CONNECTED",
+              "INTEGRATION_DISCONNECTED",
+              "INTEGRATION_SYNCED",
+              "INTEGRATION_ERROR",
+            ],
+          };
           break;
         case "system":
           where.userType = "system";
@@ -92,6 +107,7 @@ export async function GET(request: Request) {
       approvalEventsCount,
       complianceEventsCount,
       userEventsCount,
+      integrationEventsCount,
       systemEventsCount,
     ] = await Promise.all([
       prisma.auditLog.count({
@@ -118,7 +134,12 @@ export async function GET(request: Request) {
         where: {
           organizationId: orgId,
           action: {
-            in: ["COMPLIANCE_CHECK_RUN", "COMPLIANCE_CHECK_COMPLETED"],
+            in: [
+              "COMPLIANCE_CHECK_RUN",
+              "COMPLIANCE_CHECK_COMPLETED",
+              "AGENTIC_COMPLIANCE_RUN",
+              "AGENTIC_COMPLIANCE_COMPLETED",
+            ],
           },
           createdAt: { gte: oneWeekAgo },
         },
@@ -127,6 +148,20 @@ export async function GET(request: Request) {
         where: {
           organizationId: orgId,
           entityType: "User",
+          createdAt: { gte: oneWeekAgo },
+        },
+      }),
+      prisma.auditLog.count({
+        where: {
+          organizationId: orgId,
+          action: {
+            in: [
+              "INTEGRATION_CONNECTED",
+              "INTEGRATION_DISCONNECTED",
+              "INTEGRATION_SYNCED",
+              "INTEGRATION_ERROR",
+            ],
+          },
           createdAt: { gte: oneWeekAgo },
         },
       }),
@@ -162,7 +197,14 @@ export async function GET(request: Request) {
     const lastComplianceCheck = await prisma.auditLog.findFirst({
       where: {
         organizationId: orgId,
-        action: { in: ["COMPLIANCE_CHECK_RUN", "COMPLIANCE_CHECK_COMPLETED"] },
+        action: {
+          in: [
+            "COMPLIANCE_CHECK_RUN",
+            "COMPLIANCE_CHECK_COMPLETED",
+            "AGENTIC_COMPLIANCE_RUN",
+            "AGENTIC_COMPLIANCE_COMPLETED",
+          ],
+        },
       },
       orderBy: { createdAt: "desc" },
       select: { createdAt: true },
@@ -182,6 +224,7 @@ export async function GET(request: Request) {
         approval: approvalEventsCount,
         compliance: complianceEventsCount,
         user: userEventsCount,
+        integration: integrationEventsCount,
         system: systemEventsCount,
       },
       stats: {

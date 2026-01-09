@@ -139,7 +139,6 @@ enum NotificationType {
 }
 
 enum AuditAction {
-  // Document actions
   DOCUMENT_CREATED
   DOCUMENT_UPDATED
   DOCUMENT_DELETED
@@ -150,30 +149,27 @@ enum AuditAction {
   DOCUMENT_APPROVED
   DOCUMENT_REJECTED
   
-  // Compliance actions
   COMPLIANCE_CHECK_RUN
   COMPLIANCE_CHECK_COMPLETED
+  AGENTIC_COMPLIANCE_RUN
+  AGENTIC_COMPLIANCE_COMPLETED
   
-  // User actions
   USER_INVITED
   USER_REMOVED
   USER_ROLE_CHANGED
   USER_LOGIN
   USER_LOGOUT
   
-  // System actions
   SYSTEM_BACKUP
   SYSTEM_RESTORE
   SETTINGS_CHANGED
   
-  // Integration actions
   INTEGRATION_CONNECTED
   INTEGRATION_DISCONNECTED
   INTEGRATION_SYNCED
   INTEGRATION_ERROR
 }
 
-// Integration model for third-party service connections
 model Integration {
   id               String   @id @default(cuid())
   organizationId   String

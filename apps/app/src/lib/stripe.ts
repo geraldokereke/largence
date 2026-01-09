@@ -86,7 +86,8 @@ export async function getOrCreateStripeCustomer(
     where: { organizationId },
   });
 
-  if (existingSubscription?.stripeCustomerId) {
+  // Return existing customer if it's not a temporary one
+  if (existingSubscription?.stripeCustomerId && !existingSubscription.stripeCustomerId.startsWith('temp_')) {
     return existingSubscription.stripeCustomerId;
   }
 
@@ -150,6 +151,11 @@ export async function createCheckoutSession(
         organizationId,
         plan,
       },
+      // Configure payment retry behavior
+      payment_settings: {
+        payment_method_types: ["card"],
+        save_default_payment_method: "on_subscription",
+      },
     },
     metadata: {
       organizationId,
@@ -157,6 +163,8 @@ export async function createCheckoutSession(
     },
     allow_promotion_codes: true,
     billing_address_collection: "required",
+    // Customer can update payment method in portal
+    payment_method_collection: "always",
   });
 
   return session;
@@ -304,10 +312,11 @@ export async function canPerformAction(
     };
   }
 
-  // Check if subscription is active
+  // Check if subscription is active or in grace period
   const activeStatuses: SubscriptionStatus[] = [
     SubscriptionStatus.ACTIVE,
     SubscriptionStatus.TRIALING,
+    SubscriptionStatus.PAST_DUE, // Grace period - allow access for failed payments
   ];
 
   if (!activeStatuses.includes(subscription.status)) {
@@ -316,6 +325,11 @@ export async function canPerformAction(
       reason: "Your subscription is not active. Please update your payment method.",
       subscription,
     };
+  }
+
+  // Show warning for past_due status but still allow access
+  if (subscription.status === SubscriptionStatus.PAST_DUE) {
+    console.warn(`Organization ${organizationId} is past due but within grace period`);
   }
 
   // Count usage this period

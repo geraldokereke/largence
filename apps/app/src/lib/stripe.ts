@@ -151,11 +151,6 @@ export async function createCheckoutSession(
         organizationId,
         plan,
       },
-      // Configure payment retry behavior
-      payment_settings: {
-        payment_method_types: ["card"],
-        save_default_payment_method: "on_subscription",
-      },
     },
     metadata: {
       organizationId,

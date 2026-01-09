@@ -10,8 +10,7 @@ export function Hero() {
     <section className="pt-28 pb-16 px-4 sm:px-6">
       <div className="max-w-5xl mx-auto text-center">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/20 bg-primary/5 text-sm font-medium text-primary mb-6">
-          <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-          Now in Beta
+          Now available in Beta
         </div>
 
         <h1 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-foreground mb-4">

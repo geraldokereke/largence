@@ -45,7 +45,7 @@ export function CompanyDetailsStep({
           value={formData.companySize}
           onValueChange={(value) => updateFormData({ companySize: value })}
         >
-          <SelectTrigger className="h-10 rounded-sm">
+          <SelectTrigger className="rounded-sm">
             <SelectValue placeholder="Select company size" />
           </SelectTrigger>
           <SelectContent>
@@ -83,7 +83,7 @@ export function CompanyDetailsStep({
             placeholder="https://example.com"
             value={formData.website}
             onChange={(e) => updateFormData({ website: e.target.value })}
-            className="h-10 rounded-sm pl-10"
+            className="rounded-sm pl-10"
           />
         </div>
       </div>

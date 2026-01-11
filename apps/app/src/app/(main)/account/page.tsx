@@ -420,19 +420,19 @@ export default function AccountPage() {
 
   if (!isLoaded) {
     return (
-      <div className="flex flex-1 flex-col p-8 w-full">
-        <div className="mb-8">
-          <Skeleton className="h-8 w-48 mb-2" />
+      <div className="flex flex-1 flex-col p-4 w-full">
+        <div className="mb-4">
+          <Skeleton className="h-7 w-48 mb-1" />
           <Skeleton className="h-4 w-96" />
         </div>
-        <div className="flex gap-6">
-          <div className="w-64">
-            <Skeleton className="h-10 w-full mb-2" />
-            <Skeleton className="h-10 w-full mb-2" />
-            <Skeleton className="h-10 w-full mb-2" />
+        <div className="flex gap-4">
+          <div className="w-56">
+            <Skeleton className="h-8 w-full mb-1" />
+            <Skeleton className="h-8 w-full mb-1" />
+            <Skeleton className="h-8 w-full mb-1" />
           </div>
           <div className="flex-1">
-            <Skeleton className="h-96 w-full" />
+            <Skeleton className="h-80 w-full" />
           </div>
         </div>
       </div>
@@ -440,10 +440,10 @@ export default function AccountPage() {
   }
 
   return (
-    <div className="flex flex-1 flex-col p-8 w-full">
+    <div className="flex flex-1 flex-col p-4 w-full">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-semibold mb-2 font-heading">
+      <div className="mb-4">
+        <h1 className="text-2xl font-semibold mb-1 font-heading">
           Account Settings
         </h1>
         <p className="text-muted-foreground">
@@ -451,9 +451,9 @@ export default function AccountPage() {
         </p>
       </div>
 
-      <div className="flex gap-6">
+      <div className="flex gap-4">
         {/* Sidebar Navigation */}
-        <nav className="w-64 space-y-1 shrink-0">
+        <nav className="w-56 space-y-0.5 shrink-0">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -461,7 +461,7 @@ export default function AccountPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-sm text-sm font-medium transition-colors ${
+                className={`w-full flex items-center gap-2 px-3 py-2 rounded-sm text-sm font-medium transition-colors ${
                   isActive
                     ? "bg-primary text-primary-foreground"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -476,12 +476,12 @@ export default function AccountPage() {
 
         {/* Content Area */}
         <div className="flex-1">
-          <div className="bg-card border rounded-sm p-6">
+          <div className="bg-card border rounded-sm p-4">
             {/* Profile Tab */}
             {activeTab === "profile" && (
-              <div className="space-y-6">
+              <div className="space-y-4">
                 <div>
-                  <h2 className="text-xl font-semibold mb-1 font-heading">
+                  <h2 className="text-lg font-semibold mb-0.5 font-heading">
                     Profile Information
                   </h2>
                   <p className="text-sm text-muted-foreground">
@@ -491,25 +491,25 @@ export default function AccountPage() {
 
                 <Separator />
 
-                <div className="space-y-6">
-                  <div className="flex items-start gap-6">
-                    <Avatar className="h-20 w-20">
+                <div className="space-y-4">
+                  <div className="flex items-start gap-4">
+                    <Avatar className="h-16 w-16">
                       <AvatarImage
                         src={user?.imageUrl}
                         alt={user?.fullName || "User"}
                       />
-                      <AvatarFallback className="text-2xl">
+                      <AvatarFallback className="text-xl">
                         {user?.firstName?.[0]}
                         {user?.lastName?.[0]}
                       </AvatarFallback>
                     </Avatar>
-                    <div className="flex-1 space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
+                    <div className="flex-1 space-y-3">
+                      <div className="grid grid-cols-2 gap-3">
                         <div>
                           <Label>First Name</Label>
                           <Input
                             value={user?.firstName || ""}
-                            className="h-10 rounded-sm mt-1.5 bg-muted"
+                            className="h-8 rounded-sm mt-1 bg-muted text-sm"
                             readOnly
                           />
                         </div>
@@ -517,7 +517,7 @@ export default function AccountPage() {
                           <Label>Last Name</Label>
                           <Input
                             value={user?.lastName || ""}
-                            className="h-10 rounded-sm mt-1.5 bg-muted"
+                            className="h-8 rounded-sm mt-1 bg-muted text-sm"
                             readOnly
                           />
                         </div>
@@ -526,7 +526,7 @@ export default function AccountPage() {
                         <Label>Email Address</Label>
                         <Input
                           value={user?.primaryEmailAddress?.emailAddress || ""}
-                          className="h-10 rounded-sm mt-1.5 bg-muted"
+                          className="h-8 rounded-sm mt-1 bg-muted text-sm"
                           readOnly
                         />
                       </div>
@@ -538,9 +538,9 @@ export default function AccountPage() {
 
             {/* Organization Tab */}
             {activeTab === "organization" && (
-              <div className="space-y-6">
+              <div className="space-y-4">
                 <div>
-                  <h2 className="text-xl font-semibold mb-1 font-heading">
+                  <h2 className="text-lg font-semibold mb-0.5 font-heading">
                     Organization Settings
                   </h2>
                   <p className="text-sm text-muted-foreground">
@@ -554,18 +554,18 @@ export default function AccountPage() {
                   <div className="flex items-start gap-6">
                     <div className="shrink-0">
                       {orgMetadata?.logoUrl ? (
-                        <Avatar className="h-20 w-20 rounded-sm">
+                        <Avatar className="h-16 w-16 rounded-sm">
                           <AvatarImage
                             src={orgMetadata.logoUrl}
                             alt={organization?.name || "Organization"}
                           />
                           <AvatarFallback className="rounded-sm">
-                            <Building2 className="h-10 w-10" />
+                            <Building2 className="h-8 w-8" />
                           </AvatarFallback>
                         </Avatar>
                       ) : (
-                        <div className="h-20 w-20 rounded-sm bg-primary/10 flex items-center justify-center border">
-                          <Building2 className="h-10 w-10 text-primary" />
+                        <div className="h-16 w-16 rounded-sm bg-primary/10 flex items-center justify-center border">
+                          <Building2 className="h-8 w-8 text-primary" />
                         </div>
                       )}
                     </div>
@@ -573,18 +573,18 @@ export default function AccountPage() {
                       <Label>Organization Name</Label>
                       <Input
                         value={organization?.name || ""}
-                        className="h-10 rounded-sm mt-1.5 bg-muted"
+                        className="h-8 rounded-sm mt-1 bg-muted text-sm"
                         readOnly
                       />
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-3">
                     <div>
                       <Label>Industry</Label>
                       <Input
                         value={orgMetadata?.industry || "Not specified"}
-                        className="h-10 rounded-sm mt-1.5 bg-muted"
+                        className="h-8 rounded-sm mt-1 bg-muted text-sm"
                         readOnly
                       />
                     </div>
@@ -592,18 +592,18 @@ export default function AccountPage() {
                       <Label>Company Size</Label>
                       <Input
                         value={orgMetadata?.companySize || "Not specified"}
-                        className="h-10 rounded-sm mt-1.5 bg-muted"
+                        className="h-8 rounded-sm mt-1 bg-muted text-sm"
                         readOnly
                       />
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-3">
                     <div>
                       <Label>Country</Label>
                       <Input
                         value={orgMetadata?.country || "Not specified"}
-                        className="h-10 rounded-sm mt-1.5 bg-muted"
+                        className="h-8 rounded-sm mt-1 bg-muted text-sm"
                         readOnly
                       />
                     </div>
@@ -611,7 +611,7 @@ export default function AccountPage() {
                       <Label>Team Size</Label>
                       <Input
                         value={orgMetadata?.teamSize || "Not specified"}
-                        className="h-10 rounded-sm mt-1.5 bg-muted"
+                        className="h-8 rounded-sm mt-1 bg-muted text-sm"
                         readOnly
                       />
                     </div>
@@ -622,7 +622,7 @@ export default function AccountPage() {
                       <Label>Website</Label>
                       <Input
                         value={orgMetadata.website}
-                        className="h-10 rounded-sm mt-1.5 bg-muted"
+                        className="h-8 rounded-sm mt-1 bg-muted text-sm"
                         readOnly
                       />
                     </div>
@@ -633,7 +633,7 @@ export default function AccountPage() {
                       <Label>Billing Email</Label>
                       <Input
                         value={orgMetadata.billingEmail}
-                        className="h-10 rounded-sm mt-1.5 bg-muted"
+                        className="h-8 rounded-sm mt-1 bg-muted text-sm"
                         readOnly
                       />
                     </div>
@@ -650,7 +650,7 @@ export default function AccountPage() {
                             timeStyle: "short",
                           },
                         )}
-                        className="h-10 rounded-sm mt-1.5 bg-muted"
+                        className="h-8 rounded-sm mt-1 bg-muted text-sm"
                         readOnly
                       />
                     </div>
@@ -661,9 +661,9 @@ export default function AccountPage() {
 
             {/* Billing Tab */}
             {activeTab === "billing" && (
-              <div className="space-y-6">
+              <div className="space-y-4">
                 <div>
-                  <h2 className="text-xl font-semibold mb-1 font-heading">
+                  <h2 className="text-lg font-semibold mb-0.5 font-heading">
                     Billing & Subscription
                   </h2>
                   <p className="text-sm text-muted-foreground">
@@ -674,15 +674,15 @@ export default function AccountPage() {
                 <Separator />
 
                 {billingLoading ? (
-                  <div className="space-y-4">
-                    <Skeleton className="h-32 w-full" />
-                    <Skeleton className="h-48 w-full" />
+                  <div className="space-y-3">
+                    <Skeleton className="h-28 w-full" />
+                    <Skeleton className="h-40 w-full" />
                   </div>
                 ) : (
                   <>
                     {/* Current Plan Card */}
-                    <div className="border rounded-sm p-6 bg-linear-to-br from-primary/5 to-transparent">
-                      <div className="flex items-start justify-between mb-4">
+                    <div className="border rounded-sm p-4 bg-linear-to-br from-primary/5 to-transparent">
+                      <div className="flex items-start justify-between mb-3">
                         <div className="flex items-center gap-3">
                           {(() => {
                             const plan =
@@ -1321,7 +1321,7 @@ export default function AccountPage() {
                       value={selectedLanguage}
                       onValueChange={setSelectedLanguage}
                     >
-                      <SelectTrigger className="h-10 rounded-sm mt-1.5">
+                      <SelectTrigger className="rounded-sm mt-1.5">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -1351,7 +1351,7 @@ export default function AccountPage() {
                   <Button
                     onClick={handleSaveLanguage}
                     disabled={isSaving}
-                    className="h-10 rounded-sm"
+                    className="h-8 rounded-sm"
                   >
                     {isSaving ? (
                       <>

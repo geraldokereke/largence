@@ -19,6 +19,8 @@ import { Input } from "@largence/components/ui/input";
 import { Spinner } from "@largence/components/ui/spinner";
 import { UpgradeModal } from "@largence/components/upgrade-modal";
 import { useUpgradeModal } from "@/hooks/use-upgrade-modal";
+import { AiAssistantPanel } from "@largence/components/ai-assistant-panel";
+import { SaveAsTemplateDialog } from "@largence/components/save-as-template-dialog";
 import {
   AgenticComplianceModal,
   useAgenticComplianceModal,
@@ -34,6 +36,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@largence/components/ui/dropdown-menu";
 import {
@@ -52,6 +55,7 @@ import {
   Undo,
   Redo,
   FileDown,
+  FileStack,
   PenTool,
   Strikethrough,
   Link as LinkIcon,
@@ -78,6 +82,7 @@ export default function DocumentEditorPage() {
   const [title, setTitle] = useState("");
   const [status, setStatus] = useState<"DRAFT" | "FINAL" | "ARCHIVED">("DRAFT");
   const [document, setDocument] = useState<any>(null);
+  const [saveTemplateOpen, setSaveTemplateOpen] = useState(false);
   const upgradeModal = useUpgradeModal();
   const agenticModal = useAgenticComplianceModal();
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -638,6 +643,11 @@ export default function DocumentEditorPage() {
                   <PenTool className="h-4 w-4 mr-2" />
                   Send to DocuSign
                 </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => setSaveTemplateOpen(true)}>
+                  <FileStack className="h-4 w-4 mr-2" />
+                  Save as Template
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
 
@@ -659,6 +669,17 @@ export default function DocumentEditorPage() {
                 </>
               )}
             </Button>
+
+            <AiAssistantPanel
+              documentId={params.id as string}
+              getContent={() => editor?.getHTML() || ""}
+              setContent={(content) => {
+                if (editor) {
+                  editor.commands.setContent(content);
+                  toast.success("Document updated by AI");
+                }
+              }}
+            />
           </div>
         </div>
 
@@ -1052,6 +1073,16 @@ export default function DocumentEditorPage() {
         isOpen={agenticModal.isOpen}
         onClose={agenticModal.closeModal}
         onProceed={agenticModal.handleProceed}
+      />
+
+      {/* Save as Template Dialog */}
+      <SaveAsTemplateDialog
+        open={saveTemplateOpen}
+        onOpenChange={setSaveTemplateOpen}
+        documentTitle={title}
+        documentContent={editor?.getHTML() || ""}
+        documentType={document?.documentType}
+        jurisdiction={document?.jurisdiction}
       />
     </div>
   );

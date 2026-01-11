@@ -306,18 +306,18 @@ export default function IntegrationsPage() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-1 flex-col p-4">
-        <div className="mb-6">
-          <div className="h-8 w-48 bg-muted animate-pulse rounded-sm mb-2" />
+      <div className="flex flex-1 flex-col p-3">
+        <div className="mb-4">
+          <div className="h-7 w-48 bg-muted animate-pulse rounded-sm mb-1" />
           <div className="h-4 w-96 bg-muted animate-pulse rounded-sm" />
         </div>
-        <div className="flex gap-3 mb-6">
-          <div className="h-10 flex-1 bg-muted animate-pulse rounded-sm" />
-          <div className="h-10 w-24 bg-muted animate-pulse rounded-sm" />
+        <div className="flex gap-2 mb-4">
+          <div className="h-8 flex-1 bg-muted animate-pulse rounded-sm" />
+          <div className="h-8 w-24 bg-muted animate-pulse rounded-sm" />
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="h-80 bg-muted animate-pulse rounded-sm" />
+            <div key={i} className="h-64 bg-muted animate-pulse rounded-sm" />
           ))}
         </div>
       </div>
@@ -326,9 +326,9 @@ export default function IntegrationsPage() {
 
   if (error) {
     return (
-      <div className="flex flex-1 flex-col items-center justify-center p-4">
-        <AlertCircle className="h-12 w-12 text-destructive mb-4" />
-        <h2 className="text-lg font-semibold mb-2">
+      <div className="flex flex-1 flex-col items-center justify-center p-3">
+        <AlertCircle className="h-10 w-10 text-destructive mb-3" />
+        <h2 className="text-base font-semibold mb-1">
           Failed to load integrations
         </h2>
         <p className="text-sm text-muted-foreground mb-4">
@@ -349,12 +349,12 @@ export default function IntegrationsPage() {
   const stats = data?.stats;
 
   return (
-    <div className="flex flex-1 flex-col p-4">
+    <div className="flex flex-1 flex-col p-3">
       {/* Coming Soon Banner */}
-      <div className="mb-6 p-4 rounded-sm border border-amber-200 bg-amber-50 dark:border-amber-900/50 dark:bg-amber-950/20">
-        <div className="flex items-start gap-3">
-          <div className="p-2 rounded-sm bg-amber-100 dark:bg-amber-900/30">
-            <Sparkles className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+      <div className="mb-4 p-3 rounded-sm border border-amber-200 bg-amber-50 dark:border-amber-900/50 dark:bg-amber-950/20">
+        <div className="flex items-start gap-2">
+          <div className="p-1.5 rounded-sm bg-amber-100 dark:bg-amber-900/30">
+            <Sparkles className="h-4 w-4 text-amber-600 dark:text-amber-400" />
           </div>
           <div className="flex-1">
             <h3 className="font-semibold font-heading text-amber-800 dark:text-amber-300">
@@ -369,10 +369,10 @@ export default function IntegrationsPage() {
       </div>
 
       {/* Header */}
-      <div className="mb-6">
-        <div className="flex items-center justify-between mb-2">
+      <div className="mb-4">
+        <div className="flex items-center justify-between mb-1">
           <div>
-            <h1 className="text-2xl font-semibold font-heading">
+            <h1 className="text-xl font-semibold font-heading">
               Integrations
             </h1>
             <p className="text-sm text-muted-foreground mt-1">
@@ -381,9 +381,9 @@ export default function IntegrationsPage() {
             </p>
           </div>
           {stats && stats.connectedCount > 0 && (
-            <div className="hidden md:flex items-center gap-6">
+            <div className="hidden md:flex items-center gap-4">
               <div className="text-center">
-                <div className="text-2xl font-semibold">
+                <div className="text-xl font-semibold">
                   {stats.connectedCount}
                 </div>
                 <div className="text-xs text-muted-foreground">Connected</div>
@@ -402,19 +402,19 @@ export default function IntegrationsPage() {
       </div>
 
       {/* Search and Filters */}
-      <div className="flex flex-col sm:flex-row gap-3 mb-6">
+      <div className="flex flex-col sm:flex-row gap-2 mb-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search integrations..."
-            className="h-10 rounded-sm pl-9"
+            className="h-8 rounded-sm pl-9 text-sm"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
         <Button
           variant="outline"
-          className="h-10 rounded-sm"
+          className="h-8 rounded-sm text-sm"
           onClick={() => refetch()}
         >
           <RefreshCw className="h-4 w-4 mr-2" />
@@ -423,12 +423,12 @@ export default function IntegrationsPage() {
       </div>
 
       {/* Category Pills */}
-      <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+      <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
         {calculatedCategories.map((category) => (
           <button
             key={category.id}
             onClick={() => setActiveCategory(category.id)}
-            className={`px-4 py-2 rounded-sm border whitespace-nowrap transition-colors ${
+            className={`px-3 py-1.5 rounded-sm border whitespace-nowrap transition-colors text-sm ${
               activeCategory === category.id
                 ? "bg-primary text-primary-foreground border-primary"
                 : "bg-background hover:bg-accent"
@@ -454,12 +454,12 @@ export default function IntegrationsPage() {
           return (
             <div
               key={integration.id}
-              className="group flex flex-col rounded-sm border bg-card p-4 hover:border-primary/50 transition-all"
+              className="group flex flex-col rounded-sm border bg-card p-3 hover:border-primary/50 transition-all"
             >
               {/* Header */}
-              <div className="flex items-start gap-3 mb-3">
-                <div className={`p-2 rounded-sm ${colors.bg} shrink-0`}>
-                  <Icon className={`h-6 w-6 ${colors.text}`} />
+              <div className="flex items-start gap-2 mb-2">
+                <div className={`p-1.5 rounded-sm ${colors.bg} shrink-0`}>
+                  <Icon className={`h-5 w-5 ${colors.text}`} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-0.5">

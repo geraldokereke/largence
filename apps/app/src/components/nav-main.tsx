@@ -58,16 +58,16 @@ export function NavMain({
                     e.preventDefault();
                     handleNavigation(item.url);
                   }}
-                  className="h-10 rounded-md data-[active=true]:bg-primary/10 data-[active=true]:text-primary data-[active=true]:shadow-sm data-[active=true]:shadow-primary/5 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-all duration-200 group-data-[collapsible=icon]:h-10 group-data-[collapsible=icon]:w-10 group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:justify-center cursor-pointer"
+                  className="h-8 rounded-md data-[active=true]:bg-primary/10 data-[active=true]:text-primary data-[active=true]:shadow-sm data-[active=true]:shadow-primary/5 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-all duration-200 group-data-[collapsible=icon]:h-8 group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:justify-center cursor-pointer"
                 >
-                  <div className="flex items-center gap-3 w-full">
-                    <item.icon className="h-5 w-5 shrink-0" />
-                    <span className="font-medium text-sm group-data-[collapsible=icon]:hidden">
+                  <div className="flex items-center gap-2 w-full">
+                    <item.icon className="h-4 w-4 shrink-0" />
+                    <span className="font-medium text-[13px] group-data-[collapsible=icon]:hidden">
                       {item.title}
                     </span>
                     {item.badge && (
                       <span
-                        className={`ml-auto flex h-5 min-w-5 items-center justify-center rounded-md px-1.5 text-xs font-medium group-data-[collapsible=icon]:hidden ${
+                        className={`ml-auto flex h-4 min-w-4 items-center justify-center rounded-md px-1 text-[10px] font-medium group-data-[collapsible=icon]:hidden ${
                           isActive
                             ? "bg-primary/20 text-primary"
                             : "bg-primary/10 text-primary"

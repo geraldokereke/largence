@@ -39,7 +39,7 @@ export function BillingContactStep({
             placeholder="billing@example.com"
             value={formData.billingEmail}
             onChange={(e) => updateFormData({ billingEmail: e.target.value })}
-            className="h-10 rounded-sm pl-10"
+            className="rounded-sm pl-10"
           />
         </div>
         <p className="text-xs text-muted-foreground">
@@ -57,7 +57,7 @@ export function BillingContactStep({
             placeholder="+1 (555) 000-0000"
             value={formData.phone}
             onChange={(e) => updateFormData({ phone: e.target.value })}
-            className="h-10 rounded-sm pl-10"
+            className="rounded-sm pl-10"
           />
         </div>
         <p className="text-xs text-muted-foreground">

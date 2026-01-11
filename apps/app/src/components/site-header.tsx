@@ -338,7 +338,7 @@ export function SiteHeader() {
       </CommandDialog>
 
       <header className="bg-background sticky top-0 z-50 flex w-full items-center border-b">
-        <div className="flex h-14 w-full items-center px-2 sm:px-4 gap-2 sm:gap-4">
+        <div className="flex h-12 w-full items-center px-2 sm:px-4 gap-2 sm:gap-3">
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <SidebarTrigger className="h-9 w-9 sm:mr-1.5" />
             <div className="flex items-center gap-2">
@@ -349,7 +349,7 @@ export function SiteHeader() {
                 height={28}
                 className="shrink-0"
               />
-              <span className="hidden sm:inline text-xl font-semibold tracking-tight font-heading">
+              <span className="hidden sm:inline text-lg font-semibold tracking-tight font-heading">
                 Largence
               </span>
             </div>
@@ -358,7 +358,7 @@ export function SiteHeader() {
           <div className="flex-1 flex items-center justify-center gap-2 max-w-2xl mx-auto min-w-0">
             <button
               onClick={() => setCommandOpen(true)}
-              className="w-full max-w-md h-9 px-2 sm:px-3 rounded-sm border bg-background hover:bg-accent transition-colors flex items-center gap-2 text-sm text-muted-foreground"
+              className="w-full max-w-md h-9 px-3 sm:px-3 rounded-sm border bg-background hover:bg-accent transition-colors flex items-center gap-2 text-sm text-muted-foreground"
             >
               <Search className="h-4 w-4 shrink-0" />
               <span className="hidden xs:inline truncate">
@@ -372,7 +372,7 @@ export function SiteHeader() {
             <Button
               variant="default"
               size="sm"
-              className="h-9 rounded-sm gap-2 shrink-0 cursor-pointer px-2 sm:px-3"
+              className="h-9 rounded-sm gap-2 shrink-0 p cursor-pointer px-2 sm:px-3"
               onClick={() => router.push("/create")}
             >
               <span className="hidden md:inline">Create</span>

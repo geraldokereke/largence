@@ -4,17 +4,12 @@ import { useAuth } from "@clerk/nextjs";
 import { useQuery } from "@tanstack/react-query";
 import { WelcomeCTA } from "@largence/components/welcome-cta";
 import { OnboardingChecklist } from "@largence/components/onboarding-checklist";
+import { QuickStats } from "@largence/components/quick-stats";
+import { QuickActions } from "@largence/components/quick-actions";
 import { EmptyState } from "@largence/components/empty-state";
-import { Button } from "@largence/components/ui/button";;
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@largence/components/ui/card";
+import { Button } from "@largence/components/ui/button";
 import { Skeleton } from "@largence/components/ui/skeleton";
-import { FileText, AlertCircle, ArrowRight, RefreshCw } from "lucide-react";
+import { FileText, AlertCircle, ArrowRight, RefreshCw, Clock, Edit3 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
 
@@ -55,21 +50,21 @@ export default function Home() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "DRAFT":
-        return "text-yellow-600 bg-yellow-50 border-yellow-200";
+        return "text-amber-700 bg-amber-50 border-amber-200 dark:text-amber-400 dark:bg-amber-950/50 dark:border-amber-900";
       case "FINAL":
-        return "text-green-600 bg-green-50 border-green-200";
+        return "text-emerald-700 bg-emerald-50 border-emerald-200 dark:text-emerald-400 dark:bg-emerald-950/50 dark:border-emerald-900";
       case "ARCHIVED":
-        return "text-gray-600 bg-gray-50 border-gray-200";
+        return "text-slate-600 bg-slate-50 border-slate-200 dark:text-slate-400 dark:bg-slate-900/50 dark:border-slate-800";
       default:
-        return "text-gray-600 bg-gray-50 border-gray-200";
+        return "text-slate-600 bg-slate-50 border-slate-200 dark:text-slate-400 dark:bg-slate-900/50 dark:border-slate-800";
     }
   };
 
   if (error) {
     return (
-      <div className="flex flex-1 flex-col gap-4 p-4">
+      <div className="flex flex-1 flex-col gap-3 p-3">
         <WelcomeCTA />
-        <div className="flex flex-col items-center justify-center py-16">
+        <div className="flex flex-col items-center justify-center py-12">
           <AlertCircle className="h-12 w-12 text-destructive mb-4" />
           <h2 className="text-lg font-semibold mb-2">Failed to load documents</h2>
           <p className="text-sm text-muted-foreground mb-4">
@@ -85,116 +80,157 @@ export default function Home() {
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-4 p-4">
+    <div className="flex flex-1 flex-col gap-3 p-3">
       <WelcomeCTA />
       
       {/* Onboarding Checklist - shows only once */}
       <OnboardingChecklist />
 
       {isLoading ? (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {[1, 2, 3].map((i) => (
-            <Card key={i} className="rounded-sm">
-              <CardHeader>
-                <Skeleton className="h-6 w-full mb-2" />
-                <Skeleton className="h-4 w-32" />
-              </CardHeader>
-              <CardContent>
-                <Skeleton className="h-20 w-full" />
-              </CardContent>
-            </Card>
-          ))}
+        <div className="space-y-3">
+          {/* Stats skeleton */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="rounded-sm border bg-card p-3">
+                <Skeleton className="h-6 w-6 mb-2" />
+                <Skeleton className="h-7 w-12 mb-1" />
+                <Skeleton className="h-3 w-20" />
+              </div>
+            ))}
+          </div>
+          {/* Cards skeleton */}
+          <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div key={i} className="rounded-sm border bg-card p-3">
+                <div className="flex items-start justify-between gap-2 mb-2">
+                  <Skeleton className="h-4 w-4/5" />
+                  <Skeleton className="h-5 w-14 rounded-sm" />
+                </div>
+                <Skeleton className="h-3 w-32 mb-3" />
+                <Skeleton className="h-10 w-full mb-2" />
+                <Skeleton className="h-3 w-24" />
+              </div>
+            ))}
+          </div>
         </div>
       ) : documents.length === 0 ? (
         <EmptyState />
       ) : (
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold font-display">
-              Recent Documents
-            </h2>
-            <Button
-              variant="ghost"
+        <div className="space-y-4">
+          {/* Quick Stats */}
+          <QuickStats documents={documents} />
+
+          {/* Quick Actions Bar */}
+          <div className="flex items-center justify-between">
+            <QuickActions />
+          </div>
+
+          {/* Recent Documents Section */}
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-base font-semibold font-display">
+                Recent Documents
+              </h2>
+              <Button
+                variant="ghost"
               onClick={() => router.push("/documents")}
-              className="text-sm"
+              className="text-sm h-8"
             >
               View all
-              <ArrowRight className="h-4 w-4 ml-1" />
+              <ArrowRight className="h-3.5 w-3.5 ml-1" />
             </Button>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {documents.slice(0, 6).map((doc) => (
-              <Card
+          <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {documents.slice(0, 8).map((doc) => (
+              <div
                 key={doc.id}
-                className="rounded-sm cursor-pointer hover:bg-accent/5 transition-colors"
+                className="group relative rounded-sm border bg-card p-3 cursor-pointer hover:border-primary/30 hover:shadow-sm transition-all"
                 onClick={() => router.push(`/documents/${doc.id}`)}
               >
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm bg-primary/10">
-                      <FileText className="h-5 w-5 text-primary" />
-                    </div>
-                    <div
-                      className={`inline-flex items-center rounded-sm border px-2 py-1 text-xs font-medium ${getStatusColor(
-                        doc.status,
-                      )}`}
-                    >
-                      {doc.status}
-                    </div>
-                  </div>
-                  <CardTitle className="text-base font-medium line-clamp-1 mt-3">
+                {/* Quick action button - visible on hover */}
+                <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="h-6 w-6 p-0 rounded-sm shadow-sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      router.push(`/documents/${doc.id}`);
+                    }}
+                  >
+                    <Edit3 className="h-3 w-3" />
+                  </Button>
+                </div>
+
+                {/* Header row - Title and Status */}
+                <div className="flex items-start justify-between gap-2 mb-1.5 pr-8">
+                  <h3 className="text-sm font-medium line-clamp-1 flex-1 group-hover:text-primary transition-colors">
                     {doc.title}
-                  </CardTitle>
-                  <CardDescription className="text-xs">
-                    {doc.documentType} • {doc.jurisdiction}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
-                    {(() => {
-                      let cleanText = doc.content || "";
-                      cleanText = cleanText.replace(
-                        /<style[^>]*>[\s\S]*?<\/style>/gi,
-                        "",
-                      );
-                      cleanText = cleanText.replace(
-                        /<script[^>]*>[\s\S]*?<\/script>/gi,
-                        "",
-                      );
-                      cleanText = cleanText.replace(/```[\s\S]*?```/g, "");
-                      cleanText = cleanText.replace(/`[^`]*`/g, "");
-                      cleanText = cleanText.replace(
-                        /\b(?:body|html|h[1-6]|p|div|span|\.[\w-]+|#[\w-]+)\s*\{[^}]*\}/g,
-                        "",
-                      );
-                      cleanText = cleanText.replace(/\{[^}]*\}/g, "");
-                      cleanText = cleanText.replace(/<[^>]*>/g, " ");
-                      cleanText = cleanText.replace(/\s+/g, " ").trim();
-                      const titleLower = doc.title.toLowerCase();
-                      const cleanLower = cleanText.toLowerCase();
-                      if (cleanLower.startsWith(titleLower)) {
-                        cleanText = cleanText
-                          .substring(doc.title.length)
-                          .trim();
-                      }
-                      if (!cleanText || cleanText.length === 0) {
-                        return "No preview available";
-                      }
-                      return cleanText.length > 120
-                        ? cleanText.substring(0, 120) + "..."
-                        : cleanText;
-                    })()}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Updated{" "}
-                    {formatDistanceToNow(new Date(doc.updatedAt), {
-                      addSuffix: true,
-                    })}
-                  </p>
-                </CardContent>
-              </Card>
+                  </h3>
+                </div>
+
+                {/* Status badge below title */}
+                <div className="flex items-center gap-2 mb-2">
+                  <span
+                    className={`inline-flex items-center rounded-sm border px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide shrink-0 ${getStatusColor(
+                      doc.status,
+                    )}`}
+                  >
+                    {doc.status}
+                  </span>
+                  <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                    <Clock className="h-3 w-3" />
+                    {formatDistanceToNow(new Date(doc.updatedAt), { addSuffix: true })}
+                  </span>
+                </div>
+
+                {/* Metadata row */}
+                <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground mb-2">
+                  <span className="truncate">{doc.documentType}</span>
+                  <span className="text-muted-foreground/50">•</span>
+                  <span className="truncate">{doc.jurisdiction}</span>
+                </div>
+
+                {/* Content preview */}
+                <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+                  {(() => {
+                    let cleanText = doc.content || "";
+                    cleanText = cleanText.replace(
+                      /<style[^>]*>[\s\S]*?<\/style>/gi,
+                      "",
+                    );
+                    cleanText = cleanText.replace(
+                      /<script[^>]*>[\s\S]*?<\/script>/gi,
+                      "",
+                    );
+                    cleanText = cleanText.replace(/```[\s\S]*?```/g, "");
+                    cleanText = cleanText.replace(/`[^`]*`/g, "");
+                    cleanText = cleanText.replace(
+                      /\b(?:body|html|h[1-6]|p|div|span|\.[\w-]+|#[\w-]+)\s*\{[^}]*\}/g,
+                      "",
+                    );
+                    cleanText = cleanText.replace(/\{[^}]*\}/g, "");
+                    cleanText = cleanText.replace(/<[^>]*>/g, " ");
+                    cleanText = cleanText.replace(/\s+/g, " ").trim();
+                    const titleLower = doc.title.toLowerCase();
+                    const cleanLower = cleanText.toLowerCase();
+                    if (cleanLower.startsWith(titleLower)) {
+                      cleanText = cleanText
+                        .substring(doc.title.length)
+                        .trim();
+                    }
+                    if (!cleanText || cleanText.length === 0) {
+                      return "No preview available";
+                    }
+                    return cleanText.length > 100
+                      ? cleanText.substring(0, 100) + "..."
+                      : cleanText;
+                  })()}
+                </p>
+              </div>
             ))}
+          </div>
           </div>
         </div>
       )}

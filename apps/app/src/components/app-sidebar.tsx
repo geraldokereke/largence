@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 
 import { NavMain } from "@largence/components/nav-main";
+import { NewDocumentDialog } from "@largence/components/new-document-dialog";
 import {
   Sidebar,
   SidebarContent,
@@ -51,6 +52,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   const [documentCount, setDocumentCount] = React.useState<number | null>(null);
   const [plan, setPlan] = React.useState<string | null>(null);
+  const [newDocDialogOpen, setNewDocDialogOpen] = React.useState(false);
   const upgradeModal = useUpgradeModal();
 
   const [isClient, setIsClient] = React.useState(false);
@@ -187,7 +189,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   };
 
   const handleNewDocument = () => {
-    router.push("/create");
+    setNewDocDialogOpen(true);
   };
 
   return (
@@ -196,21 +198,21 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       className="top-(--header-height) h-[calc(100svh-var(--header-height))]! border-r"
       {...props}
     >
-      <SidebarContent className="gap-0 px-2 py-4">
+      <SidebarContent className="gap-0 px-2 py-1">
         <NavMain items={data.navMain} currentPath={pathname} />
       </SidebarContent>
        {(plan === "FREE" || plan === null) && (
-          <div className="mb-4 mx-4 p-4 rounded-sm border bg-gradient-to-br from-primary/5 to-primary/10 group-data-[collapsible=icon]:hidden">
-            <div className="flex items-center gap-2 mb-2">
-              <Sparkles className="h-4 w-4 text-primary" />
-              <span className="font-semibold text-sm">Free Plan</span>
+          <div className="mb-3 mx-3 p-3 rounded-sm border bg-gradient-to-br from-primary/5 to-primary/10 group-data-[collapsible=icon]:hidden">
+            <div className="flex items-center gap-2 mb-1.5">
+              <Sparkles className="h-3.5 w-3.5 text-primary" />
+              <span className="font-semibold text-xs">Free Plan</span>
             </div>
-            <p className="text-xs text-muted-foreground mb-3">
+            <p className="text-[11px] text-muted-foreground mb-2">
               Upgrade to Pro for unlimited documents, compliance checks, and team collaboration.
             </p>
             <Button
               size="sm"
-              className="w-full h-8 text-xs rounded-sm cursor-pointer"
+              className="w-full h-7 text-xs rounded-sm cursor-pointer"
               onClick={() =>
                 upgradeModal.openUpgradeModal({
                   reason: "Upgrade to unlock all features",
@@ -222,20 +224,20 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </div>
         )}
 
-      <SidebarFooter className="border-t gap-0 px-4 py-4">
+      <SidebarFooter className="border-t gap-0 px-3 py-3">
        
         <SidebarMenu className="gap-1 px-0">
           <SidebarMenuItem>
             <SidebarMenuButton
               asChild
-              className="h-10 rounded-md hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors group-data-[collapsible=icon]:justify-center"
+              className="h-8 rounded-md hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors group-data-[collapsible=icon]:justify-center"
             >
               <button
                 onClick={handleNewDocument}
-                className="flex items-center gap-3 w-full"
+                className="flex items-center gap-2 w-full"
               >
-                <Plus className="h-5 w-5 shrink-0" />
-                <span className="font-medium text-sm group-data-[collapsible=icon]:hidden">
+                <Plus className="h-4 w-4 shrink-0" />
+                <span className="font-medium text-[13px] group-data-[collapsible=icon]:hidden">
                   New Document
                 </span>
               </button>
@@ -245,8 +247,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuItem>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <SidebarMenuButton className="h-10 rounded-md data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors group-data-[collapsible=icon]:justify-center">
-                  <div className="bg-primary text-primary-foreground flex aspect-square h-5 w-5 items-center justify-center rounded-md shrink-0">
+                <SidebarMenuButton className="h-8 rounded-md data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors group-data-[collapsible=icon]:justify-center">
+                  <div className="bg-primary text-primary-foreground flex aspect-square h-4 w-4 items-center justify-center rounded-md shrink-0">
                     {organization?.imageUrl ? (
                       <img
                         src={organization.imageUrl}
@@ -257,11 +259,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                       <Building2 className="h-3 w-3" />
                     )}
                   </div>
-                  <div className="flex flex-1 flex-col items-start text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
+                  <div className="flex flex-1 flex-col items-start text-left text-xs leading-tight group-data-[collapsible=icon]:hidden">
                     <span className="truncate font-medium">
                       {organization?.name || "No Organization"}
                     </span>
-                    <span className="truncate text-xs text-muted-foreground">
+                    <span className="truncate text-[10px] text-muted-foreground">
                       {organization?.membersCount || 0} members
                     </span>
                   </div>
@@ -328,6 +330,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         feature={upgradeModal.feature}
         currentPlan={upgradeModal.currentPlan}
       />
+      <NewDocumentDialog open={newDocDialogOpen} onOpenChange={setNewDocDialogOpen} />
     </Sidebar>
   );
 }

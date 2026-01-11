@@ -83,8 +83,8 @@ export function InviteMemberDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="h-10 rounded-sm">
-          <UserPlus className="h-5 w-5" />
+        <Button className="h-8 rounded-sm">
+          <UserPlus className="h-4 w-4" />
           Invite Member
         </Button>
       </DialogTrigger>
@@ -128,7 +128,7 @@ export function InviteMemberDialog() {
                     onChange={(e) => setEmail(e.target.value)}
                     required
                     disabled={isInviting}
-                    className="h-10 rounded-sm pl-9"
+                    className="rounded-sm pl-9"
                   />
                 </div>
               </div>
@@ -142,7 +142,7 @@ export function InviteMemberDialog() {
                   }
                   disabled={isInviting}
                 >
-                  <SelectTrigger className="h-10 rounded-sm">
+                  <SelectTrigger className="rounded-sm">
                     <SelectValue placeholder="Select a role" />
                   </SelectTrigger>
                   <SelectContent>
@@ -164,14 +164,14 @@ export function InviteMemberDialog() {
                 variant="outline"
                 onClick={() => setOpen(false)}
                 disabled={isInviting}
-                className="h-10 rounded-sm"
+                className="h-8 rounded-sm"
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
                 disabled={isInviting || !email}
-                className="h-10 rounded-sm"
+                className="h-8 rounded-sm"
               >
                 {isInviting ? (
                   <span className="flex items-center gap-2">

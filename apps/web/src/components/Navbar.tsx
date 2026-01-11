@@ -3,15 +3,21 @@
 import * as React from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import { Button } from "@largence/ui";
-import { Menu, X } from "lucide-react";
+import { Menu, X, User, LogOut, LayoutDashboard, HomeIcon } from "lucide-react";
+import { useUser, useClerk, SignedIn, SignedOut } from "@clerk/nextjs";
 import { ScheduleDemoDialog } from "./schedule-demo-dialog";
 
 export const Navbar: React.FC = () => {
+  const pathname = usePathname();
   const [scrolled, setScrolled] = React.useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const [activeSection, setActiveSection] = React.useState("");
   const [demoDialogOpen, setDemoDialogOpen] = React.useState(false);
+  const [profileMenuOpen, setProfileMenuOpen] = React.useState(false);
+  const { user, isLoaded } = useUser();
+  const { signOut } = useClerk();
 
   React.useEffect(() => {
     const handleScroll = () => {
@@ -46,8 +52,23 @@ export const Navbar: React.FC = () => {
 
   const menuItems = [
     { href: "#features", label: "Features" },
+    { href: "/templates", label: "Templates", isPage: true },
     { href: "#pricing", label: "Pricing" },
   ];
+
+  // Handle link clicks - redirect to home page with hash if not on home
+  const handleLinkClick = (e: React.MouseEvent, item: typeof menuItems[0]) => {
+    setMobileMenuOpen(false);
+    
+    // If it's a page link, let normal navigation happen
+    if ((item as any).isPage) return;
+    
+    // If it's a hash link and we're not on the home page, navigate to home with hash
+    if (item.href.startsWith("#") && pathname !== "/") {
+      e.preventDefault();
+      window.location.href = `/${item.href}`;
+    }
+  };
 
   return (
     <>
@@ -80,17 +101,19 @@ export const Navbar: React.FC = () => {
             {/* Desktop Menu */}
             <div className="hidden md:flex items-center gap-1 lg:gap-2 ml-8 lg:ml-10 mt-0.5">
               {menuItems.map((item) => {
-                const isActive = activeSection === item.href.substring(1);
+                const isActive = (item as any).isPage 
+                  ? pathname === item.href 
+                  : activeSection === item.href.substring(1);
                 return (
                   <Link
                     key={item.href}
                     href={item.href}
                     className={`text-sm font-medium transition-colors duration-200 relative group px-2.5 py-1.5 rounded-md ${
                       isActive
-                        ? "text-primary"
+                        ? "text-primary bg-primary/5"
                         : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                     }`}
-                    onClick={() => setMobileMenuOpen(false)}
+                    onClick={(e) => handleLinkClick(e, item)}
                   >
                     {item.label}
                     {isActive && (
@@ -103,32 +126,88 @@ export const Navbar: React.FC = () => {
 
             {/* Desktop Actions */}
             <div className="hidden md:flex items-center gap-2 ml-auto">
-              <Link href="https://app.largence.com/login">
+              <SignedOut>
+                <Link href="https://app.largence.com/login">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="font-medium rounded-sm transition-all duration-200 cursor-pointer text-sm"
+                  >
+                    Sign In
+                  </Button>
+                </Link>
                 <Button
-                  variant="ghost"
+                  onClick={() => setDemoDialogOpen(true)}
+                  variant="outline"
                   size="sm"
-                  className="font-medium rounded-sm transition-all duration-200 cursor-pointer text-sm"
+                  className="font-medium rounded-sm transition-all duration-200 border-border/50 cursor-pointer text-sm"
                 >
-                  Sign In
+                  Book Demo
                 </Button>
-              </Link>
-              <Button
-                onClick={() => setDemoDialogOpen(true)}
-                variant="outline"
-                size="sm"
-                className="font-medium rounded-sm transition-all duration-200 border-border/50 cursor-pointer text-sm"
-              >
-                Book Demo
-              </Button>
-              <Link href="https://app.largence.com/auth/signup">
-                <Button
-                  variant="default"
-                  size="sm"
-                  className="font-medium rounded-sm transition-all duration-200 cursor-pointer text-sm"
-                >
-                  Get Started
-                </Button>
-              </Link>
+                <Link href="https://app.largence.com/auth/signup">
+                  <Button
+                    variant="default"
+                    size="sm"
+                    className="font-medium rounded-sm transition-all duration-200 cursor-pointer text-sm"
+                  >
+                    Get Started
+                  </Button>
+                </Link>
+              </SignedOut>
+              <SignedIn>
+                <div className="relative">
+                  <button
+                    onClick={() => setProfileMenuOpen(!profileMenuOpen)}
+                    className="flex items-center justify-center h-8 w-8 rounded-full bg-primary/10 hover:bg-primary/20 transition-colors"
+                  >
+                    {!isLoaded ? (
+                      <div className="h-8 w-8 rounded-full bg-muted animate-pulse" />
+                    ) : user?.imageUrl ? (
+                      <Image
+                        src={user.imageUrl}
+                        alt="Profile"
+                        width={32}
+                        height={32}
+                        className="rounded-full"
+                      />
+                    ) : (
+                      <User className="h-4 w-4 text-primary" />
+                    )}
+                  </button>
+                  {profileMenuOpen && (
+                    <>
+                      <div 
+                        className="fixed inset-0 z-40" 
+                        onClick={() => setProfileMenuOpen(false)}
+                      />
+                      <div className="absolute right-0 top-full mt-2 w-48 py-1 bg-background border rounded-md shadow-lg z-50">
+                        <div className="px-3 py-2 border-b">
+                          <p className="text-sm font-medium truncate">{user?.fullName || user?.emailAddresses?.[0]?.emailAddress}</p>
+                          <p className="text-xs text-muted-foreground truncate">{user?.emailAddresses?.[0]?.emailAddress}</p>
+                        </div>
+                        <Link
+                          href="https://app.largence.com"
+                          className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-muted transition-colors"
+                          onClick={() => setProfileMenuOpen(false)}
+                        >
+                          <HomeIcon className="h-4 w-4" />
+                          Go to Dashboard
+                        </Link>
+                        <button
+                          onClick={() => {
+                            setProfileMenuOpen(false);
+                            signOut();
+                          }}
+                          className="flex items-center gap-2 w-full px-3 py-2 text-sm text-destructive hover:bg-muted transition-colors"
+                        >
+                          <LogOut className="h-4 w-4" />
+                          Sign Out
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </SignedIn>
             </div>
 
             {/* Mobile Menu Button */}
@@ -172,7 +251,9 @@ export const Navbar: React.FC = () => {
           {/* Navigation Links */}
           <div className="flex flex-col space-y-1 mb-8">
             {menuItems.map((item, index) => {
-              const isActive = activeSection === item.href.substring(1);
+              const isActive = (item as any).isPage 
+                ? pathname === item.href 
+                : activeSection === item.href.substring(1);
               return (
                 <Link
                   key={item.href}
@@ -189,7 +270,7 @@ export const Navbar: React.FC = () => {
                   style={{
                     transitionDelay: mobileMenuOpen ? `${index * 50}ms` : "0ms",
                   }}
-                  onClick={() => setMobileMenuOpen(false)}
+                  onClick={(e) => handleLinkClick(e, item)}
                 >
                   {item.label}
                 </Link>
@@ -210,22 +291,47 @@ export const Navbar: React.FC = () => {
                 : "0ms",
             }}
           >
-            <Link
-              href="https://app.largence.com/login"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              <Button variant="outline" size="lg" className="w-full rounded-sm">
-                Sign in
+            <SignedOut>
+              <Link
+                href="https://app.largence.com/login"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <Button variant="outline" size="lg" className="w-full rounded-sm">
+                  Sign in
+                </Button>
+              </Link>
+              <Link
+                href="https://app.largence.com/auth/signup"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <Button variant="default" size="lg" className="w-full rounded-sm">
+                  Get Started
+                </Button>
+              </Link>
+            </SignedOut>
+            <SignedIn>
+              <Link
+                href="https://app.largence.com"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <Button variant="default" size="lg" className="w-full rounded-sm">
+                  <LayoutDashboard className="h-4 w-4 mr-2" />
+                  Go to Dashboard
+                </Button>
+              </Link>
+              <Button
+                variant="outline"
+                size="lg"
+                className="w-full rounded-sm text-destructive"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  signOut();
+                }}
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Sign Out
               </Button>
-            </Link>
-            <Link
-              href="https://app.largence.com/auth/signup"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              <Button variant="default" size="lg" className="w-full rounded-sm">
-                Get Started
-              </Button>
-            </Link>
+            </SignedIn>
           </div>
 
           {/* Footer Info */}

@@ -4,30 +4,41 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
     "analyze": "ANALYZE=true next build",
-    "lighthouse": "lighthouse http://localhost:3000 --view --output=html --output-path=./lighthouse-report.html"
+    "lighthouse": "lighthouse http://localhost:3000 --view --output=html --output-path=./lighthouse-report.html",
+    "prisma:generate": "prisma generate"
+  },
+  "prisma": {
+    "schema": "../app/prisma/schema.prisma"
   },
   "dependencies": {
+    "@clerk/nextjs": "^6.34.5",
     "@largence/ui": "workspace:*",
+    "@prisma/adapter-pg": "^7.2.0",
+    "@prisma/client": "^6.19.0",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.4.2",
+    "dotenv": "^17.2.3",
     "framer-motion": "^12.23.24",
     "lucide-react": "^0.548.0",
     "next": "16.0.7",
+    "pg": "^8.16.3",
     "react": "19.2.0",
     "react-dom": "19.2.0",
     "three": "^0.181.2"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
+    "@types/node": "^20.19.27",
+    "@types/pg": "^8.16.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/three": "^0.181.0",
     "babel-plugin-react-compiler": "1.0.0",
+    "prisma": "^6.19.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { Geist_Mono } from "next/font/google";
+import { ClerkProvider } from "@clerk/nextjs";
 import { ThemeProvider } from "../components/theme-provider";
 import "./globals.css";
 
@@ -228,19 +229,21 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <head>
-        <meta name="format-detection" content="telephone=no" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
-      </head>
-      <body
-        className={`${generalSans.variable} ${polySans.variable} ${satoshi.variable} ${geistMono.variable} font-sans antialiased`}
-      >
-        <ThemeProvider defaultTheme="system" storageKey="largence-theme">
-          {children}
-        </ThemeProvider>
-      </body>
-    </html>
+    <ClerkProvider>
+      <html lang="en" suppressHydrationWarning>
+        <head>
+          <meta name="format-detection" content="telephone=no" />
+          <link rel="preconnect" href="https://fonts.googleapis.com" />
+          <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+        </head>
+        <body
+          className={`${generalSans.variable} ${polySans.variable} ${satoshi.variable} ${geistMono.variable} font-sans antialiased`}
+        >
+          <ThemeProvider defaultTheme="system" storageKey="largence-theme">
+            {children}
+          </ThemeProvider>
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }

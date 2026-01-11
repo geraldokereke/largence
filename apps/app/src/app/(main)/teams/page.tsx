@@ -164,28 +164,28 @@ export default function TeamsPage() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-1 flex-col p-4">
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-2">
+      <div className="flex flex-1 flex-col p-3">
+        <div className="mb-4">
+          <div className="flex items-center justify-between mb-1">
             <div>
-              <Skeleton className="h-8 w-32 mb-2" />
+              <Skeleton className="h-7 w-32 mb-1" />
               <Skeleton className="h-4 w-96" />
             </div>
-            <Skeleton className="h-10 w-40" />
+            <Skeleton className="h-8 w-40" />
           </div>
         </div>
 
         {/* Stats Skeleton */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="rounded-sm border bg-card p-6">
-              <div className="flex items-start justify-between mb-3">
-                <Skeleton className="h-9 w-9 rounded-sm" />
+            <div key={i} className="rounded-sm border bg-card p-4">
+              <div className="flex items-start justify-between mb-2">
+                <Skeleton className="h-8 w-8 rounded-sm" />
                 <Skeleton className="h-4 w-4" />
               </div>
-              <div className="space-y-2">
+              <div className="space-y-1">
                 <Skeleton className="h-4 w-24" />
-                <Skeleton className="h-8 w-16" />
+                <Skeleton className="h-6 w-16" />
                 <Skeleton className="h-3 w-32" />
               </div>
             </div>
@@ -193,16 +193,16 @@ export default function TeamsPage() {
         </div>
 
         {/* Search Skeleton */}
-        <div className="flex flex-col sm:flex-row gap-3 mb-6">
-          <Skeleton className="h-10 flex-1" />
-          <Skeleton className="h-10 w-24" />
+        <div className="flex flex-col sm:flex-row gap-2 mb-4">
+          <Skeleton className="h-8 flex-1" />
+          <Skeleton className="h-8 w-24" />
         </div>
 
         {/* Members Table Skeleton */}
-        <div className="mb-8">
-          <Skeleton className="h-6 w-48 mb-4" />
+        <div className="mb-6">
+          <Skeleton className="h-5 w-48 mb-3" />
           <div className="rounded-sm border bg-card">
-            <div className="grid grid-cols-12 gap-4 px-6 py-3 border-b bg-muted/50">
+            <div className="grid grid-cols-12 gap-3 px-4 py-2 border-b bg-muted/50">
               <Skeleton className="col-span-4 h-4" />
               <Skeleton className="col-span-3 h-4" />
               <Skeleton className="col-span-2 h-4" />
@@ -210,10 +210,10 @@ export default function TeamsPage() {
             </div>
             <div className="divide-y">
               {[1, 2, 3, 4, 5].map((i) => (
-                <div key={i} className="grid grid-cols-12 gap-4 px-6 py-4">
-                  <div className="col-span-4 flex items-center gap-3">
-                    <Skeleton className="h-10 w-10 rounded-full" />
-                    <div className="space-y-2 flex-1">
+                <div key={i} className="grid grid-cols-12 gap-3 px-4 py-3">
+                  <div className="col-span-4 flex items-center gap-2">
+                    <Skeleton className="h-8 w-8 rounded-full" />
+                    <div className="space-y-1 flex-1">
                       <Skeleton className="h-4 w-32" />
                       <Skeleton className="h-3 w-24" />
                     </div>
@@ -228,7 +228,7 @@ export default function TeamsPage() {
                     <Skeleton className="h-4 w-24" />
                   </div>
                   <div className="col-span-1 flex items-center justify-end">
-                    <Skeleton className="h-8 w-8 rounded-sm" />
+                    <Skeleton className="h-7 w-7 rounded-sm" />
                   </div>
                 </div>
               ))}
@@ -240,11 +240,11 @@ export default function TeamsPage() {
   }
 
   return (
-    <div className="flex flex-1 flex-col p-4">
-      <div className="mb-6">
-        <div className="flex items-center justify-between mb-2">
+    <div className="flex flex-1 flex-col p-3">
+      <div className="mb-4">
+        <div className="flex items-center justify-between mb-1">
           <div>
-            <h1 className="text-2xl font-semibold font-display">Teams</h1>
+            <h1 className="text-xl font-semibold font-display">Teams</h1>
             <p className="text-sm text-muted-foreground mt-1">
               Manage teams, members, and collaborate on legal work across{" "}
               {organization?.name}
@@ -254,62 +254,62 @@ export default function TeamsPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div className="rounded-sm border bg-card p-6 hover:bg-accent/5 transition-colors">
-          <div className="flex items-start justify-between mb-3">
-            <div className="p-2 rounded-sm bg-primary/10">
-              <Users className="h-5 w-5 text-primary" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+        <div className="rounded-sm border bg-card p-4 hover:bg-accent/5 transition-colors">
+          <div className="flex items-start justify-between mb-2">
+            <div className="p-1.5 rounded-sm bg-primary/10">
+              <Users className="h-4 w-4 text-primary" />
             </div>
             <TrendingUp className="h-4 w-4 text-emerald-600" />
           </div>
           <div className="space-y-1">
             <p className="text-sm text-muted-foreground">Total Members</p>
-            <p className="text-3xl font-semibold font-heading">
+            <p className="text-2xl font-semibold font-heading">
               {totalMembers}
             </p>
             <p className="text-xs text-muted-foreground">Active team members</p>
           </div>
         </div>
 
-        <div className="rounded-sm border bg-card p-6 hover:bg-accent/5 transition-colors">
-          <div className="flex items-start justify-between mb-3">
-            <div className="p-2 rounded-sm bg-primary/10">
-              <Mail className="h-5 w-5 text-primary" />
+        <div className="rounded-sm border bg-card p-4 hover:bg-accent/5 transition-colors">
+          <div className="flex items-start justify-between mb-2">
+            <div className="p-1.5 rounded-sm bg-primary/10">
+              <Mail className="h-4 w-4 text-primary" />
             </div>
           </div>
           <div className="space-y-1">
             <p className="text-sm text-muted-foreground">Pending Invites</p>
-            <p className="text-3xl font-semibold font-heading">
+            <p className="text-2xl font-semibold font-heading">
               {pendingInvites}
             </p>
             <p className="text-xs text-muted-foreground">Awaiting acceptance</p>
           </div>
         </div>
 
-        <div className="rounded-sm border bg-card p-6 hover:bg-accent/5 transition-colors">
-          <div className="flex items-start justify-between mb-3">
-            <div className="p-2 rounded-sm bg-primary/10">
-              <Shield className="h-5 w-5 text-primary" />
+        <div className="rounded-sm border bg-card p-4 hover:bg-accent/5 transition-colors">
+          <div className="flex items-start justify-between mb-2">
+            <div className="p-1.5 rounded-sm bg-primary/10">
+              <Shield className="h-4 w-4 text-primary" />
             </div>
           </div>
           <div className="space-y-1">
             <p className="text-sm text-muted-foreground">Admins</p>
-            <p className="text-3xl font-semibold font-heading">
+            <p className="text-2xl font-semibold font-heading">
               {memberships.filter((m) => m.role === "org:admin").length || 0}
             </p>
             <p className="text-xs text-muted-foreground">Organization admins</p>
           </div>
         </div>
 
-        <div className="rounded-sm border bg-card p-6 hover:bg-accent/5 transition-colors">
-          <div className="flex items-start justify-between mb-3">
-            <div className="p-2 rounded-sm bg-primary/10">
-              <Award className="h-5 w-5 text-primary" />
+        <div className="rounded-sm border bg-card p-4 hover:bg-accent/5 transition-colors">
+          <div className="flex items-start justify-between mb-2">
+            <div className="p-1.5 rounded-sm bg-primary/10">
+              <Award className="h-4 w-4 text-primary" />
             </div>
           </div>
           <div className="space-y-1">
             <p className="text-sm text-muted-foreground">Your Role</p>
-            <p className="text-lg font-semibold font-heading">
+            <p className="text-base font-semibold font-heading">
               {currentMembership?.role === "org:admin" ? "Admin" : "Member"}
             </p>
             <p className="text-xs text-muted-foreground">
@@ -319,26 +319,26 @@ export default function TeamsPage() {
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-3 mb-6">
+      <div className="flex flex-col sm:flex-row gap-2 mb-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search teams or members..."
-            className="h-10 rounded-sm pl-9"
+            className="h-8 rounded-sm pl-9 text-sm"
           />
         </div>
-        <Button variant="outline" className="h-10 rounded-sm">
-          <Filter className="h-5 w-5" />
+        <Button variant="outline" className="h-8 rounded-sm text-sm">
+          <Filter className="h-4 w-4" />
           Filters
         </Button>
       </div>
 
-      <div className="mb-8">
-        <h2 className="text-lg font-semibold mb-4 font-heading">
+      <div className="mb-6">
+        <h2 className="text-base font-semibold mb-3 font-heading">
           Organization Members
         </h2>
         <div className="rounded-sm border bg-card">
-          <div className="grid grid-cols-12 gap-4 px-6 py-3 border-b bg-muted/50 text-xs font-medium text-muted-foreground">
+          <div className="grid grid-cols-12 gap-3 px-4 py-2 border-b bg-muted/50 text-xs font-medium text-muted-foreground">
             <div className="col-span-4">Member</div>
             <div className="col-span-3">Email</div>
             <div className="col-span-2">Role</div>
@@ -354,13 +354,13 @@ export default function TeamsPage() {
               return (
                 <div
                   key={membership.id}
-                  className="grid grid-cols-12 gap-4 px-6 py-4 hover:bg-accent/5 transition-colors"
+                  className="grid grid-cols-12 gap-3 px-4 py-3 hover:bg-accent/5 transition-colors"
                 >
                   {/* Member */}
-                  <div className="col-span-4 flex items-center gap-3">
-                    <Avatar className="h-10 w-10">
+                  <div className="col-span-4 flex items-center gap-2">
+                    <Avatar className="h-8 w-8">
                       <AvatarImage src={userData.imageUrl} />
-                      <AvatarFallback className="bg-primary/10 text-primary font-semibold text-sm">
+                      <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs">
                         {userData.firstName?.[0]}
                         {userData.lastName?.[0]}
                       </AvatarFallback>

@@ -219,7 +219,7 @@ export function BasicInfoStep({
             <Input
               id="duration"
               placeholder="- - -"
-              className="h-10 rounded-sm mt-1.5 bg-muted"
+              className="rounded-sm mt-1.5 bg-muted"
               value={calculatedDuration}
               readOnly
             />

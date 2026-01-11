@@ -114,14 +114,52 @@ export default function CreatePage() {
     partyName?: string;
     party2Name?: string;
   }>({});
+  const [loadingTemplate, setLoadingTemplate] = useState(false);
 
-  // Pre-select document type from query parameter
+  // Pre-select document type from query parameter or load template
   useEffect(() => {
     const type = searchParams.get("type");
-    if (type) {
+    const templateId = searchParams.get("template");
+    
+    if (templateId) {
+      // Load template from API and create document
+      setLoadingTemplate(true);
+      fetch(`/api/templates/${templateId}`)
+        .then((res) => {
+          if (!res.ok) throw new Error("Template not found");
+          return res.json();
+        })
+        .then((data) => {
+          // Create a new document from the template content
+          return fetch("/api/documents", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              title: `${data.template.name} - Copy`,
+              content: data.template.content,
+              documentType: data.template.documentType,
+              jurisdiction: data.template.jurisdiction || "Nigeria",
+              status: "DRAFT",
+            }),
+          });
+        })
+        .then((res) => {
+          if (!res.ok) throw new Error("Failed to create document");
+          return res.json();
+        })
+        .then((data) => {
+          toast.success("Document created from template");
+          router.push(`/documents/${data.document.id}`);
+        })
+        .catch((err) => {
+          console.error("Template load error:", err);
+          toast.error("Failed to load template");
+          setLoadingTemplate(false);
+        });
+    } else if (type) {
       setFormData((prev) => ({ ...prev, documentType: type }));
     }
-  }, [searchParams]);
+  }, [searchParams, router]);
 
   const totalSteps = 5; // Added review step
 
@@ -289,6 +327,16 @@ Please generate a comprehensive, legally sound document with:
     }));
   };
 
+  // If loading template, show loading state
+  if (loadingTemplate) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen w-full gap-3">
+        <Spinner size="sm" />
+        <p className="text-sm text-muted-foreground">Loading template...</p>
+      </div>
+    );
+  }
+
   // If document is generated, show the editor
   if (isGenerated && documentId) {
     // Redirect to the document editor page
@@ -307,19 +355,19 @@ Please generate a comprehensive, legally sound document with:
 
       {/* Content */}
       <div className="flex-1 overflow-auto">
-        <div className="flex flex-col items-center justify-center min-h-full p-8 bg-muted/30">
+        <div className="flex flex-col items-center justify-center min-h-full p-4 bg-muted/30">
           <div className="w-full max-w-2xl">
             {/* Progress */}
-            <div className="mb-8">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-muted-foreground">
+            <div className="mb-4">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-medium text-muted-foreground">
                   Step {step} of {totalSteps}
                 </span>
-                <span className="text-sm font-medium text-primary">
+                <span className="text-xs font-medium text-primary">
                   {Math.round((step / totalSteps) * 100)}% Complete
                 </span>
               </div>
-              <div className="h-2 bg-muted rounded-full overflow-hidden">
+              <div className="h-1.5 bg-muted rounded-full overflow-hidden">
                 <div
                   className="h-full bg-primary transition-all duration-300"
                   style={{ width: `${(step / totalSteps) * 100}%` }}
@@ -328,10 +376,10 @@ Please generate a comprehensive, legally sound document with:
             </div>
 
             {/* Card */}
-            <div className="bg-card rounded-sm border shadow-sm p-8">
+            <div className="bg-card rounded-sm border shadow-sm p-5">
               {/* Error Message */}
               {error && (
-                <div className="mb-6 p-3 rounded-sm bg-destructive/10 border border-destructive/20 text-destructive text-sm">
+                <div className="mb-4 p-2 rounded-sm bg-destructive/10 border border-destructive/20 text-destructive text-xs">
                   {error}
                 </div>
               )}
@@ -384,14 +432,14 @@ Please generate a comprehensive, legally sound document with:
               )}
 
               {/* Navigation */}
-              <div className="flex items-center justify-between mt-8 pt-6 border-t">
+              <div className="flex items-center justify-between mt-6 pt-4 border-t">
                 <Button
                   variant="outline"
                   onClick={handleBack}
                   disabled={step === 1 || isGenerating}
-                  className="h-10 rounded-sm"
+                  className="h-8 rounded-sm text-sm"
                 >
-                  <ArrowLeft className="h-5 w-5" />
+                  <ArrowLeft className="h-4 w-4" />
                   Back
                 </Button>
 
@@ -400,7 +448,7 @@ Please generate a comprehensive, legally sound document with:
                   disabled={
                     isGenerating || (step === 1 && !formData.documentType)
                   }
-                  className="h-10 rounded-sm cursor-pointer"
+                  className="h-8 rounded-sm cursor-pointer text-sm"
                 >
                   {isGenerating ? (
                     <>
@@ -409,13 +457,13 @@ Please generate a comprehensive, legally sound document with:
                     </>
                   ) : step === totalSteps ? (
                     <>
-                      <Sparkles className="h-5 w-5" />
+                      <Sparkles className="h-4 w-4" />
                       Generate Document
                     </>
                   ) : (
                     <>
                       Next
-                      <ArrowRight className="h-5 w-5" />
+                      <ArrowRight className="h-4 w-4" />
                     </>
                   )}
                 </Button>

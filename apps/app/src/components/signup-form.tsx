@@ -190,7 +190,7 @@ export function SignupForm({ className }: SignupFormProps) {
           <Button
             type="submit"
             disabled={isLoading || code.length !== 6}
-            className="w-full h-10 rounded-sm"
+            className="w-full h-8 rounded-sm"
           >
             {isLoading ? (
               <span className="flex items-center gap-2">
@@ -236,7 +236,7 @@ export function SignupForm({ className }: SignupFormProps) {
               required
               disabled={isLoading}
               autoComplete="given-name"
-              className="h-10 rounded-sm"
+              className="rounded-sm"
             />
           </div>
 
@@ -250,7 +250,7 @@ export function SignupForm({ className }: SignupFormProps) {
               required
               disabled={isLoading}
               autoComplete="family-name"
-              className="h-10 rounded-sm"
+              className="rounded-sm"
             />
           </div>
         </div>
@@ -265,7 +265,7 @@ export function SignupForm({ className }: SignupFormProps) {
             required
             disabled={isLoading}
             autoComplete="email"
-            className="h-10 rounded-sm"
+            className="rounded-sm"
           />
         </div>
 
@@ -280,7 +280,7 @@ export function SignupForm({ className }: SignupFormProps) {
               required
               disabled={isLoading}
               autoComplete="new-password"
-              className="h-10 rounded-sm pr-10"
+              className="rounded-sm pr-10"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
@@ -359,7 +359,7 @@ export function SignupForm({ className }: SignupFormProps) {
         <Button
           type="submit"
           disabled={isLoading}
-          className="w-full h-10 rounded-sm"
+          className="w-full h-8 rounded-sm"
         >
           {isLoading ? (
             <span className="flex items-center gap-2">
@@ -388,7 +388,7 @@ export function SignupForm({ className }: SignupFormProps) {
             type="button"
             onClick={handleOAuthSignUp("oauth_google")}
             disabled={isLoading || oauthLoading !== null}
-            className="w-full h-10 rounded-sm"
+            className="w-full h-8 rounded-sm"
           >
             {oauthLoading === "google" ? (
               <span className="flex items-center gap-2">
@@ -408,7 +408,7 @@ export function SignupForm({ className }: SignupFormProps) {
             type="button"
             onClick={handleOAuthSignUp("oauth_microsoft")}
             disabled={isLoading || oauthLoading !== null}
-            className="w-full h-10 rounded-sm"
+            className="w-full h-8 rounded-sm"
           >
             {oauthLoading === "microsoft" ? (
               <span className="flex items-center gap-2">

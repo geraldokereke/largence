@@ -105,7 +105,7 @@ export function ForgotPasswordForm({ className }: ForgotPasswordFormProps) {
 
         <Button
           onClick={() => router.push("/")}
-          className="w-full h-10 rounded-sm"
+          className="w-full h-8 rounded-sm"
         >
           Continue to Dashboard
         </Button>
@@ -149,7 +149,7 @@ export function ForgotPasswordForm({ className }: ForgotPasswordFormProps) {
               onChange={(e) => setCode(e.target.value)}
               required
               disabled={isLoading}
-              className="h-10 rounded-sm"
+              className="rounded-sm"
               maxLength={6}
             />
           </div>
@@ -166,7 +166,7 @@ export function ForgotPasswordForm({ className }: ForgotPasswordFormProps) {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 disabled={isLoading}
-                className="h-10 rounded-sm pr-10"
+                className="rounded-sm pr-10"
                 minLength={8}
               />
               <button
@@ -191,7 +191,7 @@ export function ForgotPasswordForm({ className }: ForgotPasswordFormProps) {
           <Button
             type="submit"
             disabled={isLoading}
-            className="w-full h-10 rounded-sm"
+            className="w-full h-8 rounded-sm"
           >
             {isLoading ? (
               <span className="flex items-center gap-2">
@@ -247,14 +247,14 @@ export function ForgotPasswordForm({ className }: ForgotPasswordFormProps) {
             required
             disabled={isLoading}
             autoComplete="email"
-            className="h-10 rounded-sm"
+            className="rounded-sm"
           />
         </div>
 
         <Button
           type="submit"
           disabled={isLoading}
-          className="w-full h-10 rounded-sm"
+          className="w-full h-8 rounded-sm"
         >
           {isLoading ? (
             <span className="flex items-center gap-2">

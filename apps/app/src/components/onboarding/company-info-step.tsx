@@ -82,7 +82,7 @@ export function CompanyInfoStep({
           placeholder="Acme Corporation"
           value={formData.companyName}
           onChange={(e) => updateFormData({ companyName: e.target.value })}
-          className="h-10 rounded-sm"
+          className="rounded-sm"
         />
         {subdomain && (
           <p className="text-xs text-muted-foreground">
@@ -107,7 +107,7 @@ export function CompanyInfoStep({
           value={formData.industry}
           onValueChange={(value) => updateFormData({ industry: value })}
         >
-          <SelectTrigger className="h-10 rounded-sm">
+          <SelectTrigger className="rounded-sm">
             <SelectValue placeholder="Select your industry" />
           </SelectTrigger>
           <SelectContent>

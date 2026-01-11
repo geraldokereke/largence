@@ -38,3 +38,36 @@ export async function GET() {
     );
   }
 }
+
+export async function POST(request: Request) {
+  try {
+    const { userId, orgId } = await auth();
+
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const body = await request.json();
+    const { title, content, documentType, jurisdiction, status } = body;
+
+    const document = await prisma.document.create({
+      data: {
+        title: title || "Untitled Document",
+        content: content || "",
+        documentType: documentType || "Other",
+        jurisdiction: jurisdiction || "General",
+        status: status || "DRAFT",
+        userId,
+        organizationId: orgId || userId,
+      },
+    });
+
+    return NextResponse.json({ document }, { status: 201 });
+  } catch (error: any) {
+    console.error("Create document error:", error);
+    return NextResponse.json(
+      { error: "Failed to create document" },
+      { status: 500 },
+    );
+  }
+}

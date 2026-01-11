@@ -78,7 +78,7 @@ export function LoginForm({
             required
             disabled={isLoading}
             autoComplete="email"
-            className="h-10 rounded-sm"
+            className="rounded-sm"
           />
         </div>
 
@@ -101,7 +101,7 @@ export function LoginForm({
               required
               disabled={isLoading}
               autoComplete="current-password"
-              className="h-10 rounded-sm pr-10"
+              className="rounded-sm pr-10"
             />
             <button
               type="button"
@@ -122,7 +122,7 @@ export function LoginForm({
         <Button
           type="submit"
           disabled={isLoading}
-          className="w-full h-10 rounded-sm"
+          className="w-full h-8 rounded-sm"
         >
           {isLoading ? (
             <span className="flex items-center gap-2">
@@ -151,7 +151,7 @@ export function LoginForm({
             type="button"
             onClick={handleOAuthSignIn("oauth_google")}
             disabled={isLoading || oauthLoading !== null}
-            className="w-full h-10 rounded-sm"
+            className="w-full h-8 rounded-sm"
           >
             {oauthLoading === "google" ? (
               <span className="flex items-center gap-2">
@@ -171,7 +171,7 @@ export function LoginForm({
             type="button"
             onClick={handleOAuthSignIn("oauth_microsoft")}
             disabled={isLoading || oauthLoading !== null}
-            className="w-full h-10 rounded-sm"
+            className="w-full h-8 rounded-sm"
           >
             {oauthLoading === "microsoft" ? (
               <span className="flex items-center gap-2">

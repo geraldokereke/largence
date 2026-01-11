@@ -266,58 +266,58 @@ export default function AuditPage() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-1 flex-col p-4">
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-2">
+      <div className="flex flex-1 flex-col p-3">
+        <div className="mb-4">
+          <div className="flex items-center justify-between mb-1">
             <div>
-              <Skeleton className="h-8 w-48 mb-2" />
+              <Skeleton className="h-7 w-48 mb-1" />
               <Skeleton className="h-4 w-96" />
             </div>
-            <Skeleton className="h-10 w-32" />
+            <Skeleton className="h-8 w-32" />
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="rounded-sm border bg-card p-6">
-              <div className="flex items-start justify-between mb-3">
-                <Skeleton className="h-9 w-9 rounded-sm" />
+            <div key={i} className="rounded-sm border bg-card p-4">
+              <div className="flex items-start justify-between mb-2">
+                <Skeleton className="h-8 w-8 rounded-sm" />
                 <Skeleton className="h-4 w-4" />
               </div>
-              <div className="space-y-2">
+              <div className="space-y-1">
                 <Skeleton className="h-4 w-24" />
-                <Skeleton className="h-8 w-16" />
+                <Skeleton className="h-6 w-16" />
                 <Skeleton className="h-3 w-32" />
               </div>
             </div>
           ))}
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-3 mb-6">
-          <Skeleton className="h-10 flex-1" />
-          <Skeleton className="h-10 w-32" />
-          <Skeleton className="h-10 w-24" />
+        <div className="flex flex-col sm:flex-row gap-2 mb-4">
+          <Skeleton className="h-8 flex-1" />
+          <Skeleton className="h-8 w-32" />
+          <Skeleton className="h-8 w-24" />
         </div>
 
-        <div className="flex gap-2 mb-6">
+        <div className="flex gap-2 mb-4">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <Skeleton key={i} className="h-10 w-24" />
+            <Skeleton key={i} className="h-8 w-24" />
           ))}
         </div>
 
-        <div className="space-y-3">
+        <div className="space-y-2">
           {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="rounded-sm border bg-card p-6">
-              <div className="flex items-start gap-4">
-                <Skeleton className="h-10 w-10 rounded-sm" />
+            <div key={i} className="rounded-sm border bg-card p-4">
+              <div className="flex items-start gap-3">
+                <Skeleton className="h-8 w-8 rounded-sm" />
                 <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Skeleton className="h-8 w-8 rounded-sm" />
+                  <div className="flex items-center gap-2 mb-1">
+                    <Skeleton className="h-6 w-6 rounded-sm" />
                     <Skeleton className="h-4 w-32" />
                     <Skeleton className="h-4 w-24" />
-                    <Skeleton className="h-6 w-48 rounded-sm" />
+                    <Skeleton className="h-5 w-48 rounded-sm" />
                   </div>
-                  <div className="flex items-center gap-4 mt-3 pt-3 border-t">
+                  <div className="flex items-center gap-3 mt-2 pt-2 border-t">
                     <Skeleton className="h-3 w-24" />
                     <Skeleton className="h-3 w-32" />
                     <Skeleton className="h-3 w-28" />
@@ -332,12 +332,12 @@ export default function AuditPage() {
   }
 
   return (
-    <div className="flex flex-1 flex-col p-4">
+    <div className="flex flex-1 flex-col p-3">
       {/* Header */}
-      <div className="mb-6">
-        <div className="flex items-center justify-between mb-2">
+      <div className="mb-4">
+        <div className="flex items-center justify-between mb-1">
           <div>
-            <h1 className="text-2xl font-semibold font-heading">Audit Trail</h1>
+            <h1 className="text-xl font-semibold font-heading">Audit Trail</h1>
             <p className="text-sm text-muted-foreground mt-1">
               Complete activity log tracking who did what, when, and where
               across your organization
@@ -346,7 +346,7 @@ export default function AuditPage() {
           <div className="flex gap-2">
             <Button
               variant="outline"
-              className="h-10 rounded-sm"
+              className="h-8 rounded-sm text-sm"
               onClick={() => backfillMutation.mutate()}
               disabled={backfillMutation.isPending}
             >
@@ -359,15 +359,15 @@ export default function AuditPage() {
             </Button>
             <Button
               variant="outline"
-              className="h-10 rounded-sm"
+              className="h-8 rounded-sm text-sm"
               onClick={() => refetch()}
               disabled={isLoading}
             >
               <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
               Refresh
             </Button>
-            <Button variant="outline" className="h-10 rounded-sm">
-              <Download className="h-5 w-5" />
+            <Button variant="outline" className="h-8 rounded-sm text-sm">
+              <Download className="h-4 w-4" />
               Export Report
             </Button>
           </div>
@@ -383,23 +383,23 @@ export default function AuditPage() {
       )}
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
         {stats.map((stat) => {
           const Icon = stat.icon;
           return (
             <div
               key={stat.label}
-              className="rounded-sm border bg-card p-6 hover:bg-accent/5 transition-colors"
+              className="rounded-sm border bg-card p-4 hover:bg-accent/5 transition-colors"
             >
-              <div className="flex items-start justify-between mb-3">
-                <div className="p-2 rounded-sm bg-primary/10">
-                  <Icon className="h-5 w-5 text-primary" />
+              <div className="flex items-start justify-between mb-2">
+                <div className="p-1.5 rounded-sm bg-primary/10">
+                  <Icon className="h-4 w-4 text-primary" />
                 </div>
                 <TrendingUp className="h-4 w-4 text-emerald-600" />
               </div>
-              <div className="space-y-1">
+              <div className="space-y-0.5">
                 <p className="text-sm text-muted-foreground">{stat.label}</p>
-                <p className="text-3xl font-semibold font-heading">
+                <p className="text-2xl font-semibold font-heading">
                   {stat.value}
                 </p>
                 <p className="text-xs text-emerald-600">{stat.change}</p>
@@ -410,30 +410,30 @@ export default function AuditPage() {
       </div>
 
       {/* Search and Filters */}
-      <div className="flex flex-col sm:flex-row gap-3 mb-6">
+      <div className="flex flex-col sm:flex-row gap-2 mb-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search by user, action, document, or IP address..."
-            className="h-10 rounded-sm pl-9"
+            className="h-8 rounded-sm pl-9 text-sm"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" className="h-10 rounded-sm">
-            <Calendar className="h-5 w-5" />
+          <Button variant="outline" className="h-8 rounded-sm text-sm">
+            <Calendar className="h-4 w-4" />
             Date Range
           </Button>
-          <Button variant="outline" className="h-10 rounded-sm">
-            <Filter className="h-5 w-5" />
+          <Button variant="outline" className="h-8 rounded-sm text-sm">
+            <Filter className="h-4 w-4" />
             Filters
           </Button>
         </div>
       </div>
 
       {/* Event Type Filters */}
-      <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+      <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
         {eventTypes.map((type) => (
           <button
             key={type.id}
@@ -441,7 +441,7 @@ export default function AuditPage() {
               setEventType(type.id);
               setPage(1);
             }}
-            className={`px-4 py-2 rounded-sm border whitespace-nowrap transition-colors ${
+            className={`px-3 py-1.5 rounded-sm border whitespace-nowrap transition-colors text-sm ${
               eventType === type.id
                 ? "bg-primary text-primary-foreground border-primary"
                 : "bg-background hover:bg-accent"
@@ -455,15 +455,15 @@ export default function AuditPage() {
 
       {/* Audit Trail Timeline */}
       {data?.auditLogs.length === 0 ? (
-        <div className="rounded-sm border bg-card p-12 text-center">
-          <Activity className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold mb-2">No audit events yet</h3>
+        <div className="rounded-sm border bg-card p-8 text-center">
+          <Activity className="h-10 w-10 text-muted-foreground/50 mx-auto mb-3" />
+          <h3 className="text-base font-semibold mb-1">No audit events yet</h3>
           <p className="text-sm text-muted-foreground">
             Activity will appear here as users interact with your organization
           </p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-2">
           {data?.auditLogs.map((log) => {
             const { icon: Icon, color } = getActionIcon(log.action);
             const DeviceIcon = getDeviceIcon(log.device);
@@ -472,22 +472,22 @@ export default function AuditPage() {
                 key={log.id}
                 className="group rounded-sm border bg-card hover:border-primary/50 transition-all"
               >
-                <div className="p-6">
-                  <div className="flex items-start gap-4">
-                    <div className={`p-2.5 rounded-sm ${color} shrink-0`}>
-                      <Icon className="h-5 w-5" />
+                <div className="p-4">
+                  <div className="flex items-start gap-3">
+                    <div className={`p-2 rounded-sm ${color} shrink-0`}>
+                      <Icon className="h-4 w-4" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-4 mb-2">
+                      <div className="flex items-start justify-between gap-3 mb-1">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
                             <div className="flex items-center gap-2">
                               {log.userType === "system" ? (
-                                <div className="flex items-center justify-center h-8 w-8 rounded-sm bg-blue-500/10 text-blue-600">
-                                  <Bot className="h-4 w-4" />
+                                <div className="flex items-center justify-center h-6 w-6 rounded-sm bg-blue-500/10 text-blue-600">
+                                  <Bot className="h-3 w-3" />
                                 </div>
                               ) : (
-                                <div className="flex items-center justify-center h-8 w-8 rounded-sm bg-primary/10 text-primary font-semibold text-xs">
+                                <div className="flex items-center justify-center h-6 w-6 rounded-sm bg-primary/10 text-primary font-semibold text-[10px]">
                                   {log.userAvatar || "U"}
                                 </div>
                               )}

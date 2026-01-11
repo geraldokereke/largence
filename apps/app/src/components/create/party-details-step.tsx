@@ -89,7 +89,7 @@ export function PartyDetailsStep({
             <Input
               id="partyName"
               placeholder="e.g., John Doe, ABC Company Ltd"
-              className={`h-10 rounded-sm mt-1.5 ${errors?.partyName ? "border-destructive" : ""}`}
+              className={`rounded-sm mt-1.5 ${errors?.partyName ? "border-destructive" : ""}`}
               value={formData.partyName}
               onChange={(e) => onUpdate("partyName", e.target.value)}
             />
@@ -106,7 +106,7 @@ export function PartyDetailsStep({
               id="partyEmail"
               type="email"
               placeholder="email@example.com"
-              className="h-10 rounded-sm mt-1.5"
+              className="rounded-sm mt-1.5"
               value={formData.partyEmail}
               onChange={(e) => onUpdate("partyEmail", e.target.value)}
             />
@@ -126,7 +126,7 @@ export function PartyDetailsStep({
             <Input
               id="party2Name"
               placeholder="e.g., XYZ Corporation, Jane Smith"
-              className={`h-10 rounded-sm mt-1.5 ${errors?.party2Name ? "border-destructive" : ""}`}
+              className={`rounded-sm mt-1.5 ${errors?.party2Name ? "border-destructive" : ""}`}
               value={formData.party2Name}
               onChange={(e) => onUpdate("party2Name", e.target.value)}
             />
@@ -143,7 +143,7 @@ export function PartyDetailsStep({
               id="party2Email"
               type="email"
               placeholder="email@example.com"
-              className="h-10 rounded-sm mt-1.5"
+              className="rounded-sm mt-1.5"
               value={formData.party2Email}
               onChange={(e) => onUpdate("party2Email", e.target.value)}
             />
@@ -163,7 +163,7 @@ export function PartyDetailsStep({
                 value={formData.compensationType}
                 onValueChange={(value) => onUpdate("compensationType", value)}
               >
-                <SelectTrigger className="h-10 rounded-sm mt-1.5">
+                <SelectTrigger className="rounded-sm mt-1.5">
                   <SelectValue placeholder="Select type" />
                 </SelectTrigger>
                 <SelectContent>
@@ -185,7 +185,7 @@ export function PartyDetailsStep({
                 <Input
                   id="compensationAmount"
                   placeholder="5,000"
-                  className="h-10 rounded-sm pl-10"
+                  className="rounded-sm pl-10"
                   value={formData.compensationAmount}
                   onChange={handleAmountChange}
                 />

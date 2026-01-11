@@ -74,9 +74,9 @@ export default function ComplianceResultsPage() {
   }, [params.id, router]);
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return "text-green-600 bg-green-50 border-green-200";
-    if (score >= 60) return "text-yellow-600 bg-yellow-50 border-yellow-200";
-    return "text-red-600 bg-red-50 border-red-200";
+    if (score >= 80) return "text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/30";
+    if (score >= 60) return "text-amber-600 dark:text-amber-400 bg-amber-500/10 border-amber-500/30";
+    return "text-red-600 dark:text-red-400 bg-red-500/10 border-red-500/30";
   };
 
   const getScoreLabel = (score: number) => {
@@ -91,11 +91,11 @@ export default function ComplianceResultsPage() {
       case "critical":
         return <AlertTriangle className="h-5 w-5 text-red-500" />;
       case "warning":
-        return <AlertCircle className="h-5 w-5 text-yellow-500" />;
+        return <AlertCircle className="h-5 w-5 text-amber-500" />;
       case "info":
         return <Info className="h-5 w-5 text-blue-500" />;
       default:
-        return <Info className="h-5 w-5 text-gray-500" />;
+        return <Info className="h-5 w-5 text-muted-foreground" />;
     }
   };
 
@@ -238,13 +238,13 @@ export default function ComplianceResultsPage() {
                 </p>
               </div>
               <div className="text-center">
-                <div className="flex h-20 w-20 items-center justify-center rounded-sm bg-background/50 mb-2">
+                <div className="flex h-20 w-20 items-center justify-center rounded-sm bg-background/80 mb-2">
                   {complianceCheck.overallScore >= 80 ? (
-                    <CheckCircle2 className="h-10 w-10 text-green-600" />
+                    <CheckCircle2 className="h-10 w-10 text-emerald-600 dark:text-emerald-400" />
                   ) : complianceCheck.overallScore >= 60 ? (
-                    <AlertCircle className="h-10 w-10 text-yellow-600" />
+                    <AlertCircle className="h-10 w-10 text-amber-600 dark:text-amber-400" />
                   ) : (
-                    <AlertTriangle className="h-10 w-10 text-red-600" />
+                    <AlertTriangle className="h-10 w-10 text-red-600 dark:text-red-400" />
                   )}
                 </div>
                 <p className="text-xs text-muted-foreground">
@@ -257,14 +257,14 @@ export default function ComplianceResultsPage() {
           {/* Summary Stats */}
           <div className="grid grid-cols-3 gap-4">
             <Card
-              className={`rounded-sm p-4 ${criticalIssues.length > 0 ? "border-red-200 bg-red-50/50" : "border-muted"}`}
+              className={`rounded-sm p-4 ${criticalIssues.length > 0 ? "border-red-500/30 bg-red-500/10" : "border-muted"}`}
             >
               <div className="flex items-center gap-3">
                 <div className="flex h-12 w-12 items-center justify-center rounded-sm bg-red-500/10">
                   <AlertTriangle className="h-6 w-6 text-red-500" />
                 </div>
                 <div>
-                  <p className="text-3xl font-bold text-red-600">
+                  <p className="text-3xl font-bold text-red-600 dark:text-red-400">
                     {criticalIssues.length}
                   </p>
                   <p className="text-sm text-muted-foreground">
@@ -274,14 +274,14 @@ export default function ComplianceResultsPage() {
               </div>
             </Card>
             <Card
-              className={`rounded-sm p-4 ${warningIssues.length > 0 ? "border-yellow-200 bg-yellow-50/50" : "border-muted"}`}
+              className={`rounded-sm p-4 ${warningIssues.length > 0 ? "border-amber-500/30 bg-amber-500/10" : "border-muted"}`}
             >
               <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-sm bg-yellow-500/10">
-                  <AlertCircle className="h-6 w-6 text-yellow-500" />
+                <div className="flex h-12 w-12 items-center justify-center rounded-sm bg-amber-500/10">
+                  <AlertCircle className="h-6 w-6 text-amber-500" />
                 </div>
                 <div>
-                  <p className="text-3xl font-bold text-yellow-600">
+                  <p className="text-3xl font-bold text-amber-600 dark:text-amber-400">
                     {warningIssues.length}
                   </p>
                   <p className="text-sm text-muted-foreground">Warnings</p>
@@ -289,14 +289,14 @@ export default function ComplianceResultsPage() {
               </div>
             </Card>
             <Card
-              className={`rounded-sm p-4 ${infoIssues.length > 0 ? "border-blue-200 bg-blue-50/50" : "border-muted"}`}
+              className={`rounded-sm p-4 ${infoIssues.length > 0 ? "border-blue-500/30 bg-blue-500/10" : "border-muted"}`}
             >
               <div className="flex items-center gap-3">
                 <div className="flex h-12 w-12 items-center justify-center rounded-sm bg-blue-500/10">
                   <Info className="h-6 w-6 text-blue-500" />
                 </div>
                 <div>
-                  <p className="text-3xl font-bold text-blue-600">
+                  <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
                     {infoIssues.length}
                   </p>
                   <p className="text-sm text-muted-foreground">Suggestions</p>
@@ -319,7 +319,7 @@ export default function ComplianceResultsPage() {
                 {criticalIssues.map((issue, index) => (
                   <Card
                     key={index}
-                    className="rounded-sm p-4 border-red-200 bg-red-50/30 hover:bg-red-50/50 transition-colors"
+                    className="rounded-sm p-4 border-red-500/30 bg-red-500/5 hover:bg-red-500/10 transition-colors"
                   >
                     <div className="flex items-start gap-3">
                       <div className="shrink-0 mt-0.5">
@@ -334,9 +334,9 @@ export default function ComplianceResultsPage() {
                           {issue.message}
                         </p>
                         {issue.suggestion && (
-                          <div className="mt-3 p-3 bg-white rounded-sm border border-red-100">
+                          <div className="mt-3 p-3 bg-background rounded-sm border border-red-500/20">
                             <p className="text-sm">
-                              <span className="font-medium text-green-700">
+                              <span className="font-medium text-emerald-600 dark:text-emerald-400">
                                 💡 Suggestion:
                               </span>{" "}
                               <span className="text-muted-foreground">
@@ -357,11 +357,11 @@ export default function ComplianceResultsPage() {
           {warningIssues.length > 0 && (
             <div className="space-y-3">
               <div className="flex items-center gap-2">
-                <AlertCircle className="h-5 w-5 text-yellow-500" />
+                <AlertCircle className="h-5 w-5 text-amber-500" />
                 <h2 className="text-lg font-semibold">Warnings</h2>
                 <Badge
                   variant="outline"
-                  className="ml-auto border-yellow-500 text-yellow-600"
+                  className="ml-auto border-amber-500/50 text-amber-600 dark:text-amber-400"
                 >
                   {warningIssues.length}
                 </Badge>
@@ -370,7 +370,7 @@ export default function ComplianceResultsPage() {
                 {warningIssues.map((issue, index) => (
                   <Card
                     key={index}
-                    className="rounded-sm p-4 border-yellow-200 bg-yellow-50/30 hover:bg-yellow-50/50 transition-colors"
+                    className="rounded-sm p-4 border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/10 transition-colors"
                   >
                     <div className="flex items-start gap-3">
                       <div className="shrink-0 mt-0.5">
@@ -385,9 +385,9 @@ export default function ComplianceResultsPage() {
                           {issue.message}
                         </p>
                         {issue.suggestion && (
-                          <div className="mt-3 p-3 bg-white rounded-sm border border-yellow-100">
+                          <div className="mt-3 p-3 bg-background rounded-sm border border-amber-500/20">
                             <p className="text-sm">
-                              <span className="font-medium text-green-700">
+                              <span className="font-medium text-emerald-600 dark:text-emerald-400">
                                 💡 Suggestion:
                               </span>{" "}
                               <span className="text-muted-foreground">
@@ -418,7 +418,7 @@ export default function ComplianceResultsPage() {
                 {infoIssues.map((issue, index) => (
                   <Card
                     key={index}
-                    className="rounded-sm p-4 border-blue-200 bg-blue-50/30 hover:bg-blue-50/50 transition-colors"
+                    className="rounded-sm p-4 border-blue-500/30 bg-blue-500/5 hover:bg-blue-500/10 transition-colors"
                   >
                     <div className="flex items-start gap-3">
                       <div className="shrink-0 mt-0.5">
@@ -433,9 +433,9 @@ export default function ComplianceResultsPage() {
                           {issue.message}
                         </p>
                         {issue.suggestion && (
-                          <div className="mt-3 p-3 bg-white rounded-sm border border-blue-100">
+                          <div className="mt-3 p-3 bg-background rounded-sm border border-blue-500/20">
                             <p className="text-sm">
-                              <span className="font-medium text-green-700">
+                              <span className="font-medium text-emerald-600 dark:text-emerald-400">
                                 💡 Suggestion:
                               </span>{" "}
                               <span className="text-muted-foreground">
@@ -454,9 +454,9 @@ export default function ComplianceResultsPage() {
 
           {/* No Issues - All Clear */}
           {allIssues.length === 0 && (
-            <Card className="rounded-sm p-12 text-center border-green-200 bg-green-50/30">
-              <div className="flex h-20 w-20 items-center justify-center rounded-sm bg-green-500/10 mx-auto mb-4">
-                <CheckCircle2 className="h-12 w-12 text-green-500" />
+            <Card className="rounded-sm p-12 text-center border-emerald-500/30 bg-emerald-500/10">
+              <div className="flex h-20 w-20 items-center justify-center rounded-sm bg-emerald-500/20 mx-auto mb-4">
+                <CheckCircle2 className="h-12 w-12 text-emerald-500" />
               </div>
               <h3 className="text-xl font-semibold mb-2">All Clear!</h3>
               <p className="text-muted-foreground max-w-md mx-auto">

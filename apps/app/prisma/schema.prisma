@@ -27,16 +27,67 @@ model Document {
   aiModel        String?  
   generatedAt    DateTime?
   
+  // Matter/Case association
+  matterId       String?
+  matter         Matter?  @relation(fields: [matterId], references: [id])
+  
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
   
   // Relations
   complianceChecks ComplianceCheck[]
+  versions         DocumentVersion[]
+  signatures       DocumentSignature[]
+  shares           DocumentShare[]
+  comments         DocumentComment[]
   
   @@index([userId])
   @@index([organizationId])
   @@index([status])
   @@index([createdAt])
+  @@index([matterId])
+}
+
+// Document version history for time-travel feature
+model DocumentVersion {
+  id             String   @id @default(cuid())
+  documentId     String
+  document       Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  
+  // Version info
+  version        Int      // Sequential version number
+  title          String   // Title at this version
+  content        String   @db.Text // Content snapshot
+  status         DocumentStatus
+  
+  // Change metadata
+  changeType     VersionChangeType @default(EDIT)
+  changeSummary  String?  // Brief description of what changed
+  changedFields  String[] // List of fields that changed
+  
+  // User who made this change
+  userId         String
+  userName       String?
+  userAvatar     String?
+  
+  // Associated audit log (for linking back to audit trail)
+  auditLogId     String?  @unique
+  
+  createdAt      DateTime @default(now())
+  
+  @@index([documentId])
+  @@index([version])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+enum VersionChangeType {
+  CREATE
+  EDIT
+  STATUS_CHANGE
+  AI_REGENERATE
+  COMPLIANCE_FIX
+  RESTORE
 }
 
 model ComplianceCheck {
@@ -475,4 +526,250 @@ model TemplateRating {
   @@index([templateId])
   @@index([rating])
 }
+
+// ==================== MATTER/CASE MANAGEMENT ====================
+
+model Matter {
+  id               String   @id @default(cuid())
+  
+  userId           String
+  organizationId   String
+  
+  // Matter details
+  name             String
+  description      String?  @db.Text
+  matterNumber     String?  // Internal reference number
+  status           MatterStatus @default(ACTIVE)
+  
+  // Client information
+  clientName       String?
+  clientEmail      String?
+  clientPhone      String?
+  clientCompany    String?
+  
+  // Matter type and categorization
+  matterType       String?  // Litigation, Corporate, Real Estate, etc.
+  practiceArea     String?
+  
+  // Important dates
+  openDate         DateTime @default(now())
+  closeDate        DateTime?
+  dueDate          DateTime?
+  
+  // Billing
+  billingType      BillingType @default(HOURLY)
+  hourlyRate       Float?
+  flatFee          Float?
+  retainerAmount   Float?
+  
+  // Notes
+  notes            String?  @db.Text
+  
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  
+  // Relations
+  documents        Document[]
+  
+  @@index([userId])
+  @@index([organizationId])
+  @@index([status])
+  @@index([clientName])
+  @@index([matterNumber])
+}
+
+enum MatterStatus {
+  ACTIVE
+  PENDING
+  ON_HOLD
+  CLOSED
+  ARCHIVED
+}
+
+enum BillingType {
+  HOURLY
+  FLAT_FEE
+  CONTINGENCY
+  RETAINER
+  PRO_BONO
+}
+
+// ==================== E-SIGNATURES ====================
+
+model DocumentSignature {
+  id               String   @id @default(cuid())
+  
+  documentId       String
+  document         Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  
+  // Signer information
+  signerName       String
+  signerEmail      String
+  signerRole       String?  // e.g., "Party A", "Witness", "Notary"
+  
+  // Signature status
+  status           SignatureStatus @default(PENDING)
+  
+  // Signature data
+  signatureData    String?  @db.Text // Base64 encoded signature image
+  signatureType    SignatureType @default(DRAW)
+  
+  // Verification
+  ipAddress        String?
+  userAgent        String?
+  signedAt         DateTime?
+  
+  // Token for external signers
+  accessToken      String   @unique @default(cuid())
+  tokenExpiresAt   DateTime
+  
+  // Order of signing
+  signOrder        Int      @default(1)
+  
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  
+  @@index([documentId])
+  @@index([signerEmail])
+  @@index([status])
+  @@index([accessToken])
+}
+
+enum SignatureStatus {
+  PENDING
+  VIEWED
+  SIGNED
+  DECLINED
+  EXPIRED
+}
+
+enum SignatureType {
+  DRAW       // Hand-drawn signature
+  TYPE       // Typed signature
+  UPLOAD     // Uploaded image
+}
+
+// ==================== DOCUMENT SHARING ====================
+
+model DocumentShare {
+  id               String   @id @default(cuid())
+  
+  documentId       String
+  document         Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  
+  // Share settings
+  sharedByUserId   String
+  sharedWithEmail  String?  // For external shares
+  sharedWithUserId String?  // For internal shares
+  
+  // Permissions
+  permission       SharePermission @default(VIEW)
+  
+  // Access control
+  accessToken      String   @unique @default(cuid())
+  password         String?  // Optional password protection
+  expiresAt        DateTime?
+  
+  // Tracking
+  viewCount        Int      @default(0)
+  lastViewedAt     DateTime?
+  
+  // Message
+  message          String?  @db.Text
+  
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  
+  @@index([documentId])
+  @@index([sharedWithEmail])
+  @@index([accessToken])
+}
+
+enum SharePermission {
+  VIEW
+  COMMENT
+  EDIT
+  SIGN
+}
+
+// ==================== DOCUMENT COMMENTS ====================
+
+model DocumentComment {
+  id               String   @id @default(cuid())
+  
+  documentId       String
+  document         Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  
+  // Comment author
+  userId           String?  // Null for external commenters
+  userName         String
+  userEmail        String?
+  
+  // Comment content
+  content          String   @db.Text
+  
+  // Position in document (for inline comments)
+  selectionStart   Int?
+  selectionEnd     Int?
+  selectedText     String?  @db.Text
+  
+  // Reply threading
+  parentId         String?
+  parent           DocumentComment? @relation("CommentReplies", fields: [parentId], references: [id])
+  replies          DocumentComment[] @relation("CommentReplies")
+  
+  // Status
+  resolved         Boolean  @default(false)
+  resolvedAt       DateTime?
+  resolvedByUserId String?
+  
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  
+  @@index([documentId])
+  @@index([parentId])
+  @@index([userId])
+}
+
+// ==================== CLAUSE LIBRARY ====================
+
+model Clause {
+  id               String   @id @default(cuid())
+  
+  userId           String
+  organizationId   String
+  
+  // Clause details
+  name             String
+  description      String?  @db.Text
+  content          String   @db.Text
+  
+  // Categorization
+  category         String   // e.g., "Confidentiality", "Indemnification", "Termination"
+  subcategory      String?
+  tags             String[]
+  
+  // Metadata
+  jurisdiction     String?
+  documentTypes    String[] // Document types this clause is suitable for
+  
+  // Usage tracking
+  usageCount       Int      @default(0)
+  lastUsedAt       DateTime?
+  
+  // Favorites
+  isFavorite       Boolean  @default(false)
+  
+  // Version
+  version          String   @default("1.0")
+  
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  
+  @@index([userId])
+  @@index([organizationId])
+  @@index([category])
+  @@index([usageCount])
+}
+
 

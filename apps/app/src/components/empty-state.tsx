@@ -11,6 +11,7 @@ import {
   Shield,
   LucideIcon,
 } from "lucide-react";
+import { ReactNode } from "react";
 
 const templates = [
   {
@@ -40,7 +41,7 @@ const templates = [
 ];
 
 interface EmptyStateProps {
-  icon?: LucideIcon;
+  icon?: LucideIcon | ReactNode;
   title?: string;
   description?: string;
   primaryAction?: {
@@ -53,6 +54,7 @@ interface EmptyStateProps {
   } | null;
   showTemplates?: boolean;
   variant?: "default" | "documents" | "drafts" | "templates";
+  action?: ReactNode;
 }
 
 export function EmptyState({
@@ -63,6 +65,7 @@ export function EmptyState({
   secondaryAction,
   showTemplates,
   variant = "default",
+  action,
 }: EmptyStateProps = {}) {
   const router = useRouter();
 
@@ -122,7 +125,6 @@ export function EmptyState({
   };
 
   const config = variantConfig[variant];
-  const FinalIcon = Icon || config.icon;
   const finalTitle = title || config.title;
   const finalDescription = description || config.description;
   const finalPrimaryAction = primaryAction || config.primaryAction;
@@ -130,6 +132,10 @@ export function EmptyState({
     secondaryAction !== undefined ? secondaryAction : config.secondaryAction;
   const finalShowTemplates =
     showTemplates !== undefined ? showTemplates : config.showTemplates;
+
+  // Determine if Icon is a component (LucideIcon) or ReactNode
+  const isIconComponent = Icon && typeof Icon === "function";
+  const FinalIconComponent = isIconComponent ? (Icon as LucideIcon) : config.icon;
 
   const handleGenerateClick = () => {
     if (finalPrimaryAction.onClick) {
@@ -151,96 +157,111 @@ export function EmptyState({
     router.push(`/create?type=${templateType}`);
   };
 
+  // Render icon - either as ReactNode or as LucideIcon component
+  const renderIcon = () => {
+    if (Icon && !isIconComponent) {
+      // Icon is already a ReactNode (JSX element)
+      return Icon;
+    }
+    // Icon is a LucideIcon component or fallback to config icon
+    return <FinalIconComponent className="h-8 w-8 text-muted-foreground" />;
+  };
+
   return (
     <div className="rounded-sm border bg-card overflow-hidden">
       <div className="relative overflow-hidden border-b bg-card">
-        <div className="relative flex flex-col items-center justify-center py-16 px-6 text-center">
-          <div className="relative mb-6">
-            <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full" />
-            <div className="relative p-5 rounded-sm bg-muted/50 border">
-              <FinalIcon className="h-16 w-16 text-muted-foreground" />
+        <div className="relative flex flex-col items-center justify-center py-8 px-4 text-center">
+          <div className="relative mb-4">
+            <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full" />
+            <div className="relative p-3 rounded-sm bg-muted/50 border">
+              {renderIcon()}
             </div>
           </div>
 
-          <div className="max-w-2xl mb-8">
-            <h2 className="text-3xl font-semibold mb-3 font-display tracking-tight">
+          <div className="max-w-lg mb-5">
+            <h2 className="text-lg font-semibold mb-1.5 font-display tracking-tight">
               {finalTitle}
             </h2>
-            <p className="text-muted-foreground">{finalDescription}</p>
+            <p className="text-sm text-muted-foreground">{finalDescription}</p>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-3 w-full max-w-md">
-            <Button
-              className="flex-1 h-10 rounded-sm cursor-pointer"
-              onClick={handleGenerateClick}
-            >
-              <Sparkles className="h-5 w-5" />
-              {finalPrimaryAction.label}
-            </Button>
-            {finalSecondaryAction && (
+          {/* Render custom action if provided, otherwise default buttons */}
+          {action ? (
+            <div className="flex flex-col sm:flex-row gap-2 w-full max-w-sm justify-center">
+              {action}
+            </div>
+          ) : (
+            <div className="flex flex-col sm:flex-row gap-2 w-full max-w-sm">
               <Button
-                variant="outline"
-                className="flex-1 h-10 rounded-sm cursor-pointer"
-                onClick={handleUploadClick}
+                size="sm"
+                className="flex-1 h-8 rounded-sm cursor-pointer text-xs"
+                onClick={handleGenerateClick}
               >
-                <Upload className="h-5 w-5" />
-                {finalSecondaryAction.label}
+                <Sparkles className="h-3.5 w-3.5" />
+                {finalPrimaryAction.label}
               </Button>
-            )}
-          </div>
+              {finalSecondaryAction && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1 h-8 rounded-sm cursor-pointer text-xs"
+                  onClick={handleUploadClick}
+                >
+                  <Upload className="h-3.5 w-3.5" />
+                  {finalSecondaryAction.label}
+                </Button>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
       {finalShowTemplates && (
-        <div className="p-8">
-          <div className="max-w-4xl mx-auto">
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold mb-1 font-heading">
+        <div className="p-4">
+          <div className="max-w-3xl mx-auto">
+            <div className="mb-3">
+              <h3 className="text-sm font-semibold mb-0.5 font-heading">
                 Popular Templates
               </h3>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 Choose from pre-built templates to get started instantly
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
               {templates.map((template) => {
                 const TemplateIcon = template.icon;
                 return (
                   <button
                     key={template.name}
                     onClick={() => handleTemplateClick(template.type)}
-                    className="group p-4 rounded-sm border bg-card hover:bg-accent/5 hover:border-primary/50 transition-all text-left flex items-start gap-4 cursor-pointer"
+                    className="group p-3 rounded-sm border bg-card hover:bg-accent/5 hover:border-primary/50 transition-all text-left cursor-pointer"
                   >
-                    <div className="p-2.5 rounded-sm bg-primary/10 group-hover:bg-primary/20 transition-colors shrink-0">
-                      <TemplateIcon className="h-5 w-5 text-primary" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between mb-1">
-                        <p className="font-medium text-sm">{template.name}</p>
-                        <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <div className="p-1.5 rounded-sm bg-primary/10 group-hover:bg-primary/20 transition-colors shrink-0">
+                        <TemplateIcon className="h-3.5 w-3.5 text-primary" />
                       </div>
-                      <p className="text-xs text-muted-foreground">
-                        {template.description}
-                      </p>
+                      <ArrowRight className="h-3 w-3 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all ml-auto" />
                     </div>
+                    <p className="font-medium text-xs">{template.name}</p>
+                    <p className="text-[10px] text-muted-foreground">
+                      {template.description}
+                    </p>
                   </button>
                 );
               })}
             </div>
 
             {/* Help Text */}
-            <div className="mt-8 pt-6 border-t">
-              <div className="flex items-start gap-3 p-4 rounded-sm bg-muted/50">
-                <Sparkles className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+            <div className="mt-4 pt-3 border-t">
+              <div className="flex items-start gap-2 p-2.5 rounded-sm bg-muted/50">
+                <Sparkles className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-sm font-medium mb-1">
+                  <p className="text-xs font-medium mb-0.5">
                     Need help getting started?
                   </p>
-                  <p className="text-sm text-muted-foreground">
-                    Our AI assistant can guide you through document creation,
-                    suggest clauses, and ensure compliance with your
-                    jurisdiction's regulations.
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    Our AI assistant can guide you through document creation and ensure compliance.
                   </p>
                 </div>
               </div>

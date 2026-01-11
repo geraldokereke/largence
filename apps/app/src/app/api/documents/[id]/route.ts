@@ -52,7 +52,7 @@ export async function PATCH(
     }
 
     const body = await request.json();
-    const { title, content, status } = body;
+    const { title, content, status, skipVersion } = body;
 
     // Verify ownership
     const existing = await prisma.document.findFirst({
@@ -69,6 +69,57 @@ export async function PATCH(
       );
     }
 
+    // Determine what changed
+    const changes: string[] = [];
+    if (title !== undefined && title !== existing.title) changes.push("title");
+    if (content !== undefined && content !== existing.content) changes.push("content");
+    if (status !== undefined && status !== existing.status) changes.push("status");
+
+    const user = await currentUser();
+    const userName = user
+      ? `${user.firstName || ""} ${user.lastName || ""}`.trim() ||
+        user.username ||
+        "User"
+      : "User";
+    const userAvatar = getUserInitials(user?.firstName, user?.lastName);
+
+    // Create a version snapshot before updating (if there are meaningful changes and not skipped)
+    // Skip version for auto-save (frequent small changes) or when explicitly requested
+    if (changes.length > 0 && !skipVersion) {
+      // Get the latest version number
+      const latestVersion = await prisma.documentVersion.findFirst({
+        where: { documentId: id },
+        orderBy: { version: "desc" },
+      });
+
+      const newVersionNumber = (latestVersion?.version || 0) + 1;
+
+      // Determine change type
+      let changeType: "CREATE" | "EDIT" | "STATUS_CHANGE" | "AI_REGENERATE" | "COMPLIANCE_FIX" | "RESTORE" = "EDIT";
+      let changeSummary = `Updated ${changes.join(", ")}`;
+
+      if (changes.includes("status") && changes.length === 1) {
+        changeType = "STATUS_CHANGE";
+        changeSummary = `Changed status from ${existing.status} to ${status}`;
+      }
+
+      await prisma.documentVersion.create({
+        data: {
+          documentId: id,
+          version: newVersionNumber,
+          title: existing.title,
+          content: existing.content,
+          status: existing.status,
+          changeType,
+          changeSummary,
+          changedFields: changes,
+          userId,
+          userName,
+          userAvatar,
+        },
+      });
+    }
+
     const document = await prisma.document.update({
       where: { id },
       data: {
@@ -79,19 +130,12 @@ export async function PATCH(
     });
 
     // Log document update to audit trail
-    if (orgId) {
-      const user = await currentUser();
+    if (orgId && changes.length > 0) {
       const statusLabels: Record<string, string> = {
         DRAFT: "Draft",
         FINAL: "Final",
         ARCHIVED: "Archived",
       };
-
-      // Determine what changed
-      const changes: string[] = [];
-      if (title !== undefined && title !== existing.title) changes.push("title");
-      if (content !== undefined && content !== existing.content) changes.push("content");
-      if (status !== undefined && status !== existing.status) changes.push("status");
 
       let actionLabel = "Updated document";
       const metadata: Record<string, any> = {};
@@ -105,24 +149,18 @@ export async function PATCH(
         metadata.fieldsChanged = changes;
       }
 
-      if (changes.length > 0) {
-        await createAuditLog({
-          userId,
-          organizationId: orgId,
-          action: "DOCUMENT_UPDATED",
-          actionLabel,
-          entityType: "Document",
-          entityId: id,
-          entityName: document.title,
-          metadata,
-          userName: user
-            ? `${user.firstName || ""} ${user.lastName || ""}`.trim() ||
-              user.username ||
-              "User"
-            : "User",
-          userAvatar: getUserInitials(user?.firstName, user?.lastName),
-        });
-      }
+      await createAuditLog({
+        userId,
+        organizationId: orgId,
+        action: "DOCUMENT_UPDATED",
+        actionLabel,
+        entityType: "Document",
+        entityId: id,
+        entityName: document.title,
+        metadata,
+        userName,
+        userAvatar,
+      });
     }
 
     return NextResponse.json({ document });

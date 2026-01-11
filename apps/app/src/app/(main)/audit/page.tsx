@@ -40,8 +40,10 @@ import {
   Unlink,
   RefreshCcw,
   AlertTriangle,
+  GitBranch,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { DocumentHistoryViewer } from "@/components/document-history-viewer";
 
 interface AuditLog {
   id: string;
@@ -166,6 +168,8 @@ export default function AuditPage() {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [backfillMessage, setBackfillMessage] = useState<string | null>(null);
+  const [historyViewerOpen, setHistoryViewerOpen] = useState(false);
+  const [selectedDocument, setSelectedDocument] = useState<{ id: string; title: string } | null>(null);
   const queryClient = useQueryClient();
 
   // Debounce search
@@ -580,10 +584,24 @@ export default function AuditPage() {
                           <DeviceIcon className="h-3 w-3" />
                           <span>{log.device || "Unknown"}</span>
                         </div>
+                        {log.entityType === "Document" && log.entityId && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="ml-auto h-7 rounded-sm text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={() => {
+                              setSelectedDocument({ id: log.entityId!, title: log.entityName });
+                              setHistoryViewerOpen(true);
+                            }}
+                          >
+                            <GitBranch className="h-3 w-3" />
+                            View History
+                          </Button>
+                        )}
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="ml-auto h-7 rounded-sm text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                          className={`h-7 rounded-sm text-xs opacity-0 group-hover:opacity-100 transition-opacity ${log.entityType === "Document" && log.entityId ? "" : "ml-auto"}`}
                         >
                           <Eye className="h-3 w-3" />
                           View Details
@@ -634,6 +652,22 @@ export default function AuditPage() {
             </Button>
           </div>
         </div>
+      )}
+
+      {/* Document History Viewer Modal */}
+      {selectedDocument && (
+        <DocumentHistoryViewer
+          documentId={selectedDocument.id}
+          documentTitle={selectedDocument.title}
+          open={historyViewerOpen}
+          onClose={() => {
+            setHistoryViewerOpen(false);
+            setSelectedDocument(null);
+          }}
+          onRestoreSuccess={() => {
+            refetch();
+          }}
+        />
       )}
     </div>
   );

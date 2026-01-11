@@ -16,6 +16,8 @@ import {
   Plug2Icon,
   Building2,
   Sparkles,
+  Briefcase,
+  ScrollText,
 } from "lucide-react";
 
 import { NavMain } from "@largence/components/nav-main";
@@ -107,6 +109,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         url: "/documents",
         icon: FileText,
         badge: documentCount !== null ? String(documentCount) : undefined,
+      },
+      {
+        title: "Matters",
+        url: "/matters",
+        icon: Briefcase,
+      },
+      {
+        title: "Clause Library",
+        url: "/clauses",
+        icon: ScrollText,
       },
       {
         title: "Compliance Checks",

@@ -210,12 +210,12 @@ export function RedlineViewer({
               disabled={comparing || !version1}
               className="mt-6"
             >
-              {comparing ? (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              ) : (
-                <GitCompare className="h-4 w-4 mr-2" />
-              )}
               Compare
+              {comparing ? (
+                <Loader2 className="h-4 w-4 ml-2 animate-spin" />
+              ) : (
+                <GitCompare className="h-4 w-4 ml-2" />
+              )}
             </Button>
           </div>
 

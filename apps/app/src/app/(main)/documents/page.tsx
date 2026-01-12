@@ -258,7 +258,7 @@ function SortableDocumentCard({
     <div
       ref={setNodeRef}
       style={style}
-      className="group rounded-sm border bg-card p-3 hover:border-primary/30 hover:shadow-sm transition-all"
+      className="group rounded-sm border bg-card p-3 hover:border-primary/30 hover:shadow-sm transition-all flex flex-col h-full"
     >
       <div className="flex items-start justify-between gap-2 mb-1.5">
         <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -305,10 +305,10 @@ function SortableDocumentCard({
         <span className="text-muted-foreground/50">•</span>
         <span className="truncate">{doc.jurisdiction}</span>
       </div>
-      <p className="text-xs text-muted-foreground line-clamp-2 mb-2 leading-relaxed cursor-pointer" onClick={() => onEdit(doc.id)}>
+      <p className="text-xs text-muted-foreground line-clamp-2 mb-2 leading-relaxed cursor-pointer flex-1\" onClick={() => onEdit(doc.id)}>
         {getContentPreview(doc.content, doc.title)}
       </p>
-      <div className="flex items-center justify-between pt-2 border-t border-border/50">
+      <div className="flex items-center justify-between pt-2 border-t border-border/50 mt-auto">
         <div className="flex items-center gap-1.5">
           <FileText className="h-3 w-3 text-muted-foreground/70" />
           <span className="text-[10px] text-muted-foreground">
@@ -518,7 +518,7 @@ export default function DocumentsPage() {
       case "compact":
         return "flex flex-col gap-2";
       default:
-        return "grid gap-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4";
+        return "grid gap-2 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 auto-rows-fr";
     }
   };
 
@@ -590,10 +590,10 @@ export default function DocumentsPage() {
   return (
     <div className="flex flex-1 flex-col gap-3 p-3">
       {/* Header */}
-      <div className="mb-1 flex items-center justify-between">
+      <div className="mb-1 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold font-display">Documents</h1>
-          <p className="text-sm text-muted-foreground">
+          <h1 className="text-lg sm:text-xl font-semibold font-display">Documents</h1>
+          <p className="text-xs sm:text-sm text-muted-foreground">
             {processedDocuments.length} document{processedDocuments.length !== 1 ? "s" : ""}
             {searchQuery && ` matching "${searchQuery}"`}
           </p>
@@ -602,7 +602,7 @@ export default function DocumentsPage() {
           <Button variant="outline" size="icon" onClick={() => refetch()} className="h-8 w-8 rounded-sm">
             <RefreshCw className="h-3.5 w-3.5" />
           </Button>
-          <Button onClick={() => setNewDocDialogOpen(true)} className="h-8 rounded-sm text-sm">
+          <Button onClick={() => setNewDocDialogOpen(true)} className="h-8 rounded-sm text-sm flex-1 sm:flex-none">
             <Plus className="h-3.5 w-3.5 mr-1" />
             New Document
           </Button>
@@ -786,7 +786,7 @@ export default function DocumentsPage() {
               ? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter className="gap-2 sm:gap-0">
+          <DialogFooter className="gap-2 sm:gap-2">
             <Button
               variant="outline"
               onClick={() => {

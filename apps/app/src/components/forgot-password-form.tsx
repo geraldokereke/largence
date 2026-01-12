@@ -138,8 +138,8 @@ export function ForgotPasswordForm({ className }: ForgotPasswordFormProps) {
             </div>
           )}
 
-          <div className="space-y-2">
-            <Label htmlFor="code">Verification Code</Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="code" className="text-sm">Verification Code</Label>
             <Input
               id="code"
               name="code"
@@ -149,13 +149,13 @@ export function ForgotPasswordForm({ className }: ForgotPasswordFormProps) {
               onChange={(e) => setCode(e.target.value)}
               required
               disabled={isLoading}
-              className="rounded-sm"
+              className="h-9 rounded-sm text-sm"
               maxLength={6}
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="password">New Password</Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="password" className="text-sm">New Password</Label>
             <div className="relative">
               <Input
                 id="password"
@@ -166,7 +166,7 @@ export function ForgotPasswordForm({ className }: ForgotPasswordFormProps) {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 disabled={isLoading}
-                className="rounded-sm pr-10"
+                className="h-9 rounded-sm text-sm pr-10"
                 minLength={8}
               />
               <button
@@ -235,8 +235,8 @@ export function ForgotPasswordForm({ className }: ForgotPasswordFormProps) {
           </div>
         )}
 
-        <div className="space-y-2">
-          <Label htmlFor="email">Email Address</Label>
+        <div className="space-y-1.5">
+          <Label htmlFor="email" className="text-sm">Email Address</Label>
           <Input
             id="email"
             name="email"
@@ -247,14 +247,14 @@ export function ForgotPasswordForm({ className }: ForgotPasswordFormProps) {
             required
             disabled={isLoading}
             autoComplete="email"
-            className="rounded-sm"
+            className="h-9 rounded-sm text-sm"
           />
         </div>
 
         <Button
           type="submit"
           disabled={isLoading}
-          className="w-full h-8 rounded-sm"
+          className="w-full h-9 rounded-sm"
         >
           {isLoading ? (
             <span className="flex items-center gap-2">

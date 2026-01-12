@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Label } from "@largence/components/ui/label";
-import { Clock, Bell } from "lucide-react";
+import { Check } from "lucide-react";
 import { SiNotion, SiGoogledrive, SiDropbox, SiSlack } from "react-icons/si";
 import { FaFileSignature, FaMicrosoft } from "react-icons/fa";
 import type { OnboardingFormData } from "@largence/hooks/use-onboarding";
@@ -60,29 +60,29 @@ export function IntegrationsStep({
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
-      className="space-y-6"
+      className="space-y-4"
     >
       {/* Coming Soon Banner */}
-      <div className="flex items-center gap-3 p-4 bg-primary/5 border border-primary/20 rounded-sm">
-        <div className="p-2 bg-primary/10 rounded-sm">
-          <Clock className="h-5 w-5 text-primary" />
+      <div className="flex items-center gap-2 p-2.5 bg-amber-500/10 border border-amber-500/20 rounded-sm">
+        <div className="p-1 bg-amber-500/20 rounded-sm">
+          <svg className="h-3.5 w-3.5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
         </div>
         <div className="flex-1">
-          <p className="font-medium text-sm">Integrations Coming Soon</p>
-          <p className="text-xs text-muted-foreground">
-            We're working hard to bring you powerful integrations. Select your favorites below to be notified when they launch!
-          </p>
+          <p className="text-xs font-medium text-amber-700 dark:text-amber-500">Integrations Coming Soon</p>
+          <p className="text-[10px] text-amber-600/80 dark:text-amber-500/70">Select your preferences below to be notified when available</p>
         </div>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-3">
         <div>
-          <Label>Which integrations interest you?</Label>
+          <Label>Connect your favorite tools</Label>
           <p className="text-sm text-muted-foreground mt-1">
-            Select all that apply — we'll notify you when they're available
+            Select integrations to streamline your workflow
           </p>
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-2 max-h-70 overflow-y-auto pr-1">
           {availableIntegrations.map((integration) => {
             const Icon = integration.icon;
             const isSelected = formData.integrations.includes(integration.id);
@@ -90,26 +90,22 @@ export function IntegrationsStep({
               <button
                 key={integration.id}
                 onClick={() => toggleIntegration(integration.id)}
-                className={`p-4 rounded-sm border-2 transition-all text-left relative ${
+                className={`p-3 rounded-sm border-2 transition-all text-left relative ${
                   isSelected
                     ? "border-primary bg-primary/5"
                     : "border-border hover:border-primary/50"
                 }`}
               >
-                {/* Coming Soon Badge */}
-                <div className="absolute top-2 right-2 px-1.5 py-0.5 bg-amber-500/10 border border-amber-500/20 rounded text-[10px] font-medium text-amber-600">
-                  Soon
-                </div>
-                <div className="flex items-start justify-between gap-2 mb-2">
+                <div className="flex items-start justify-between gap-2 mb-1.5">
                   <div
-                    className={`p-2 rounded-sm ${
+                    className={`p-1.5 rounded-sm ${
                       isSelected
                         ? "bg-primary/10"
                         : "bg-muted"
                     }`}
                   >
                     <Icon
-                      className={`h-5 w-5 ${
+                      className={`h-4 w-4 ${
                         isSelected
                           ? "text-primary"
                           : "text-muted-foreground"
@@ -117,11 +113,11 @@ export function IntegrationsStep({
                     />
                   </div>
                   {isSelected && (
-                    <Bell className="h-4 w-4 text-primary shrink-0 mt-1" />
+                    <Check className="h-4 w-4 text-primary shrink-0" />
                   )}
                 </div>
-                <p className="text-sm font-medium mb-1">{integration.name}</p>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-sm font-medium mb-0.5">{integration.name}</p>
+                <p className="text-[11px] text-muted-foreground leading-tight">
                   {integration.description}
                 </p>
               </button>
@@ -134,11 +130,11 @@ export function IntegrationsStep({
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-center gap-2 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-sm"
+          className="flex items-center gap-2 p-2.5 bg-primary/5 border border-primary/20 rounded-sm"
         >
-          <Bell className="h-4 w-4 text-emerald-600" />
-          <p className="text-xs text-emerald-700">
-            Great! You'll be notified when {formData.integrations.length === 1 ? 'this integration is' : 'these integrations are'} available.
+          <Check className="h-4 w-4 text-primary shrink-0" />
+          <p className="text-xs text-primary">
+            {formData.integrations.length} integration{formData.integrations.length !== 1 ? 's' : ''} selected
           </p>
         </motion.div>
       )}

@@ -39,13 +39,13 @@ export function CompanyDetailsStep({
       exit={{ opacity: 0, x: -20 }}
       className="space-y-6"
     >
-      <div className="space-y-2">
-        <Label htmlFor="companySize">Company Size *</Label>
+      <div className="space-y-1.5">
+        <Label htmlFor="companySize" className="text-sm">Company Size *</Label>
         <Select
           value={formData.companySize}
           onValueChange={(value) => updateFormData({ companySize: value })}
         >
-          <SelectTrigger className="rounded-sm">
+          <SelectTrigger className="rounded-sm h-9 text-sm">
             <SelectValue placeholder="Select company size" />
           </SelectTrigger>
           <SelectContent>
@@ -58,8 +58,8 @@ export function CompanyDetailsStep({
         </Select>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="country">Primary Country *</Label>
+      <div className="space-y-1.5">
+        <Label htmlFor="country" className="text-sm">Primary Country *</Label>
         <CountryCombobox
           value={formData.country?.toLowerCase().replace(/ /g, "-")}
           onValueChange={(value) => {
@@ -73,17 +73,17 @@ export function CompanyDetailsStep({
         />
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="website">Company Website</Label>
+      <div className="space-y-1.5">
+        <Label htmlFor="website" className="text-sm">Company Website</Label>
         <div className="relative">
-          <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
           <Input
             id="website"
             type="url"
             placeholder="https://example.com"
             value={formData.website}
             onChange={(e) => updateFormData({ website: e.target.value })}
-            className="rounded-sm pl-10"
+            className="rounded-sm pl-9 h-9 text-sm"
           />
         </div>
       </div>

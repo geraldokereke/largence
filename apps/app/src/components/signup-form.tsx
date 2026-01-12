@@ -149,16 +149,16 @@ export function SignupForm({ className }: SignupFormProps) {
   if (pendingVerification) {
     return (
       <div className={cn("w-full", className)}>
-        <div className="mb-8">
-          <h1 className="text-3xl font-semibold mb-2 font-display">
+        <div className="mb-6 sm:mb-8 text-center lg:text-left">
+          <h1 className="text-2xl sm:text-3xl font-semibold mb-2 font-display">
             Verify Your Email
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-sm sm:text-base text-muted-foreground">
             We've sent a verification code to your email address.
           </p>
         </div>
 
-        <form className="space-y-6" onSubmit={handleVerify}>
+        <form className="space-y-4 sm:space-y-6" onSubmit={handleVerify}>
           {error && (
             <div className="p-3 rounded-sm bg-destructive/10 border border-destructive/20 text-destructive text-sm">
               {error}
@@ -211,23 +211,23 @@ export function SignupForm({ className }: SignupFormProps) {
 
   return (
     <div className={cn("w-full", className)}>
-      <div className="mb-8">
-        <h1 className="text-3xl font-semibold mb-2 font-display">
+      <div className="mb-6 sm:mb-8 text-center lg:text-left">
+        <h1 className="text-2xl sm:text-3xl font-semibold mb-2 font-display">
           Create Your Account
         </h1>
-        <p className="text-muted-foreground">Get started with Largence today</p>
+        <p className="text-sm sm:text-base text-muted-foreground">Get started with Largence today</p>
       </div>
 
-      <form className="space-y-6" onSubmit={handleSubmit}>
+      <form className="space-y-4 sm:space-y-6" onSubmit={handleSubmit}>
         {error && (
           <div className="p-3 rounded-sm bg-destructive/10 border border-destructive/20 text-destructive text-sm">
             {error}
           </div>
         )}
 
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="firstName">First Name</Label>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1.5">
+            <Label htmlFor="firstName" className="text-sm">First Name</Label>
             <Input
               id="firstName"
               name="firstName"
@@ -236,12 +236,12 @@ export function SignupForm({ className }: SignupFormProps) {
               required
               disabled={isLoading}
               autoComplete="given-name"
-              className="rounded-sm"
+              className="h-9 rounded-sm text-sm"
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="lastName">Last Name</Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="lastName" className="text-sm">Last Name</Label>
             <Input
               id="lastName"
               name="lastName"
@@ -250,13 +250,13 @@ export function SignupForm({ className }: SignupFormProps) {
               required
               disabled={isLoading}
               autoComplete="family-name"
-              className="rounded-sm"
+              className="h-9 rounded-sm text-sm"
             />
           </div>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="email">Work Email</Label>
+        <div className="space-y-1.5">
+          <Label htmlFor="email" className="text-sm">Work Email</Label>
           <Input
             id="email"
             name="email"
@@ -265,12 +265,12 @@ export function SignupForm({ className }: SignupFormProps) {
             required
             disabled={isLoading}
             autoComplete="email"
-            className="rounded-sm"
+            className="h-9 rounded-sm text-sm"
           />
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="password">Password</Label>
+        <div className="space-y-1.5">
+          <Label htmlFor="password" className="text-sm">Password</Label>
           <div className="relative">
             <Input
               id="password"
@@ -280,7 +280,7 @@ export function SignupForm({ className }: SignupFormProps) {
               required
               disabled={isLoading}
               autoComplete="new-password"
-              className="rounded-sm pr-10"
+              className="h-9 rounded-sm text-sm pr-10"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
@@ -359,7 +359,7 @@ export function SignupForm({ className }: SignupFormProps) {
         <Button
           type="submit"
           disabled={isLoading}
-          className="w-full h-8 rounded-sm"
+          className="w-full h-9 rounded-sm"
         >
           {isLoading ? (
             <span className="flex items-center gap-2">
@@ -388,7 +388,7 @@ export function SignupForm({ className }: SignupFormProps) {
             type="button"
             onClick={handleOAuthSignUp("oauth_google")}
             disabled={isLoading || oauthLoading !== null}
-            className="w-full h-8 rounded-sm"
+            className="w-full h-9 rounded-sm"
           >
             {oauthLoading === "google" ? (
               <span className="flex items-center gap-2">
@@ -408,7 +408,7 @@ export function SignupForm({ className }: SignupFormProps) {
             type="button"
             onClick={handleOAuthSignUp("oauth_microsoft")}
             disabled={isLoading || oauthLoading !== null}
-            className="w-full h-8 rounded-sm"
+            className="w-full h-9 rounded-sm"
           >
             {oauthLoading === "microsoft" ? (
               <span className="flex items-center gap-2">

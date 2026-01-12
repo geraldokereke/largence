@@ -92,17 +92,17 @@ const CLAUSE_CATEGORIES = [
 ];
 
 const COMMON_JURISDICTIONS = [
-  "United States",
-  "California",
-  "New York",
-  "Delaware",
+  "Nigeria",
+  "Ghana",
+  "Kenya",
+  "South Africa",
+  "Egypt",
+  "Tanzania",
   "United Kingdom",
-  "European Union",
-  "Canada",
-  "Australia",
-  "Singapore",
-  "Hong Kong",
-  "Other",
+  "Uganda",
+  "Rwanda",
+  "Ethiopia",
+  "Côte d'Ivoire",
 ];
 
 async function fetchClauses(search?: string, category?: string): Promise<ClausesResponse> {
@@ -432,7 +432,7 @@ export default function ClausesPage() {
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="space-y-1.5">
           <Label htmlFor="category" className="text-xs">Category</Label>
           <Select
@@ -504,9 +504,9 @@ export default function ClausesPage() {
     <div className="flex flex-1 flex-col p-3">
       {/* Header */}
       <div className="mb-4">
-        <div className="flex items-center justify-between mb-1">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-1">
           <div>
-            <h1 className="text-xl font-semibold tracking-tight">Clause Library</h1>
+            <h1 className="text-xl font-semibold font-display">Clause Library</h1>
             <p className="text-sm text-muted-foreground">
               Manage and reuse standard legal clauses across your documents
             </p>
@@ -516,7 +516,7 @@ export default function ClausesPage() {
               resetForm();
               setIsCreateDialogOpen(true);
             }}
-            className="h-8 rounded-sm text-sm"
+            className="h-8 rounded-sm text-sm w-full sm:w-auto"
           >
             <Plus className="h-4 w-4 mr-1.5" />
             New Clause
@@ -588,7 +588,7 @@ export default function ClausesPage() {
           }
         />
       ) : (
-        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {clauses.map((clause) => {
             const CategoryIcon = getCategoryIcon(clause.category);
             return (
@@ -642,16 +642,16 @@ export default function ClausesPage() {
                 <p className="text-xs text-muted-foreground line-clamp-2 mb-3">{clause.content}</p>
 
                 {clause.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mb-3">
-                    {clause.tags.slice(0, 3).map((tag) => (
-                      <Badge key={tag} variant="secondary" className="text-[10px] h-5">
+                  <div className="flex flex-wrap gap-1.5 mb-3">
+                    {clause.tags.slice(0, 3).map((tag, tagIndex) => (
+                      <span key={`${clause.id}-tag-${tagIndex}`} className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-primary/10 text-primary border border-primary/20">
                         {tag}
-                      </Badge>
+                      </span>
                     ))}
                     {clause.tags.length > 3 && (
-                      <Badge variant="outline" className="text-[10px] h-5">
-                        +{clause.tags.length - 3}
-                      </Badge>
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-muted text-muted-foreground border">
+                        +{clause.tags.length - 3} more
+                      </span>
                     )}
                   </div>
                 )}
@@ -692,8 +692,8 @@ export default function ClausesPage() {
               disabled={createMutation.isPending}
               className="h-8 rounded-sm text-sm"
             >
-              {createMutation.isPending && <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />}
               Create Clause
+              {createMutation.isPending && <Loader2 className="h-3.5 w-3.5 ml-1.5 animate-spin" />}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -725,8 +725,8 @@ export default function ClausesPage() {
               disabled={updateMutation.isPending}
               className="h-8 rounded-sm text-sm"
             >
-              {updateMutation.isPending && <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />}
               Save Changes
+              {updateMutation.isPending && <Loader2 className="h-3.5 w-3.5 ml-1.5 animate-spin" />}
             </Button>
           </DialogFooter>
         </DialogContent>

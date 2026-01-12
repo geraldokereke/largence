@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import { documentTypeConfigs, type DocumentTypeConfig } from "./document-types";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY || "dummy-key",
@@ -15,41 +16,57 @@ export interface DocumentGenerationParams {
   additionalInstructions?: string;
 }
 
+// Get the document type ID from the name
+function getDocumentTypeId(documentTypeName: string): string {
+  const normalizedName = documentTypeName.toLowerCase();
+  for (const [id, config] of Object.entries(documentTypeConfigs)) {
+    if (config.name.toLowerCase() === normalizedName || id === normalizedName) {
+      return id;
+    }
+  }
+  return normalizedName.replace(/\s+/g, "-");
+}
+
 export async function generateDocument(
   params: DocumentGenerationParams,
 ): Promise<string> {
   const { documentType, jurisdiction, parties, terms, additionalInstructions } =
     params;
 
-  const systemPrompt = `You are an expert legal document generator specializing in African jurisdictions. 
-Your task is to generate professional, legally sound documents that comply with local regulations.
-Format the output in clean HTML with proper headings, sections, and paragraphs.
-Use <h1> for the document title, <h2> for sections, <h3> for subsections, and <p> for paragraphs.
-Include standard legal clauses appropriate for the document type and jurisdiction.`;
+  const typeId = getDocumentTypeId(documentType);
+  const typeConfig = documentTypeConfigs[typeId];
 
-  const userPrompt = `Generate a comprehensive ${params.documentType} for ${params.jurisdiction} with the following requirements:
+  const systemPrompt = `You are an expert legal document generator specializing in African and international jurisdictions. 
 
-PARTIES INVOLVED:
-- First Party: ${params.parties?.party1 || "Party A"}
-- Second Party: ${params.parties?.party2 || "Party B"}
+CRITICAL INSTRUCTIONS:
+1. Generate ONLY the legal document content in clean HTML format
+2. DO NOT include any meta-commentary, explanations, or instructions like "This document represents..." or "Please fill in the placeholders..."
+3. DO NOT include placeholder instructions or notes to the user
+4. Use the actual party names and details provided - do not use generic placeholders like [Party Name] when real names are given
+5. Generate a complete, ready-to-use legal document with all sections filled in appropriately
+6. Use proper HTML structure: <h1> for title, <h2> for sections, <h3> for subsections, <p> for paragraphs
+7. Include all standard legal clauses appropriate for the document type and jurisdiction
+8. The document should be professional, legally sound, and immediately usable after generation`;
 
-${params.terms ? `TERMS AND CONDITIONS:\n${JSON.stringify(params.terms, null, 2)}\n` : ""}
+  const userPrompt = `Generate a ${documentType} for ${jurisdiction}.
 
-${params.additionalInstructions ? `SPECIFIC REQUIREMENTS:\n${params.additionalInstructions}\n` : ""}
+PARTY INFORMATION:
+- ${typeConfig?.parties.party1.label || "First Party"}: ${parties?.party1 || "Party A"}
+- ${typeConfig?.parties.party2.label || "Second Party"}: ${parties?.party2 || "Party B"}
 
-Please generate a complete, legally binding document that:
-1. Includes a clear title and preamble
-2. Defines all parties with their full details
-3. States the purpose and scope of the agreement
-4. Includes all standard clauses for this document type in ${params.jurisdiction}
-5. Has properly numbered sections and subsections
-6. Includes payment/compensation terms if applicable
-7. Covers confidentiality, termination, and dispute resolution
-8. Has signature blocks for all parties
-9. Uses proper legal terminology and formatting
-10. Complies with ${params.jurisdiction} legal requirements
+${terms ? `TERMS:\n${JSON.stringify(terms, null, 2)}\n` : ""}
 
-Generate the complete document now in clean HTML format.`;
+${additionalInstructions ? `ADDITIONAL DETAILS:\n${additionalInstructions}\n` : ""}
+
+${typeConfig ? `
+DOCUMENT-SPECIFIC FOCUS:
+${typeConfig.aiContext.specificInstructions}
+
+Key provisions to include:
+${typeConfig.aiContext.keyProvisions.map(p => `- ${p}`).join("\n")}
+` : ""}
+
+Generate the complete ${documentType} document now. Output ONLY the HTML document content with no introductory text, explanations, or closing remarks.`;
 
   try {
     const response = await openai.chat.completions.create({
@@ -62,17 +79,41 @@ Generate the complete document now in clean HTML format.`;
       max_tokens: 4000,
     });
 
-    const generatedContent = response.choices[0]?.message?.content;
+    let generatedContent = response.choices[0]?.message?.content;
 
     if (!generatedContent) {
       throw new Error("No content generated from OpenAI");
     }
+
+    // Clean up any meta-commentary that might have slipped through
+    generatedContent = cleanGeneratedContent(generatedContent);
 
     return generatedContent;
   } catch (error) {
     console.error("Error generating document:", error);
     throw new Error("Failed to generate document. Please try again.");
   }
+}
+
+// Remove any meta-commentary from generated content
+function cleanGeneratedContent(content: string): string {
+  // Remove common meta-commentary patterns
+  const patternsToRemove = [
+    /^[\s\S]*?(?=<h1|<H1|<!DOCTYPE|<html)/i, // Remove anything before the first HTML tag
+    /This (?:HTML )?document (?:represents|is|contains)[\s\S]*?(?=<h1|<h2|<p)/gi,
+    /Please (?:ensure|note|fill in|replace)[\s\S]*?(?=<h1|<h2|<p|$)/gi,
+    /\[?(?:Note|Important|Instructions?)\]?:[\s\S]*?(?=<h1|<h2|<p|$)/gi,
+    /---+\s*(?:End of document|Document ends)[\s\S]*$/gi,
+    /```html?\s*/gi,
+    /```\s*$/gi,
+  ];
+
+  let cleaned = content;
+  for (const pattern of patternsToRemove) {
+    cleaned = cleaned.replace(pattern, "");
+  }
+
+  return cleaned.trim();
 }
 
 export async function generateDocumentStream(
@@ -82,50 +123,46 @@ export async function generateDocumentStream(
   const { documentType, jurisdiction, parties, terms, additionalInstructions } =
     params;
 
-  const systemPrompt = `You are an expert legal document generator specializing in creating comprehensive, legally sound documents for African jurisdictions and international business.
+  const typeId = getDocumentTypeId(documentType);
+  const typeConfig = documentTypeConfigs[typeId];
 
-Your documents must:
-- Be professionally formatted with clear HTML structure (use <h1>, <h2>, <h3>, <p>, <ul>, <ol>, <strong>, <em> tags)
-- Include all standard clauses and provisions for the document type
-- Be jurisdiction-specific and compliant with local laws
-- Use formal legal language appropriate for the document type
-- Include proper definitions section where applicable
-- Have numbered clauses and sub-clauses
-- Include signature blocks for all parties
-- Be comprehensive yet clear and understandable
-- Include dispute resolution mechanisms
-- Address termination and breach conditions
-- Cover confidentiality and data protection where relevant
-- Include force majeure clauses where appropriate
+  const systemPrompt = `You are an expert legal document generator specializing in African and international jurisdictions.
+
+CRITICAL INSTRUCTIONS:
+1. Generate ONLY the legal document content in clean HTML format
+2. DO NOT include any meta-commentary, explanations, or instructions
+3. DO NOT write things like "This document represents..." or "Please fill in..."
+4. DO NOT include placeholder instructions or notes to the user
+5. Use the actual party names and details provided - do not use generic placeholders when real names are given
+6. Generate a complete, ready-to-use legal document
 
 Format requirements:
 - Use <h1> for main title
 - Use <h2> for major sections
 - Use <h3> for subsections
-- Use <p> for body text with proper spacing
-- Use <strong> for emphasis and defined terms
+- Use <p> for body text
+- Use <strong> for defined terms
 - Use <ul> or <ol> for lists
-- Ensure proper paragraph spacing and readability
 
-Generate a complete, ready-to-use legal document.`;
+Start the document directly with the HTML content. No introductory text.`;
 
-  const userPrompt = `Generate a ${documentType} document with the following details:
+  const userPrompt = `Generate a ${documentType} for ${jurisdiction || "Nigeria"}.
 
-${jurisdiction ? `Jurisdiction: ${jurisdiction}` : ""}
-${parties?.party1 ? `Party 1: ${parties.party1}` : ""}
-${parties?.party2 ? `Party 2: ${parties.party2}` : ""}
+PARTY INFORMATION:
+- ${typeConfig?.parties.party1.label || "First Party"}: ${parties?.party1 || "Party A"}
+- ${typeConfig?.parties.party2.label || "Second Party"}: ${parties?.party2 || "Party B"}
 
-${
-  terms
-    ? `Terms:\n${Object.entries(terms)
-        .map(([key, value]) => `- ${key}: ${value}`)
-        .join("\n")}`
-    : ""
-}
+${terms ? `TERMS:\n${Object.entries(terms).map(([key, value]) => `- ${key}: ${value}`).join("\n")}` : ""}
 
-${additionalInstructions ? `Additional Instructions:\n${additionalInstructions}` : ""}
+${additionalInstructions ? `DETAILS:\n${additionalInstructions}` : ""}
 
-Generate a complete, professional ${documentType}.`;
+${typeConfig ? `
+FOCUS AREAS:
+${typeConfig.aiContext.keyProvisions.map(p => `- ${p}`).join("\n")}
+${typeConfig.aiContext.specificInstructions}
+` : ""}
+
+Output ONLY the HTML document. No explanations before or after.`;
 
   try {
     const stream = await openai.chat.completions.create({

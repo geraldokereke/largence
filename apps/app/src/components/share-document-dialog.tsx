@@ -304,12 +304,12 @@ export function ShareDocumentDialog({
               disabled={isCreating}
               className="w-full"
             >
-              {isCreating ? (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              ) : (
-                <Link className="h-4 w-4 mr-2" />
-              )}
               Create Share Link
+              {isCreating ? (
+                <Loader2 className="h-4 w-4 ml-2 animate-spin" />
+              ) : (
+                <Link className="h-4 w-4 ml-2" />
+              )}
             </Button>
           </div>
 

@@ -106,12 +106,12 @@ export default function DraftsPage() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-1 flex-col gap-4 p-4">
-        <div className="mb-2">
-          <Skeleton className="h-8 w-48 mb-2" />
-          <Skeleton className="h-4 w-96" />
+      <div className="flex flex-1 flex-col gap-3 p-3">
+        <div className="mb-1">
+          <Skeleton className="h-6 w-36 mb-1" />
+          <Skeleton className="h-4 w-80" />
         </div>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
           {[1, 2, 3, 4, 5, 6].map((i) => (
             <Card key={i} className="rounded-sm">
               <CardHeader>
@@ -130,9 +130,9 @@ export default function DraftsPage() {
 
   if (error) {
     return (
-      <div className="flex flex-1 flex-col gap-4 p-4">
-        <div className="mb-2">
-          <h1 className="text-2xl font-semibold font-heading">AI Drafts</h1>
+      <div className="flex flex-1 flex-col gap-3 p-3">
+        <div className="mb-1">
+          <h1 className="text-xl font-semibold font-display">AI Drafts</h1>
           <p className="text-sm text-muted-foreground">
             Review and manage your AI-generated document drafts
           </p>
@@ -154,9 +154,9 @@ export default function DraftsPage() {
 
   if (drafts.length === 0) {
     return (
-      <div className="flex flex-1 flex-col gap-4 p-4">
-        <div className="mb-2">
-          <h1 className="text-2xl font-semibold font-heading">AI Drafts</h1>
+      <div className="flex flex-1 flex-col gap-3 p-3">
+        <div className="mb-1">
+          <h1 className="text-xl font-semibold font-display">AI Drafts</h1>
           <p className="text-sm text-muted-foreground">
             Review and manage your AI-generated document drafts
           </p>
@@ -178,10 +178,10 @@ export default function DraftsPage() {
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-4 p-4">
-      <div className="flex items-center justify-between mb-2">
+    <div className="flex flex-1 flex-col gap-3 p-3">
+      <div className="flex items-center justify-between mb-1">
         <div>
-          <h1 className="text-2xl font-semibold font-heading">AI Drafts</h1>
+          <h1 className="text-xl font-semibold font-display">AI Drafts</h1>
           <p className="text-sm text-muted-foreground">
             Review and manage your AI-generated document drafts ({drafts.length}{" "}
             {drafts.length === 1 ? "draft" : "drafts"})

@@ -2,17 +2,20 @@
 
 import { Check } from "lucide-react";
 import { Label } from "@largence/components/ui/label";
+import { getSuggestedClauses } from "@largence/lib/document-types";
 
 interface SpecialClausesStepProps {
   formData: {
     specialClauses: string[];
     additionalNotes: string;
   };
+  documentType?: string;
   onToggleClause: (clause: string) => void;
   onUpdate: (field: string, value: string) => void;
 }
 
-const clauses = [
+// Default clauses for fallback
+const defaultClauses = [
   "Non-compete clause",
   "Intellectual property rights",
   "Termination provisions",
@@ -23,9 +26,13 @@ const clauses = [
 
 export function SpecialClausesStep({
   formData,
+  documentType,
   onToggleClause,
   onUpdate,
 }: SpecialClausesStepProps) {
+  // Get suggested clauses based on document type
+  const clauses = documentType ? getSuggestedClauses(documentType) : defaultClauses;
+
   return (
     <div className="space-y-6">
       <div>
@@ -39,7 +46,7 @@ export function SpecialClausesStep({
 
       <div className="space-y-4">
         <div>
-          <Label className="mb-3 block">Special Clauses</Label>
+          <Label className="mb-3 block">Recommended Clauses</Label>
           <div className="space-y-2">
             {clauses.map((clause) => (
               <button

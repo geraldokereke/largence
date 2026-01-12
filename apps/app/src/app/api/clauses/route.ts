@@ -52,8 +52,14 @@ export async function GET(request: Request) {
       }),
     ]);
 
+    // Add title alias for client compatibility
+    const clausesWithTitle = clauses.map((clause) => ({
+      ...clause,
+      title: clause.name,
+    }));
+
     return NextResponse.json({
-      clauses,
+      clauses: clausesWithTitle,
       categories: categories.map((c) => ({
         name: c.category,
         count: c._count.category,
@@ -85,6 +91,7 @@ export async function POST(request: Request) {
     const body = await request.json();
     const {
       name,
+      title, // Accept both name and title for compatibility
       description,
       content,
       category,
@@ -94,9 +101,11 @@ export async function POST(request: Request) {
       documentTypes,
     } = body;
 
-    if (!name || !content || !category) {
+    const clauseName = name || title; // Use name if provided, otherwise fall back to title
+
+    if (!clauseName || !content || !category) {
       return NextResponse.json(
-        { error: "Name, content, and category are required" },
+        { error: "Name (or title), content, and category are required" },
         { status: 400 }
       );
     }
@@ -105,7 +114,7 @@ export async function POST(request: Request) {
       data: {
         userId,
         organizationId: orgId,
-        name,
+        name: clauseName,
         description,
         content,
         category,
@@ -116,7 +125,11 @@ export async function POST(request: Request) {
       },
     });
 
-    return NextResponse.json(clause);
+    // Return with title alias for client compatibility
+    return NextResponse.json({
+      ...clause,
+      title: clause.name, // Add title alias
+    });
   } catch (error) {
     console.error("Error creating clause:", error);
     return NextResponse.json(

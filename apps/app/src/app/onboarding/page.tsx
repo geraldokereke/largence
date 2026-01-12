@@ -182,8 +182,8 @@ export default function OnboardingPage() {
 
   return (
     <div className="grid min-h-svh lg:grid-cols-2">
-      <div className="flex flex-col gap-4 p-6 md:p-10">
-        <div className="flex justify-center gap-2 md:justify-start">
+      <div className="flex flex-col gap-4 p-6 md:p-10 overflow-hidden">
+        <div className="flex justify-center gap-2 md:justify-start shrink-0">
           <a href="#" className="flex items-center gap-2 font-medium">
             <Image
               src="/logo.png"
@@ -198,55 +198,56 @@ export default function OnboardingPage() {
           </a>
         </div>
 
-        <div className="flex flex-1 items-center justify-center">
-          <div className="w-full max-w-md">
-            <div className="mb-8">
-              <h1 className="text-3xl font-semibold mb-2 font-display">
-                Welcome
-                {user?.firstName ? `, ${user.firstName}` : " to Largence"}
-              </h1>
-              <p className="text-muted-foreground">
-                Let's get your workspace set up in a few simple steps
-              </p>
-            </div>
-
-            {/* Error Display */}
-            {error && (
-              <div className="mb-6 p-4 bg-destructive/10 border border-destructive/20 rounded-sm">
-                <p className="text-sm text-destructive">{error}</p>
+        <div className="flex-1 overflow-y-auto">
+          <div className="flex min-h-full items-center justify-center py-4">
+            <div className="w-full max-w-md">
+              <div className="mb-6">
+                <h1 className="text-2xl font-semibold mb-1 font-display">
+                  Welcome
+                  {user?.firstName ? `, ${user.firstName}` : " to Largence"}
+                </h1>
+                <p className="text-sm text-muted-foreground">
+                  Let's get your workspace set up in a few simple steps
+                </p>
               </div>
-            )}
 
-            {/* Progress Steps */}
-            <div className="mb-8">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium">Step {step} of 7</span>
-                <span className="text-sm text-muted-foreground">
-                  {Math.round((step / 7) * 100)}% complete
-                </span>
+              {/* Error Display */}
+              {error && (
+                <div className="mb-4 p-3 bg-destructive/10 border border-destructive/20 rounded-sm">
+                  <p className="text-sm text-destructive">{error}</p>
+                </div>
+              )}
+
+              {/* Progress Steps */}
+              <div className="mb-6">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-xs font-medium">Step {step} of 7</span>
+                  <span className="text-xs text-muted-foreground">
+                    {Math.round((step / 7) * 100)}% complete
+                  </span>
+                </div>
+                <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-primary transition-all duration-300 ease-out"
+                    style={{ width: `${(step / 7) * 100}%` }}
+                  />
+                </div>
               </div>
-              <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-primary transition-all duration-300 ease-out"
-                  style={{ width: `${(step / 7) * 100}%` }}
+
+              {/* Step Components */}
+              {step === 1 && (
+                <CompanyInfoStep
+                  formData={formData}
+                  updateFormData={updateFormData}
                 />
-              </div>
-            </div>
+              )}
 
-            {/* Step Components */}
-            {step === 1 && (
-              <CompanyInfoStep
-                formData={formData}
-                updateFormData={updateFormData}
-              />
-            )}
-
-            {step === 2 && (
-              <CompanyDetailsStep
-                formData={formData}
-                updateFormData={updateFormData}
-              />
-            )}
+              {step === 2 && (
+                <CompanyDetailsStep
+                  formData={formData}
+                  updateFormData={updateFormData}
+                />
+              )}
 
             {step === 3 && (
               <TeamSizeStep
@@ -279,13 +280,13 @@ export default function OnboardingPage() {
             {step === 7 && <ReviewStep formData={formData} />}
 
             {/* Navigation Buttons */}
-            <div className="flex gap-3 mt-8">
+            <div className="flex gap-3 mt-6">
               {step > 1 && (
                 <Button
                   variant="outline"
                   onClick={handleBack}
                   disabled={isCompleting}
-                  className="rounded-sm h-10 px-4"
+                  className="rounded-sm h-9 px-4"
                 >
                   Back
                 </Button>
@@ -293,7 +294,7 @@ export default function OnboardingPage() {
               <Button
                 onClick={handleNext}
                 disabled={isCompleting || !isStepValid()}
-                className="flex-1 rounded-sm h-10 px-4"
+                className="flex-1 rounded-sm h-9 px-4"
               >
                 {step === 7 ? (
                   isCompleting ? (
@@ -304,22 +305,23 @@ export default function OnboardingPage() {
                   ) : (
                     <>
                       Complete Setup
-                      <CheckCircle className="h-5 w-5" />
+                      <CheckCircle className="h-4 w-4" />
                     </>
                   )
                 ) : (
                   <>
                     Continue
-                    <ArrowRight className="h-5 w-5" />
+                    <ArrowRight className="h-4 w-4" />
                   </>
                 )}
               </Button>
             </div>
 
-            <p className="text-center text-sm text-muted-foreground mt-6">
+            <p className="text-center text-xs text-muted-foreground mt-4">
               You can always change these settings later
             </p>
           </div>
+        </div>
         </div>
       </div>
 

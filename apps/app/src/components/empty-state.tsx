@@ -133,9 +133,13 @@ export function EmptyState({
   const finalShowTemplates =
     showTemplates !== undefined ? showTemplates : config.showTemplates;
 
-  // Determine if Icon is a component (LucideIcon) or ReactNode
-  const isIconComponent = Icon && typeof Icon === "function";
-  const FinalIconComponent = isIconComponent ? (Icon as LucideIcon) : config.icon;
+  // Determine if Icon is a component reference (not a rendered JSX element)
+  // - Function components: typeof === "function"
+  // - forwardRef components: object with $$typeof === Symbol.for('react.forward_ref')
+  // - JSX elements (rendered): object with $$typeof === Symbol.for('react.element')
+  const isReactElement = Icon && typeof Icon === "object" && Icon !== null && "props" in Icon;
+  const isIconComponent = Icon && !isReactElement && (typeof Icon === "function" || (typeof Icon === "object" && Icon !== null && "$$typeof" in Icon));
+  const FinalIconComponent = isIconComponent ? Icon as LucideIcon : config.icon;
 
   const handleGenerateClick = () => {
     if (finalPrimaryAction.onClick) {
@@ -159,12 +163,22 @@ export function EmptyState({
 
   // Render icon - either as ReactNode or as LucideIcon component
   const renderIcon = () => {
-    if (Icon && !isIconComponent) {
-      // Icon is already a ReactNode (JSX element)
-      return Icon;
+    if (!Icon) {
+      // No icon provided, use default from config
+      const DefaultIcon = config.icon;
+      return <DefaultIcon className="h-8 w-8 text-muted-foreground" />;
     }
-    // Icon is a LucideIcon component or fallback to config icon
-    return <FinalIconComponent className="h-8 w-8 text-muted-foreground" />;
+    if (isReactElement) {
+      // Icon is already a rendered JSX element
+      return Icon as ReactNode;
+    }
+    if (isIconComponent) {
+      // Icon is a component reference (function or forwardRef)
+      const IconComponent = FinalIconComponent;
+      return <IconComponent className="h-8 w-8 text-muted-foreground" />;
+    }
+    // Fallback: treat as ReactNode
+    return Icon as ReactNode;
   };
 
   return (

@@ -25,7 +25,11 @@ export async function GET(
       return NextResponse.json({ error: "Clause not found" }, { status: 404 });
     }
 
-    return NextResponse.json(clause);
+    // Add title alias for client compatibility
+    return NextResponse.json({
+      ...clause,
+      title: clause.name,
+    });
   } catch (error) {
     console.error("Error fetching clause:", error);
     return NextResponse.json(
@@ -62,6 +66,7 @@ export async function PATCH(
     const body = await request.json();
     const {
       name,
+      title, // Accept both name and title for compatibility
       description,
       content,
       category,
@@ -72,10 +77,12 @@ export async function PATCH(
       isFavorite,
     } = body;
 
+    const clauseName = name || title; // Use name if provided, otherwise fall back to title
+
     const clause = await prisma.clause.update({
       where: { id },
       data: {
-        ...(name !== undefined && { name }),
+        ...(clauseName !== undefined && { name: clauseName }),
         ...(description !== undefined && { description }),
         ...(content !== undefined && { content }),
         ...(category !== undefined && { category }),
@@ -87,7 +94,11 @@ export async function PATCH(
       },
     });
 
-    return NextResponse.json(clause);
+    // Add title alias for client compatibility
+    return NextResponse.json({
+      ...clause,
+      title: clause.name,
+    });
   } catch (error) {
     console.error("Error updating clause:", error);
     return NextResponse.json(

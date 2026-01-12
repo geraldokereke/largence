@@ -242,10 +242,10 @@ export default function TeamsPage() {
   return (
     <div className="flex flex-1 flex-col p-3">
       <div className="mb-4">
-        <div className="flex items-center justify-between mb-1">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-1">
           <div>
             <h1 className="text-xl font-semibold font-display">Teams</h1>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="text-sm text-muted-foreground">
               Manage teams, members, and collaborate on legal work across{" "}
               {organization?.name}
             </p>

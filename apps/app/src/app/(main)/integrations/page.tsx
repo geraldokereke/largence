@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useSearchParams } from "next/navigation";
 import { Button } from "@largence/components/ui/button";
 import { Input } from "@largence/components/ui/input";
 import {
@@ -18,6 +19,7 @@ import {
   Bell,
   Sparkles,
   BellRing,
+  Link2,
 } from "lucide-react";
 import {
   SiNotion,
@@ -52,8 +54,17 @@ import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 
-// Only show these integrations (all coming soon)
+// Only show these integrations (Notion is functional, others coming soon)
 const AVAILABLE_PROVIDERS = ["NOTION", "GOOGLE_DRIVE", "DROPBOX", "DOCUSIGN"];
+const OAUTH_ENABLED_PROVIDERS = ["NOTION", "DROPBOX", "DOCUSIGN"];
+
+// UI catalog for provider names
+const INTEGRATION_CATALOG_UI: Record<string, { name: string }> = {
+  NOTION: { name: "Notion" },
+  GOOGLE_DRIVE: { name: "Google Drive" },
+  DROPBOX: { name: "Dropbox" },
+  DOCUSIGN: { name: "DocuSign" },
+};
 
 // Icon mapping for integration providers
 const PROVIDER_ICONS: Record<
@@ -109,6 +120,7 @@ interface Integration {
   externalEmail: string | null;
   syncEnabled: boolean;
   settings: Record<string, unknown> | null;
+  oauthSupported?: boolean;
 }
 
 interface IntegrationsResponse {
@@ -128,16 +140,26 @@ async function fetchIntegrations(): Promise<IntegrationsResponse> {
   return res.json();
 }
 
+interface ConnectResponse {
+  success: boolean;
+  requiresOAuth?: boolean;
+  authUrl?: string;
+  comingSoon?: boolean;
+  message?: string;
+  error?: string;
+}
+
 async function connectIntegration(
   provider: string,
-): Promise<{ success: boolean }> {
+): Promise<ConnectResponse> {
   const res = await fetch("/api/integrations", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ provider }),
   });
-  if (!res.ok) throw new Error("Failed to connect integration");
-  return res.json();
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Failed to connect integration");
+  return data;
 }
 
 async function disconnectIntegration(
@@ -152,6 +174,7 @@ async function disconnectIntegration(
 
 export default function IntegrationsPage() {
   const queryClient = useQueryClient();
+  const searchParams = useSearchParams();
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("all");
   const [connectingProvider, setConnectingProvider] = useState<string | null>(
@@ -164,6 +187,59 @@ export default function IntegrationsPage() {
   const [showComingSoonDialog, setShowComingSoonDialog] = useState(false);
   const [comingSoonIntegration, setComingSoonIntegration] = useState<string | null>(null);
   const [notifiedIntegrations, setNotifiedIntegrations] = useState<Set<string>>(new Set());
+
+  // Track if OAuth toast has been shown to prevent duplicates
+  const oauthToastShown = useRef(false);
+
+  // Handle OAuth callback success/error messages
+  useEffect(() => {
+    // Prevent double toast in StrictMode
+    if (oauthToastShown.current) return;
+    
+    const success = searchParams.get("success");
+    const error = searchParams.get("error");
+
+    if (success === "google_drive_connected") {
+      oauthToastShown.current = true;
+      toast.success("Google Drive connected!", {
+        description: "Your Google Drive account has been successfully linked.",
+      });
+      window.history.replaceState({}, "", "/integrations");
+    } else if (success === "notion_connected") {
+      oauthToastShown.current = true;
+      toast.success("Notion connected!", {
+        description: "Your Notion workspace has been successfully linked.",
+      });
+      window.history.replaceState({}, "", "/integrations");
+    } else if (success === "dropbox_connected") {
+      oauthToastShown.current = true;
+      toast.success("Dropbox connected!", {
+        description: "Your Dropbox account has been successfully linked.",
+      });
+      window.history.replaceState({}, "", "/integrations");
+    } else if (success === "docusign_connected") {
+      oauthToastShown.current = true;
+      toast.success("DocuSign connected!", {
+        description: "Your DocuSign account has been successfully linked.",
+      });
+      window.history.replaceState({}, "", "/integrations");
+    }
+
+    if (error) {
+      oauthToastShown.current = true;
+      const errorMessages: Record<string, string> = {
+        oauth_denied: "Authorization was denied. Please try again.",
+        missing_params: "Missing required parameters. Please try again.",
+        invalid_state: "Invalid request state. Please try again.",
+        token_exchange_failed: "Failed to complete authorization. Please try again.",
+        callback_failed: "An error occurred during connection. Please try again.",
+      };
+      toast.error("Connection failed", {
+        description: errorMessages[error] || "An unknown error occurred.",
+      });
+      window.history.replaceState({}, "", "/integrations");
+    }
+  }, [searchParams]);
 
   const handleNotifyMe = (provider: string, integrationName: string) => {
     setNotifiedIntegrations(prev => {
@@ -190,17 +266,34 @@ export default function IntegrationsPage() {
 
   const connectMutation = useMutation({
     mutationFn: connectIntegration,
-    onSuccess: (_, provider) => {
+    onSuccess: (data, provider) => {
+      // Handle OAuth redirect
+      if (data.requiresOAuth && data.authUrl) {
+        // Redirect to OAuth provider
+        window.location.href = data.authUrl;
+        return;
+      }
+      
+      // Handle coming soon
+      if (data.comingSoon) {
+        setConnectingProvider(null);
+        setComingSoonIntegration(
+          INTEGRATION_CATALOG_UI[provider]?.name || provider.replace(/_/g, " ")
+        );
+        setShowComingSoonDialog(true);
+        return;
+      }
+      
       queryClient.invalidateQueries({ queryKey: ["integrations"] });
       setConnectingProvider(null);
       toast.success("Integration connected", {
         description: `Successfully connected to ${provider.replace(/_/g, " ").toLowerCase()}`,
       });
     },
-    onError: (_, provider) => {
+    onError: (error: Error, provider) => {
       setConnectingProvider(null);
       toast.error("Connection failed", {
-        description: `Failed to connect to ${provider.replace(/_/g, " ").toLowerCase()}`,
+        description: error.message || `Failed to connect to ${provider.replace(/_/g, " ").toLowerCase()}`,
       });
     },
   });
@@ -288,7 +381,14 @@ export default function IntegrationsPage() {
   }, [availableIntegrations, activeCategory, search]);
 
   const handleConnect = (provider: string, integrationName: string) => {
-    // Show coming soon dialog instead of connecting
+    // For OAuth-enabled providers, initiate OAuth flow
+    if (OAUTH_ENABLED_PROVIDERS.includes(provider)) {
+      setConnectingProvider(provider);
+      connectMutation.mutate(provider);
+      return;
+    }
+    
+    // Show coming soon dialog for others
     setComingSoonIntegration(integrationName);
     setShowComingSoonDialog(true);
   };
@@ -350,19 +450,19 @@ export default function IntegrationsPage() {
 
   return (
     <div className="flex flex-1 flex-col p-3">
-      {/* Coming Soon Banner */}
-      <div className="mb-4 p-3 rounded-sm border border-amber-200 bg-amber-50 dark:border-amber-900/50 dark:bg-amber-950/20">
+      {/* Info Banner */}
+      <div className="mb-4 p-3 rounded-sm border border-blue-200 bg-blue-50 dark:border-blue-900/50 dark:bg-blue-950/20">
         <div className="flex items-start gap-2">
-          <div className="p-1.5 rounded-sm bg-amber-100 dark:bg-amber-900/30">
-            <Sparkles className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+          <div className="p-1.5 rounded-sm bg-blue-100 dark:bg-blue-900/30">
+            <Sparkles className="h-4 w-4 text-blue-600 dark:text-blue-400" />
           </div>
           <div className="flex-1">
-            <h3 className="font-semibold font-heading text-amber-800 dark:text-amber-300">
-              Integrations Coming Soon
+            <h3 className="font-semibold font-heading text-blue-800 dark:text-blue-300">
+              Connect Your Tools
             </h3>
-            <p className="text-sm text-amber-700 dark:text-amber-400/80 mt-1">
-              We&apos;re building powerful integrations to connect Largence with your favorite tools. 
-              Click &quot;Notify Me&quot; on any integration to be the first to know when it launches!
+            <p className="text-sm text-blue-700 dark:text-blue-400/80 mt-1">
+              Google Drive and Notion integrations are now available! Connect your accounts to sync documents seamlessly.
+              More integrations coming soon - click &quot;Notify Me&quot; to be alerted when they launch.
             </p>
           </div>
         </div>
@@ -372,10 +472,10 @@ export default function IntegrationsPage() {
       <div className="mb-4">
         <div className="flex items-center justify-between mb-1">
           <div>
-            <h1 className="text-xl font-semibold font-heading">
+            <h1 className="text-xl font-semibold font-display">
               Integrations
             </h1>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="text-sm text-muted-foreground">
               Connect Largence with your favorite tools and automate your legal
               workflows
             </p>
@@ -466,9 +566,19 @@ export default function IntegrationsPage() {
                     <h3 className="text-sm font-semibold font-heading truncate">
                       {integration.name}
                     </h3>
-                    <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
-                      Soon
-                    </Badge>
+                    {isConnected ? (
+                      <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                        Connected
+                      </Badge>
+                    ) : OAUTH_ENABLED_PROVIDERS.includes(integration.provider) ? (
+                      <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+                        Available
+                      </Badge>
+                    ) : (
+                      <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+                        Soon
+                      </Badge>
+                    )}
                   </div>
                   <span className="text-xs text-muted-foreground">
                     {integration.category}
@@ -480,6 +590,16 @@ export default function IntegrationsPage() {
               <p className="text-xs text-muted-foreground mb-3 line-clamp-2">
                 {integration.description}
               </p>
+
+              {/* Connected Email */}
+              {isConnected && integration.externalEmail && (
+                <div className="mb-3 pb-3 border-b">
+                  <div className="flex items-center gap-1.5 text-xs">
+                    <span className="text-muted-foreground">Connected as:</span>
+                    <span className="font-medium truncate">{integration.externalEmail}</span>
+                  </div>
+                </div>
+              )}
 
               {/* Features */}
               <div className="flex-1 mb-3">
@@ -510,9 +630,41 @@ export default function IntegrationsPage() {
                 </div>
               )}
 
-              {/* Actions - Notify Me Toggle */}
+              {/* Actions */}
               <div className="mt-auto">
-                {notifiedIntegrations.has(integration.provider) ? (
+                {isConnected ? (
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 h-8 rounded-sm text-xs"
+                      onClick={() => handleDisconnectClick(integration)}
+                    >
+                      <Trash2 className="h-3.5 w-3.5 mr-1.5" />
+                      Disconnect
+                    </Button>
+                  </div>
+                ) : OAUTH_ENABLED_PROVIDERS.includes(integration.provider) ? (
+                  <Button
+                    variant="default"
+                    size="sm"
+                    className="w-full h-8 rounded-sm text-xs"
+                    onClick={() => handleConnect(integration.provider, integration.name)}
+                    disabled={isConnecting}
+                  >
+                    {isConnecting ? (
+                      <>
+                        <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+                        Connecting...
+                      </>
+                    ) : (
+                      <>
+                        <Link2 className="h-3.5 w-3.5 mr-1.5" />
+                        Connect
+                      </>
+                    )}
+                  </Button>
+                ) : notifiedIntegrations.has(integration.provider) ? (
                   <Button
                     variant="default"
                     size="sm"
@@ -587,12 +739,12 @@ export default function IntegrationsPage() {
               disabled={disconnectMutation.isPending}
               className="rounded-sm"
             >
-              {disconnectMutation.isPending ? (
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-              ) : (
-                <Trash2 className="h-4 w-4 mr-2" />
-              )}
               Disconnect
+              {disconnectMutation.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin ml-2" />
+              ) : (
+                <Trash2 className="h-4 w-4 ml-2" />
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>

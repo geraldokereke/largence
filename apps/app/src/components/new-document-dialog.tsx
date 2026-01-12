@@ -83,7 +83,7 @@ export function NewDocumentDialog({ open, onOpenChange }: NewDocumentDialogProps
           </button>
         </div>
 
-        <div className="px-4 py-3 border-t bg-muted/30">
+        <div className="px-4 py-3 border-t mx-3">
           <p className="text-[11px] text-muted-foreground text-center">
             You can always edit AI-generated documents after creation
           </p>

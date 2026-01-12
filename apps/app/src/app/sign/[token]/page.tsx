@@ -104,20 +104,34 @@ export default function SignPage({
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Set canvas size
-    const rect = canvas.getBoundingClientRect();
-    canvas.width = rect.width * 2;
-    canvas.height = rect.height * 2;
-    ctx.scale(2, 2);
+    // Set canvas size based on its display size
+    const setupCanvas = () => {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      
+      // Set actual canvas dimensions (higher resolution)
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      
+      // Scale the context to match device pixel ratio
+      ctx.scale(dpr, dpr);
 
-    // Set drawing style
-    ctx.strokeStyle = "#000";
-    ctx.lineWidth = 2;
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
+      // Set drawing style
+      ctx.strokeStyle = "#000";
+      ctx.lineWidth = 2;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+    };
+
+    setupCanvas();
+    
+    // Re-setup on resize
+    window.addEventListener("resize", setupCanvas);
+    return () => window.removeEventListener("resize", setupCanvas);
   }, [data, signatureType]);
 
   const startDrawing = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+    e.preventDefault();
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -131,6 +145,7 @@ export default function SignPage({
   };
 
   const draw = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+    e.preventDefault();
     if (!isDrawing) return;
 
     const canvas = canvasRef.current;
@@ -145,7 +160,8 @@ export default function SignPage({
     setHasSignature(true);
   };
 
-  const stopDrawing = () => {
+  const stopDrawing = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+    e.preventDefault();
     setIsDrawing(false);
   };
 
@@ -173,7 +189,18 @@ export default function SignPage({
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
+    // Clear the canvas
+    const dpr = window.devicePixelRatio || 1;
+    ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset transform
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.scale(dpr, dpr); // Re-apply scale
+    
+    // Re-set drawing style
+    ctx.strokeStyle = "#000";
+    ctx.lineWidth = 2;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    
     setHasSignature(false);
   };
 
@@ -243,7 +270,7 @@ export default function SignPage({
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="fixed inset-0 flex items-center justify-center bg-background overflow-y-auto">
         <div className="text-center space-y-4">
           <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
           <p className="text-muted-foreground">Loading document...</p>
@@ -254,7 +281,7 @@ export default function SignPage({
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <div className="fixed inset-0 flex items-center justify-center bg-background p-4 overflow-y-auto">
         <Card className="max-w-md w-full">
           <CardHeader className="text-center">
             <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-destructive/10 flex items-center justify-center">
@@ -270,7 +297,7 @@ export default function SignPage({
 
   if (alreadySigned) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <div className="fixed inset-0 flex items-center justify-center bg-background p-4 overflow-y-auto">
         <Card className="max-w-md w-full">
           <CardHeader className="text-center">
             <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-green-500/10 flex items-center justify-center">
@@ -288,7 +315,7 @@ export default function SignPage({
 
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <div className="fixed inset-0 flex items-center justify-center bg-background p-4 overflow-y-auto">
         <Card className="max-w-md w-full">
           <CardHeader className="text-center">
             <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-green-500/10 flex items-center justify-center">
@@ -314,45 +341,50 @@ export default function SignPage({
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="fixed inset-0 bg-muted/30 overflow-y-auto">
       {/* Header */}
-      <header className="border-b bg-card sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4">
+      <header className="border-b bg-background sticky top-0 z-10">
+        <div className="max-w-3xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                <PenTool className="h-5 w-5 text-primary" />
+            <div className="flex items-center gap-2">
+              <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                <PenTool className="h-4 w-4 text-primary" />
               </div>
               <div>
-                <h1 className="font-semibold">Sign Document</h1>
-                <p className="text-xs text-muted-foreground">
+                <h1 className="font-semibold text-sm">Sign Document</h1>
+                <p className="text-xs text-muted-foreground truncate max-w-[200px]">
                   {data.document.title}
                 </p>
               </div>
             </div>
-            <Badge variant="secondary">
+            <Badge variant="secondary" className="text-xs">
               {data.signature.signerRole || "Signer"}
             </Badge>
           </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-6 space-y-6">
-        {/* Signer Info */}
-        <Card>
-          <CardContent className="py-4">
+      <main className="max-w-3xl mx-auto px-4 py-4 space-y-4 pb-12">
+        {/* Signer Info - Compact */}
+        <Card className="border-0 shadow-sm">
+          <CardContent className="py-3 px-4">
             <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Signing as</p>
-                <p className="font-medium">{data.signature.signerName}</p>
-                <p className="text-sm text-muted-foreground">
-                  {data.signature.signerEmail}
-                </p>
+              <div className="flex items-center gap-3">
+                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                  <span className="text-xs font-semibold text-primary">
+                    {data.signature.signerName.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+                <div>
+                  <p className="font-medium text-sm">{data.signature.signerName}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {data.signature.signerEmail}
+                  </p>
+                </div>
               </div>
               <Badge
-                variant={
-                  data.signature.status === "VIEWED" ? "secondary" : "outline"
-                }
+                variant={data.signature.status === "VIEWED" ? "secondary" : "outline"}
+                className="text-xs"
               >
                 {data.signature.status}
               </Badge>
@@ -360,65 +392,66 @@ export default function SignPage({
           </CardContent>
         </Card>
 
-        {/* Document Preview */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <FileText className="h-5 w-5" />
+        {/* Document Preview - Scrollable */}
+        <Card className="border-0 shadow-sm">
+          <CardHeader className="py-3 px-4 border-b">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <FileText className="h-4 w-4" />
               Document to Sign
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-4 rounded-lg">
             <div
-              className="prose prose-sm dark:prose-invert max-w-none max-h-[400px] overflow-y-auto p-4 border rounded-lg bg-muted/30"
+              className="prose prose-sm dark:prose-invert max-w-none max-h-[50vh] overflow-y-auto p-4 bg-background"
               dangerouslySetInnerHTML={{ __html: data.document.content }}
             />
           </CardContent>
         </Card>
 
-        {/* Signature Input */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <PenTool className="h-5 w-5" />
+        {/* Signature Input - Fixed at bottom on mobile */}
+        <Card className="border-0 shadow-sm">
+          <CardHeader className="py-3 px-4 border-b">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <PenTool className="h-4 w-4" />
               Your Signature
             </CardTitle>
-            <CardDescription>
-              Draw or type your signature below to sign this document
+            <CardDescription className="text-xs">
+              Draw or type your signature to sign this document
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="p-4 space-y-3">
             <Tabs
               value={signatureType}
               onValueChange={(v) => setSignatureType(v as "draw" | "type")}
             >
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="draw" className="gap-2">
-                  <PenTool className="h-4 w-4" />
+              <TabsList className="grid w-full grid-cols-2 h-9">
+                <TabsTrigger value="draw" className="gap-1.5 text-xs">
+                  <PenTool className="h-3.5 w-3.5" />
                   Draw
                 </TabsTrigger>
-                <TabsTrigger value="type" className="gap-2">
-                  <Type className="h-4 w-4" />
+                <TabsTrigger value="type" className="gap-1.5 text-xs">
+                  <Type className="h-3.5 w-3.5" />
                   Type
                 </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="draw" className="space-y-4">
-                <div className="border rounded-lg bg-white relative">
+              <TabsContent value="draw" className="space-y-3 mt-3">
+                <div className="border-2 border-dashed rounded-lg bg-white relative overflow-hidden">
                   <canvas
                     ref={canvasRef}
-                    className="w-full h-[150px] cursor-crosshair touch-none"
+                    className="w-full cursor-crosshair touch-none"
+                    style={{ height: "120px" }}
                     onMouseDown={startDrawing}
                     onMouseMove={draw}
                     onMouseUp={stopDrawing}
-                    onMouseLeave={stopDrawing}
+                    onMouseLeave={() => setIsDrawing(false)}
                     onTouchStart={startDrawing}
                     onTouchMove={draw}
                     onTouchEnd={stopDrawing}
                   />
                   {!hasSignature && (
                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                      <p className="text-muted-foreground text-sm">
+                      <p className="text-muted-foreground text-xs">
                         Draw your signature here
                       </p>
                     </div>
@@ -429,28 +462,29 @@ export default function SignPage({
                   size="sm"
                   onClick={clearCanvas}
                   disabled={!hasSignature}
+                  className="h-8 text-xs"
                 >
-                  <Eraser className="h-4 w-4 mr-2" />
+                  <Eraser className="h-3.5 w-3.5 mr-1.5" />
                   Clear
                 </Button>
               </TabsContent>
 
-              <TabsContent value="type" className="space-y-4">
+              <TabsContent value="type" className="space-y-3 mt-3">
                 <Input
                   placeholder="Type your full name"
                   value={typedName}
                   onChange={(e) => setTypedName(e.target.value)}
-                  className="text-2xl h-14 font-serif italic text-center"
+                  className="text-xl h-12 font-serif italic text-center"
                 />
                 {typedName && (
-                  <div className="p-4 border rounded-lg bg-white text-center">
+                  <div className="p-3 border rounded-lg bg-white text-center">
                     <p
-                      className="text-3xl font-serif italic"
+                      className="text-2xl font-serif italic text-gray-900"
                       style={{ fontFamily: "'Brush Script MT', cursive" }}
                     >
                       {typedName}
                     </p>
-                    <p className="text-xs text-muted-foreground mt-2">
+                    <p className="text-[10px] text-muted-foreground mt-1">
                       Preview
                     </p>
                   </div>
@@ -458,10 +492,10 @@ export default function SignPage({
               </TabsContent>
             </Tabs>
 
-            <div className="flex items-center justify-between pt-4 border-t">
-              <p className="text-xs text-muted-foreground max-w-md">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-3 border-t">
+              <p className="text-[10px] text-muted-foreground max-w-sm leading-relaxed">
                 By signing, I agree that my electronic signature is legally
-                binding and has the same legal effect as a handwritten signature.
+                binding and has the same effect as a handwritten signature.
               </p>
               <Button
                 onClick={handleSubmit}
@@ -470,14 +504,20 @@ export default function SignPage({
                   (signatureType === "draw" && !hasSignature) ||
                   (signatureType === "type" && !typedName.trim())
                 }
-                size="lg"
+                className="w-full sm:w-auto"
+                size="sm"
               >
                 {isSubmitting ? (
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  <>
+                    <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+                    Signing...
+                  </>
                 ) : (
-                  <Check className="h-4 w-4 mr-2" />
+                  <>
+                    Sign Document
+                    <Check className="h-3.5 w-3.5 ml-1.5" />
+                  </>
                 )}
-                Sign Document
               </Button>
             </div>
           </CardContent>

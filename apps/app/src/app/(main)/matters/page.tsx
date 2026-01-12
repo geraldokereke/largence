@@ -447,7 +447,7 @@ export default function MattersPage() {
 
   const matterFormFields = (
     <div className="grid gap-4 py-4 max-h-[60vh] overflow-y-auto pr-2">
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="space-y-1.5">
           <Label htmlFor="name" className="text-xs">Matter Name *</Label>
           <Input
@@ -482,7 +482,7 @@ export default function MattersPage() {
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="space-y-1.5">
           <Label htmlFor="matterType" className="text-xs">Matter Type</Label>
           <Select
@@ -525,7 +525,7 @@ export default function MattersPage() {
         <h4 className="text-xs font-medium mb-2 flex items-center gap-1.5 text-muted-foreground">
           <User className="h-3.5 w-3.5" /> Client Information
         </h4>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="space-y-1.5">
             <Label htmlFor="clientName" className="text-xs">Client Name</Label>
             <Input
@@ -574,7 +574,7 @@ export default function MattersPage() {
         <h4 className="text-xs font-medium mb-2 flex items-center gap-1.5 text-muted-foreground">
           <DollarSign className="h-3.5 w-3.5" /> Billing Information
         </h4>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="space-y-1.5">
             <Label htmlFor="billingType" className="text-xs">Billing Type</Label>
             <Select
@@ -663,9 +663,9 @@ export default function MattersPage() {
     <div className="flex flex-1 flex-col p-3">
       {/* Header */}
       <div className="mb-4">
-        <div className="flex items-center justify-between mb-1">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-1">
           <div>
-            <h1 className="text-xl font-semibold tracking-tight">Matter Management</h1>
+            <h1 className="text-xl font-semibold font-display">Matter Management</h1>
             <p className="text-sm text-muted-foreground">
               Organize and manage your legal matters and cases
             </p>
@@ -675,7 +675,7 @@ export default function MattersPage() {
               resetForm();
               setIsCreateDialogOpen(true);
             }}
-            className="h-8 rounded-sm text-sm"
+            className="h-8 rounded-sm text-sm w-full sm:w-auto"
           >
             <Plus className="h-4 w-4 mr-1.5" />
             New Matter
@@ -747,7 +747,7 @@ export default function MattersPage() {
           }
         />
       ) : (
-        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {matters.map((matter) => (
             <div
               key={matter.id}
@@ -813,9 +813,9 @@ export default function MattersPage() {
               <div className="flex items-center gap-1.5 mb-3">
                 {getStatusBadge(matter.status)}
                 {matter.matterType && (
-                  <Badge variant="outline" className="text-[10px] h-5">
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-muted text-muted-foreground border">
                     {matter.matterType}
-                  </Badge>
+                  </span>
                 )}
               </div>
 
@@ -869,8 +869,8 @@ export default function MattersPage() {
               disabled={createMutation.isPending}
               className="h-8 rounded-sm text-sm"
             >
-              {createMutation.isPending && <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />}
               Create Matter
+              {createMutation.isPending && <Loader2 className="h-3.5 w-3.5 ml-1.5 animate-spin" />}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -902,8 +902,8 @@ export default function MattersPage() {
               disabled={updateMutation.isPending}
               className="h-8 rounded-sm text-sm"
             >
-              {updateMutation.isPending && <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />}
               Save Changes
+              {updateMutation.isPending && <Loader2 className="h-3.5 w-3.5 ml-1.5 animate-spin" />}
             </Button>
           </DialogFooter>
         </DialogContent>

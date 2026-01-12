@@ -19,12 +19,13 @@ import { Input } from "@largence/components/ui/input";
 import { Spinner } from "@largence/components/ui/spinner";
 import { UpgradeModal } from "@largence/components/upgrade-modal";
 import { useUpgradeModal } from "@/hooks/use-upgrade-modal";
-import { AiAssistantPanel } from "@largence/components/ai-assistant-panel";
 import { SaveAsTemplateDialog } from "@largence/components/save-as-template-dialog";
 import {
   AgenticComplianceModal,
   useAgenticComplianceModal,
 } from "@largence/components/agentic-compliance-modal";
+import { EditorSidebar } from "@/components/editor-sidebar";
+import { RequestSignatureDialog } from "@/components/request-signature-dialog";
 import {
   Select,
   SelectContent,
@@ -62,11 +63,8 @@ import {
   Image as ImageIcon,
   Palette,
   Type,
-  Indent,
-  Outdent,
-  Heading,
-  ShieldCheck,
   Sparkles,
+  PanelRight,
 } from "lucide-react";
 import { Separator } from "@largence/components/ui/separator";
 
@@ -79,6 +77,8 @@ export default function DocumentEditorPage() {
   const [checkingCompliance, setCheckingCompliance] = useState(false);
   const [runningAgenticCompliance, setRunningAgenticCompliance] =
     useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [signatureDialogOpen, setSignatureDialogOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [status, setStatus] = useState<"DRAFT" | "FINAL" | "ARCHIVED">("DRAFT");
   const [document, setDocument] = useState<any>(null);
@@ -559,78 +559,42 @@ export default function DocumentEditorPage() {
               </SelectContent>
             </Select>
 
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8"
-              onClick={handleRunComplianceCheck}
-              disabled={checkingCompliance || runningAgenticCompliance}
-            >
-              {checkingCompliance ? (
-                <>
-                  <Spinner size="sm" />
-                  <span className="hidden sm:inline sm:ml-1.5">Checking</span>
-                </>
-              ) : (
-                <>
-                  <ShieldCheck className="h-4 w-4" />
-                  <span className="hidden sm:inline sm:ml-1.5">
-                    Check Compliance
-                  </span>
-                </>
-              )}
-            </Button>
-
-            <Button
-              variant={runningAgenticCompliance ? "destructive" : "default"}
-              size="sm"
-              className="h-8"
-              onClick={
-                runningAgenticCompliance
-                  ? cancelAgenticCompliance
-                  : handleAgenticComplianceClick
-              }
-              disabled={checkingCompliance}
-            >
-              {runningAgenticCompliance ? (
-                <>
-                  <Spinner size="sm" variant="white" />
-                  <span className="hidden sm:inline sm:ml-1.5">Cancel</span>
-                </>
-              ) : (
-                <>
-                  <Sparkles className="h-4 w-4" />
-                  <span className="hidden sm:inline sm:ml-1.5">
-                    Agentic Compliance
-                  </span>
-                </>
-              )}
-            </Button>
-
+            {/* Combined Save & Export Button */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
-                  variant="outline"
-                  disabled={exporting}
+                  disabled={saving || exporting}
                   size="sm"
                   className="h-8"
                 >
-                  {exporting ? (
+                  {saving ? (
                     <>
                       <Spinner size="sm" />
-                      <span className="hidden sm:inline sm:ml-1.5">
-                        Exporting
-                      </span>
+                      <span className="hidden sm:inline sm:ml-1.5">Saving</span>
+                    </>
+                  ) : exporting ? (
+                    <>
+                      <Spinner size="sm" />
+                      <span className="hidden sm:inline sm:ml-1.5">Exporting</span>
                     </>
                   ) : (
                     <>
-                      <Download className="h-4 w-4" />
-                      <span className="hidden sm:inline sm:ml-1.5">Export</span>
+                      <Save className="h-4 w-4" />
+                      <span className="hidden sm:inline sm:ml-1.5">Save</span>
                     </>
                   )}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48 z-50">
+                <DropdownMenuItem onClick={handleSave}>
+                  <Save className="h-4 w-4 mr-2" />
+                  Save Document
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSaveTemplateOpen(true)}>
+                  <FileStack className="h-4 w-4 mr-2" />
+                  Save as Template
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleExportDOCX}>
                   <FileDown className="h-4 w-4 mr-2" />
                   Export as DOCX
@@ -639,47 +603,23 @@ export default function DocumentEditorPage() {
                   <FileDown className="h-4 w-4 mr-2" />
                   Export as PDF
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleSendToDocuSign}>
-                  <PenTool className="h-4 w-4 mr-2" />
-                  Send to DocuSign
-                </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => setSaveTemplateOpen(true)}>
-                  <FileStack className="h-4 w-4 mr-2" />
-                  Save as Template
+                <DropdownMenuItem onClick={() => setSignatureDialogOpen(true)}>
+                  <PenTool className="h-4 w-4 mr-2" />
+                  Request Signature
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
 
             <Button
-              onClick={handleSave}
-              disabled={saving}
+              variant="outline"
               size="sm"
               className="h-8"
+              onClick={() => setSidebarOpen(!sidebarOpen)}
             >
-              {saving ? (
-                <>
-                  <Spinner size="sm" />
-                  <span className="hidden sm:inline sm:ml-1.5">Saving</span>
-                </>
-              ) : (
-                <>
-                  <Save className="h-4 w-4" />
-                  <span className="hidden sm:inline sm:ml-1.5">Save</span>
-                </>
-              )}
+              <PanelRight className="h-4 w-4" />
+              <span className="hidden sm:inline sm:ml-1.5">Tools</span>
             </Button>
-
-            <AiAssistantPanel
-              documentId={params.id as string}
-              getContent={() => editor?.getHTML() || ""}
-              setContent={(content) => {
-                if (editor) {
-                  editor.commands.setContent(content);
-                  toast.success("Document updated by AI");
-                }
-              }}
-            />
           </div>
         </div>
 
@@ -1020,43 +960,69 @@ export default function DocumentEditorPage() {
 
       {/* Editor Area - Calculated height based on fixed header (52px + 48px = 100px) */}
       <div
-        className="overflow-y-auto overflow-x-hidden bg-muted/30"
+        className="flex overflow-hidden"
         style={{ height: "calc(100vh - 100px)" }}
       >
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          {/* Document Metadata */}
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground">
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="font-mono text-xs">
-                ID: {params.id ? String(params.id).slice(0, 8) : "N/A"}
-              </span>
-              <Separator orientation="vertical" className="h-4" />
-              <span className="text-xs">
-                Created:{" "}
-                {document?.createdAt
-                  ? new Date(document.createdAt).toLocaleDateString()
-                  : new Date().toLocaleDateString()}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div
-                className={`h-2 w-2 rounded-full shrink-0 ${
-                  status === "DRAFT"
-                    ? "bg-yellow-500"
-                    : status === "FINAL"
-                      ? "bg-green-500"
-                      : "bg-gray-500"
-                }`}
-              />
-              <span className="font-medium text-xs">{status}</span>
-            </div>
-          </div>
+        {/* Main Editor Content */}
+        <div className="flex-1 overflow-y-auto overflow-x-hidden bg-muted/50">
+          <div className="flex justify-center py-4 px-2">
+            {/* A4 Document Container */}
+            <div className="w-full max-w-[210mm] min-h-[297mm] bg-background border shadow-sm">
+              {/* Document Metadata - Compact header */}
+              <div className="px-6 py-2 border-b bg-muted/30 flex items-center justify-between text-xs text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <span className="font-mono">ID: {params.id ? String(params.id).slice(0, 8) : "N/A"}</span>
+                  <Separator orientation="vertical" className="h-3" />
+                  <span>
+                    {document?.createdAt
+                      ? new Date(document.createdAt).toLocaleDateString()
+                      : new Date().toLocaleDateString()}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <div
+                    className={`h-1.5 w-1.5 rounded-full ${
+                      status === "DRAFT"
+                        ? "bg-yellow-500"
+                        : status === "FINAL"
+                          ? "bg-green-500"
+                          : "bg-gray-500"
+                    }`}
+                  />
+                  <span className="font-medium">{status}</span>
+                </div>
+              </div>
 
-          {/* Document Editor - Fully contained */}
-          <div className="border rounded-sm bg-background min-h-[600px]">
-            <EditorContent editor={editor} />
+              {/* Document Editor - A4 content area */}
+              <div className="min-h-[280mm]">
+                <EditorContent editor={editor} className="prose prose-sm max-w-none px-12 py-8" />
+              </div>
+            </div>
           </div>
         </div>
+
+        {/* Editor Sidebar */}
+        <EditorSidebar
+          documentId={params.id as string}
+          getContent={() => editor?.getHTML() || ""}
+          setContent={(content) => {
+            if (editor) {
+              editor.commands.setContent(content);
+              toast.success("Document updated by AI");
+            }
+          }}
+          isOpen={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
+          onOpenSignatureDialog={() => setSignatureDialogOpen(true)}
+          onRunAgenticCompliance={handleAgenticComplianceClick}
+          runningAgenticCompliance={runningAgenticCompliance}
+          onCancelAgenticCompliance={cancelAgenticCompliance}
+          onRequireUpgrade={(options) => upgradeModal.openUpgradeModal({
+            reason: options.reason,
+            feature: options.feature as "document" | "compliance" | "general",
+            currentPlan: options.currentPlan,
+          })}
+        />
       </div>
 
       {/* Upgrade Modal */}
@@ -1083,6 +1049,14 @@ export default function DocumentEditorPage() {
         documentContent={editor?.getHTML() || ""}
         documentType={document?.documentType}
         jurisdiction={document?.jurisdiction}
+      />
+
+      {/* Request Signature Dialog */}
+      <RequestSignatureDialog
+        documentId={params.id as string}
+        documentTitle={title}
+        open={signatureDialogOpen}
+        onOpenChange={setSignatureDialogOpen}
       />
     </div>
   );

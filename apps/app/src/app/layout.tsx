@@ -124,6 +124,7 @@ export const metadata: Metadata = {
   title: "Largence - Legal Intelligence for Enterprises",
   description:
     "Automate contract drafting, ensure regulatory compliance, and streamline governance for African enterprises.",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://app.largence.com"),
   icons: {
     icon: [
       { url: "/logo.png" },
@@ -139,10 +140,10 @@ export const metadata: Metadata = {
     siteName: "Largence",
     images: [
       {
-        url: "/logo.png",
+        url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "Largence Logo",
+        alt: "Largence - Legal Intelligence Platform",
       },
     ],
     locale: "en_US",
@@ -153,7 +154,8 @@ export const metadata: Metadata = {
     title: "Largence - Legal Intelligence for Enterprises",
     description:
       "Automate contract drafting, ensure regulatory compliance, and streamline governance for African enterprises.",
-    images: ["/logo.png"],
+    images: ["/og-image.png"],
+    creator: "@largence",
   },
 };
 

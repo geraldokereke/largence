@@ -341,8 +341,8 @@ export default function AuditPage() {
       <div className="mb-4">
         <div className="flex items-center justify-between mb-1">
           <div>
-            <h1 className="text-xl font-semibold font-heading">Audit Trail</h1>
-            <p className="text-sm text-muted-foreground mt-1">
+            <h1 className="text-xl font-semibold font-display">Audit Trail</h1>
+            <p className="text-sm text-muted-foreground">
               Complete activity log tracking who did what, when, and where
               across your organization
             </p>

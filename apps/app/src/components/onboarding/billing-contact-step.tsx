@@ -29,17 +29,17 @@ export function BillingContactStep({
         </p>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="billingEmail">Billing Email *</Label>
+      <div className="space-y-1.5">
+        <Label htmlFor="billingEmail" className="text-sm">Billing Email *</Label>
         <div className="relative">
-          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
           <Input
             id="billingEmail"
             type="email"
             placeholder="billing@example.com"
             value={formData.billingEmail}
             onChange={(e) => updateFormData({ billingEmail: e.target.value })}
-            className="rounded-sm pl-10"
+            className="h-9 rounded-sm text-sm pl-9"
           />
         </div>
         <p className="text-xs text-muted-foreground">
@@ -47,17 +47,17 @@ export function BillingContactStep({
         </p>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="phone">Phone Number</Label>
+      <div className="space-y-1.5">
+        <Label htmlFor="phone" className="text-sm">Phone Number</Label>
         <div className="relative">
-          <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
           <Input
             id="phone"
             type="tel"
             placeholder="+1 (555) 000-0000"
             value={formData.phone}
             onChange={(e) => updateFormData({ phone: e.target.value })}
-            className="rounded-sm pl-10"
+            className="h-9 rounded-sm text-sm pl-9"
           />
         </div>
         <p className="text-xs text-muted-foreground">

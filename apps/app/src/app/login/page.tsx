@@ -22,8 +22,8 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="grid min-h-svh lg:grid-cols-2">
-      <div className="flex flex-col gap-4 p-6 md:p-10">
+    <div className="min-h-svh flex flex-col lg:grid lg:grid-cols-2">
+      <div className="flex flex-col gap-4 p-4 sm:p-6 md:p-10 flex-1 overflow-y-auto">
         <div className="flex justify-center gap-2 md:justify-start">
           <a href="#" className="flex items-center gap-2 font-medium">
             <Image
@@ -38,8 +38,8 @@ export default function LoginPage() {
             </span>
           </a>
         </div>
-        <div className="flex flex-1 items-center justify-center">
-          <div className="w-full max-w-md">
+        <div className="flex flex-1 items-center justify-center py-6 sm:py-8">
+          <div className="w-full max-w-md px-2 sm:px-0">
             <LoginForm />
           </div>
         </div>

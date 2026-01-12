@@ -141,11 +141,11 @@ export default function Home() {
             </Button>
           </div>
 
-          <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 auto-rows-fr">
             {documents.slice(0, 8).map((doc) => (
               <div
                 key={doc.id}
-                className="group relative rounded-sm border bg-card p-3 cursor-pointer hover:border-primary/30 hover:shadow-sm transition-all"
+                className="group relative rounded-sm border bg-card p-3 cursor-pointer hover:border-primary/30 hover:shadow-sm transition-all flex flex-col h-full"
                 onClick={() => router.push(`/documents/${doc.id}`)}
               >
                 {/* Quick action button - visible on hover */}
@@ -193,7 +193,7 @@ export default function Home() {
                 </div>
 
                 {/* Content preview */}
-                <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+                <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed flex-1">
                   {(() => {
                     let cleanText = doc.content || "";
                     cleanText = cleanText.replace(

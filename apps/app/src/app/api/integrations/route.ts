@@ -1,5 +1,6 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
+import prisma from "@largence/lib/prisma";
 import { createAuditLog, getUserInitials } from "@/lib/audit";
 
 // Integration provider type
@@ -18,23 +19,6 @@ type IntegrationProviderType =
   | "AIRTABLE"
   | "HUBSPOT";
 
-// In-memory storage for connected integrations (per organization)
-// In production, this would be stored in the database
-const connectedIntegrationsStore: Map<
-  string,
-  Map<
-    string,
-    {
-      id: string;
-      provider: IntegrationProviderType;
-      status: string;
-      connectedAt: Date;
-      lastSyncAt: Date;
-      syncedItemsCount: number;
-    }
-  >
-> = new Map();
-
 // Integration metadata for available integrations
 const INTEGRATION_CATALOG: Record<
   IntegrationProviderType,
@@ -43,11 +27,13 @@ const INTEGRATION_CATALOG: Record<
     description: string;
     category: string;
     features: string[];
+    oauthSupported: boolean;
   }
 > = {
   NOTION: {
     name: "Notion",
     description: "Sync documents and collaborate with your team workspace",
+    oauthSupported: true,
     category: "Productivity",
     features: ["Two-way sync", "Auto-backup", "Real-time updates"],
   },
@@ -56,72 +42,84 @@ const INTEGRATION_CATALOG: Record<
     description: "Store and access your legal documents in Google Drive",
     category: "Cloud Storage",
     features: ["Auto-backup", "Folder mapping", "Version control"],
+    oauthSupported: false, // Disabled until Google verification complete
   },
   DROPBOX: {
     name: "Dropbox",
     description: "Automatically sync documents to your Dropbox account",
     category: "Cloud Storage",
     features: ["Auto-backup", "Smart sync", "Selective sync"],
+    oauthSupported: true,
   },
   SLACK: {
     name: "Slack",
     description: "Get notifications and updates in your Slack channels",
     category: "Productivity",
     features: ["Notifications", "Command shortcuts", "File sharing"],
+    oauthSupported: false,
   },
   MICROSOFT_365: {
     name: "Microsoft 365",
     description: "Connect with Word, Excel, and OneDrive for seamless workflow",
     category: "Productivity",
     features: ["Office integration", "OneDrive sync", "Calendar sync"],
+    oauthSupported: false,
   },
   DOCUSIGN: {
     name: "DocuSign",
     description: "Send documents for e-signature and track signing progress",
     category: "Productivity",
     features: ["E-signatures", "Status tracking", "Auto-reminders"],
+    oauthSupported: true,
   },
   GOOGLE_SHEETS: {
     name: "Google Sheets",
     description: "Export data and reports to Google Sheets automatically",
     category: "Productivity",
     features: ["Data export", "Auto-refresh", "Custom templates"],
+    oauthSupported: false,
   },
   SALESFORCE: {
     name: "Salesforce",
     description: "Sync customer data and contracts with your CRM",
     category: "CRM & Sales",
     features: ["Contact sync", "Deal tracking", "Custom fields"],
+    oauthSupported: false,
   },
   TRELLO: {
     name: "Trello",
     description: "Manage legal workflows and projects with Trello boards",
     category: "Productivity",
     features: ["Board sync", "Card creation", "Checklist automation"],
+    oauthSupported: false,
   },
   ASANA: {
     name: "Asana",
     description: "Track document approvals and tasks in Asana",
     category: "Productivity",
     features: ["Task automation", "Project sync", "Due date tracking"],
+    oauthSupported: false,
   },
   ZAPIER: {
     name: "Zapier",
     description: "Create custom automation workflows with 5,000+ apps",
     category: "Automation",
     features: ["Custom workflows", "Multi-step zaps", "Webhooks"],
+    oauthSupported: false,
   },
   AIRTABLE: {
     name: "Airtable",
     description: "Organize and track documents in flexible Airtable bases",
     category: "Productivity",
     features: ["Base sync", "View creation", "Record automation"],
+    oauthSupported: false,
   },
   HUBSPOT: {
     name: "HubSpot",
     description: "Integrate with HubSpot CRM for customer and deal management",
     category: "CRM & Sales",
     features: ["Contact sync", "Deal pipeline", "Activity logging"],
+    oauthSupported: false,
   },
 };
 
@@ -133,14 +131,30 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Get connected integrations for this organization from in-memory store
-    const orgIntegrations = connectedIntegrationsStore.get(orgId) || new Map();
-    const connectedList = Array.from(orgIntegrations.values());
+    // Get connected integrations from database
+    const connectedIntegrations = await prisma.integration.findMany({
+      where: { organizationId: orgId },
+      select: {
+        id: true,
+        provider: true,
+        name: true,
+        status: true,
+        externalEmail: true,
+        syncEnabled: true,
+        lastSyncAt: true,
+        lastSyncStatus: true,
+        syncedItemsCount: true,
+        connectedAt: true,
+        settings: true,
+      },
+    });
 
     // Build the response with all integrations (connected and available)
     const allIntegrations = Object.entries(INTEGRATION_CATALOG).map(
       ([providerId, catalog]) => {
-        const connected = connectedList.find((i) => i.provider === providerId);
+        const connected = connectedIntegrations.find(
+          (i) => i.provider === providerId
+        );
 
         return {
           id: connected?.id || providerId,
@@ -152,24 +166,27 @@ export async function GET() {
           status: connected?.status || "available",
           connectedAt: connected?.connectedAt?.toISOString() || null,
           lastSyncAt: connected?.lastSyncAt?.toISOString() || null,
-          lastSyncStatus: connected ? "success" : null,
+          lastSyncStatus: connected?.lastSyncStatus || null,
           syncedItemsCount: connected?.syncedItemsCount || 0,
-          externalEmail: null,
-          syncEnabled: true,
-          settings: null,
+          externalEmail: connected?.externalEmail || null,
+          syncEnabled: connected?.syncEnabled ?? true,
+          settings: connected?.settings || null,
+          oauthSupported: catalog.oauthSupported,
         };
       },
     );
 
     // Calculate stats
-    const connectedCount = connectedList.length;
-    const totalSyncedItems = connectedList.reduce(
-      (acc: number, i) => acc + i.syncedItemsCount,
+    const connectedCount = connectedIntegrations.filter(
+      (i) => i.status === "CONNECTED"
+    ).length;
+    const totalSyncedItems = connectedIntegrations.reduce(
+      (acc, i) => acc + i.syncedItemsCount,
       0,
     );
     const lastSyncTime =
-      connectedList.length > 0
-        ? connectedList
+      connectedIntegrations.length > 0
+        ? connectedIntegrations
             .map((i) => i.lastSyncAt)
             .filter(Boolean)
             .sort((a, b) => (b?.getTime() || 0) - (a?.getTime() || 0))[0]
@@ -257,66 +274,161 @@ export async function POST(request: Request) {
 
     const catalog = INTEGRATION_CATALOG[provider as IntegrationProviderType];
 
-    // Get or create org integrations map
-    if (!connectedIntegrationsStore.has(orgId)) {
-      connectedIntegrationsStore.set(orgId, new Map());
-    }
-    const orgIntegrations = connectedIntegrationsStore.get(orgId)!;
+    // Check if already connected in database
+    const existing = await prisma.integration.findUnique({
+      where: {
+        organizationId_provider: {
+          organizationId: orgId,
+          provider,
+        },
+      },
+    });
 
-    // Check if already connected
-    if (orgIntegrations.has(provider)) {
+    if (existing && existing.status === "CONNECTED") {
       return NextResponse.json(
         { error: "Integration already connected" },
         { status: 400 },
       );
     }
 
-    // Create the integration
-    const integrationId = `int_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    const now = new Date();
+    // For OAuth-supported integrations, return OAuth URL to initiate flow
+    if (catalog.oauthSupported) {
+      let oauthEndpoint = "";
+      
+      if (provider === "GOOGLE_DRIVE") {
+        oauthEndpoint = "/api/integrations/oauth/google-drive";
+      } else if (provider === "NOTION") {
+        oauthEndpoint = "/api/integrations/oauth/notion";
+      } else if (provider === "DROPBOX") {
+        oauthEndpoint = "/api/integrations/oauth/dropbox";
+      } else if (provider === "DOCUSIGN") {
+        oauthEndpoint = "/api/integrations/oauth/docusign";
+      }
 
-    const integration = {
-      id: integrationId,
-      provider: provider as IntegrationProviderType,
-      status: "CONNECTED",
-      connectedAt: now,
-      lastSyncAt: now,
-      syncedItemsCount: Math.floor(Math.random() * 500) + 50, // Demo data
-    };
+      if (oauthEndpoint) {
+        // Build the OAuth authorization URL
+        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || request.headers.get("origin") || "http://localhost:3000";
+        
+        if (provider === "GOOGLE_DRIVE") {
+          const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+          if (!GOOGLE_CLIENT_ID) {
+            return NextResponse.json(
+              { error: "Google Drive integration is not configured. Please add GOOGLE_CLIENT_ID to environment variables." },
+              { status: 500 }
+            );
+          }
+          
+          const GOOGLE_REDIRECT_URI = `${baseUrl}/api/integrations/oauth/google-drive/callback`;
+          const SCOPES = [
+            "https://www.googleapis.com/auth/drive.file",
+            "https://www.googleapis.com/auth/drive.readonly",
+            "https://www.googleapis.com/auth/userinfo.email",
+            "https://www.googleapis.com/auth/userinfo.profile",
+          ];
+          
+          const state = Buffer.from(JSON.stringify({ userId, orgId })).toString("base64");
+          
+          const authUrl = new URL("https://accounts.google.com/o/oauth2/v2/auth");
+          authUrl.searchParams.set("client_id", GOOGLE_CLIENT_ID);
+          authUrl.searchParams.set("redirect_uri", GOOGLE_REDIRECT_URI);
+          authUrl.searchParams.set("response_type", "code");
+          authUrl.searchParams.set("scope", SCOPES.join(" "));
+          authUrl.searchParams.set("access_type", "offline");
+          authUrl.searchParams.set("prompt", "consent");
+          authUrl.searchParams.set("state", state);
 
-    orgIntegrations.set(provider, integration);
+          return NextResponse.json({
+            success: true,
+            requiresOAuth: true,
+            authUrl: authUrl.toString(),
+          });
+        } else if (provider === "NOTION") {
+          const NOTION_CLIENT_ID = process.env.NOTION_CLIENT_ID;
+          if (!NOTION_CLIENT_ID) {
+            return NextResponse.json(
+              { error: "Notion integration is not configured. Please add NOTION_CLIENT_ID to environment variables." },
+              { status: 500 }
+            );
+          }
+          
+          const NOTION_REDIRECT_URI = `${baseUrl}/api/integrations/oauth/notion/callback`;
+          const state = Buffer.from(JSON.stringify({ userId, orgId })).toString("base64");
+          
+          const authUrl = new URL("https://api.notion.com/v1/oauth/authorize");
+          authUrl.searchParams.set("client_id", NOTION_CLIENT_ID);
+          authUrl.searchParams.set("redirect_uri", NOTION_REDIRECT_URI);
+          authUrl.searchParams.set("response_type", "code");
+          authUrl.searchParams.set("owner", "user");
+          authUrl.searchParams.set("state", state);
 
-    // Log audit event for integration connection
-    const user = await currentUser();
-    await createAuditLog({
-      userId,
-      organizationId: orgId,
-      action: "INTEGRATION_CONNECTED",
-      actionLabel: `Connected ${catalog.name} integration`,
-      entityType: "Integration",
-      entityId: integration.id,
-      entityName: catalog.name,
-      metadata: {
-        provider,
-        category: catalog.category,
-      },
-      userName: user
-        ? `${user.firstName || ""} ${user.lastName || ""}`.trim() ||
-          user.username ||
-          "User"
-        : "User",
-      userAvatar: getUserInitials(user?.firstName, user?.lastName),
-    });
+          return NextResponse.json({
+            success: true,
+            requiresOAuth: true,
+            authUrl: authUrl.toString(),
+          });
+        } else if (provider === "DROPBOX") {
+          const DROPBOX_CLIENT_ID = process.env.DROPBOX_CLIENT_ID;
+          if (!DROPBOX_CLIENT_ID) {
+            return NextResponse.json(
+              { error: "Dropbox integration is not configured. Please add DROPBOX_CLIENT_ID to environment variables." },
+              { status: 500 }
+            );
+          }
+          
+          const DROPBOX_REDIRECT_URI = `${baseUrl}/api/integrations/oauth/dropbox/callback`;
+          const state = Buffer.from(JSON.stringify({ userId, orgId })).toString("base64");
+          
+          const authUrl = new URL("https://www.dropbox.com/oauth2/authorize");
+          authUrl.searchParams.set("client_id", DROPBOX_CLIENT_ID);
+          authUrl.searchParams.set("redirect_uri", DROPBOX_REDIRECT_URI);
+          authUrl.searchParams.set("response_type", "code");
+          authUrl.searchParams.set("token_access_type", "offline");
+          authUrl.searchParams.set("state", state);
 
+          return NextResponse.json({
+            success: true,
+            requiresOAuth: true,
+            authUrl: authUrl.toString(),
+          });
+        } else if (provider === "DOCUSIGN") {
+          const DOCUSIGN_CLIENT_ID = process.env.DOCUSIGN_CLIENT_ID;
+          if (!DOCUSIGN_CLIENT_ID) {
+            return NextResponse.json(
+              { error: "DocuSign integration is not configured. Please add DOCUSIGN_CLIENT_ID to environment variables." },
+              { status: 500 }
+            );
+          }
+          
+          const DOCUSIGN_REDIRECT_URI = `${baseUrl}/api/integrations/oauth/docusign/callback`;
+          const SCOPES = ["signature", "extended"];
+          const state = Buffer.from(JSON.stringify({ userId, orgId })).toString("base64");
+          
+          // Use demo environment for development
+          const docusignAuthBase = process.env.DOCUSIGN_ENVIRONMENT === "production" 
+            ? "https://account.docusign.com" 
+            : "https://account-d.docusign.com";
+          
+          const authUrl = new URL(`${docusignAuthBase}/oauth/auth`);
+          authUrl.searchParams.set("client_id", DOCUSIGN_CLIENT_ID);
+          authUrl.searchParams.set("redirect_uri", DOCUSIGN_REDIRECT_URI);
+          authUrl.searchParams.set("response_type", "code");
+          authUrl.searchParams.set("scope", SCOPES.join(" "));
+          authUrl.searchParams.set("state", state);
+
+          return NextResponse.json({
+            success: true,
+            requiresOAuth: true,
+            authUrl: authUrl.toString(),
+          });
+        }
+      }
+    }
+
+    // For non-OAuth integrations, return coming soon message
     return NextResponse.json({
-      success: true,
-      integration: {
-        id: integration.id,
-        provider: integration.provider,
-        name: catalog.name,
-        status: integration.status,
-        connectedAt: integration.connectedAt.toISOString(),
-      },
+      success: false,
+      comingSoon: true,
+      message: `${catalog.name} integration is coming soon!`,
     });
   } catch (error) {
     console.error("Error connecting integration:", error);
@@ -327,6 +439,6 @@ export async function POST(request: Request) {
   }
 }
 
-// Export the store for the [id] route to use
-export { connectedIntegrationsStore, INTEGRATION_CATALOG };
+export { INTEGRATION_CATALOG };
 export type { IntegrationProviderType };
+

@@ -56,20 +56,20 @@ export function LoginForm({
 
   return (
     <div className={cn("w-full", className)}>
-      <div className="mb-8">
-        <h1 className="text-3xl font-semibold mb-2 font-display">{title}</h1>
-        <p className="text-muted-foreground">{description}</p>
+      <div className="mb-6 sm:mb-8 text-center lg:text-left">
+        <h1 className="text-2xl sm:text-3xl font-semibold mb-2 font-display">{title}</h1>
+        <p className="text-sm sm:text-base text-muted-foreground">{description}</p>
       </div>
 
-      <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
+      <form className="space-y-4 sm:space-y-6" onSubmit={handleSubmit(onSubmit)}>
         {error && (
           <div className="p-3 rounded-sm bg-destructive/10 border border-destructive/20 text-destructive text-sm">
             {error}
           </div>
         )}
 
-        <div className="space-y-2">
-          <Label htmlFor="email">Work Email</Label>
+        <div className="space-y-1.5">
+          <Label htmlFor="email" className="text-sm">Work Email</Label>
           <Input
             id="email"
             name="email"
@@ -78,13 +78,13 @@ export function LoginForm({
             required
             disabled={isLoading}
             autoComplete="email"
-            className="rounded-sm"
+            className="h-9 rounded-sm text-sm"
           />
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           <div className="flex items-center justify-between">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password" className="text-sm">Password</Label>
             <Link
               href="/auth/forgot-password"
               className="text-xs text-primary hover:underline font-medium"
@@ -101,7 +101,7 @@ export function LoginForm({
               required
               disabled={isLoading}
               autoComplete="current-password"
-              className="rounded-sm pr-10"
+              className="h-9 rounded-sm text-sm pr-10"
             />
             <button
               type="button"
@@ -122,7 +122,7 @@ export function LoginForm({
         <Button
           type="submit"
           disabled={isLoading}
-          className="w-full h-8 rounded-sm"
+          className="w-full h-9 rounded-sm"
         >
           {isLoading ? (
             <span className="flex items-center gap-2">
@@ -151,7 +151,7 @@ export function LoginForm({
             type="button"
             onClick={handleOAuthSignIn("oauth_google")}
             disabled={isLoading || oauthLoading !== null}
-            className="w-full h-8 rounded-sm"
+            className="w-full h-9 rounded-sm"
           >
             {oauthLoading === "google" ? (
               <span className="flex items-center gap-2">
@@ -171,7 +171,7 @@ export function LoginForm({
             type="button"
             onClick={handleOAuthSignIn("oauth_microsoft")}
             disabled={isLoading || oauthLoading !== null}
-            className="w-full h-8 rounded-sm"
+            className="w-full h-9 rounded-sm"
           >
             {oauthLoading === "microsoft" ? (
               <span className="flex items-center gap-2">

@@ -39,6 +39,7 @@ import {
 } from "lucide-react";
 import { Spinner } from "@largence/components/ui/spinner";
 import { NotificationDrawer } from "@largence/components/notification-drawer";
+import { NewDocumentDialog } from "@largence/components/new-document-dialog";
 
 import { Button } from "@largence/components/ui/button";
 import { SidebarTrigger } from "@largence/components/ui/sidebar";
@@ -61,6 +62,13 @@ import {
   CommandSeparator,
   CommandShortcut,
 } from "@largence/components/ui/command";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@largence/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -140,6 +148,7 @@ export function SiteHeader() {
   const [showBanner, setShowBanner] = React.useState(true);
   const [isLoggingOut, setIsLoggingOut] = React.useState(false);
   const [mounted, setMounted] = React.useState(false);
+  const [newDocDialogOpen, setNewDocDialogOpen] = React.useState(false);
 
   // Avoid hydration mismatch for theme
   React.useEffect(() => {
@@ -172,10 +181,7 @@ export function SiteHeader() {
         e.preventDefault();
         router.push("/settings");
       }
-      if (e.key === "a" && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault();
-        router.push("/keyboard");
-      }
+      // Removed Cmd+A shortcut to allow native select-all functionality
     };
 
     document.addEventListener("keydown", down);
@@ -295,50 +301,50 @@ export function SiteHeader() {
       </CommandDialog>
 
       {/* Logout Confirmation Dialog */}
-      <CommandDialog open={logoutDialogOpen} onOpenChange={setLogoutDialogOpen}>
-        <div className="p-6">
-          <div className="flex flex-col items-center text-center space-y-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
-              <LogOut className="h-6 w-6 text-destructive" />
+      <Dialog open={logoutDialogOpen} onOpenChange={setLogoutDialogOpen}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader className="text-center sm:text-center">
+            <div className="flex justify-center mb-2">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
+                <LogOut className="h-6 w-6 text-destructive" />
+              </div>
             </div>
-            <div className="space-y-2">
-              <h2 className="text-lg font-semibold">Log out of Largence?</h2>
-              <p className="text-sm text-muted-foreground">
-                Are you sure you want to log out? You'll need to sign in again
-                to access your account.
-              </p>
-            </div>
-            <div className="flex gap-3 w-full pt-2">
-              <Button
-                variant="outline"
-                className="flex-1 h-10 rounded-sm"
-                onClick={() => setLogoutDialogOpen(false)}
-                disabled={isLoggingOut}
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="destructive"
-                className="flex-1 h-10 rounded-sm flex items-center justify-center gap-2"
-                onClick={confirmLogout}
-                disabled={isLoggingOut}
-              >
-                {isLoggingOut ? (
-                  <>
-                    <Spinner size="sm" variant="white" />
-                    Logging Out...
-                  </>
-                ) : (
-                  "Log out"
-                )}
-              </Button>
-            </div>
+            <DialogTitle>Log out of Largence?</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to log out? You'll need to sign in again
+              to access your account.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex gap-3 w-full pt-2">
+            <Button
+              variant="outline"
+              className="flex-1 h-10 rounded-sm"
+              onClick={() => setLogoutDialogOpen(false)}
+              disabled={isLoggingOut}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              className="flex-1 h-10 rounded-sm flex items-center justify-center gap-2"
+              onClick={confirmLogout}
+              disabled={isLoggingOut}
+            >
+              {isLoggingOut ? (
+                <>
+                  <Spinner size="sm" variant="white" />
+                  Logging Out...
+                </>
+              ) : (
+                "Log out"
+              )}
+            </Button>
           </div>
-        </div>
-      </CommandDialog>
+        </DialogContent>
+      </Dialog>
 
       <header className="bg-background sticky top-0 z-50 flex w-full items-center border-b">
-        <div className="flex h-12 w-full items-center px-2 sm:px-4 gap-2 sm:gap-3">
+        <div className="flex h-14 w-full items-center px-2 sm:px-4 gap-2 sm:gap-3">
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <SidebarTrigger className="h-9 w-9 sm:mr-1.5" />
             <div className="flex items-center gap-2">
@@ -373,7 +379,7 @@ export function SiteHeader() {
               variant="default"
               size="sm"
               className="h-9 rounded-sm gap-2 shrink-0 p cursor-pointer px-2 sm:px-3"
-              onClick={() => router.push("/create")}
+              onClick={() => setNewDocDialogOpen(true)}
             >
               <span className="hidden md:inline">Create</span>
               <Plus className="h-4 w-4" />
@@ -609,6 +615,9 @@ export function SiteHeader() {
           </div>
         </div>
       </header>
+      
+      {/* New Document Dialog */}
+      <NewDocumentDialog open={newDocDialogOpen} onOpenChange={setNewDocDialogOpen} />
     </>
   );
 }

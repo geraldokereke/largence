@@ -74,8 +74,8 @@ export default function MainLayout({
     <>
       {/* Cookie Consent Dialog */}
       {showCookie && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-card border rounded-sm shadow-xl p-6 w-full max-w-md mx-auto flex flex-col gap-5 relative">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 p-4">
+          <div className="bg-card border rounded-sm shadow-xl p-4 sm:p-6 w-full max-w-md flex flex-col gap-4 sm:gap-5 relative max-h-[85vh] overflow-y-auto">
             <button
               onClick={handleCloseCookie}
               className="absolute top-3 right-3 p-2 rounded-sm hover:bg-muted/40 transition-colors cursor-pointer"
@@ -84,20 +84,20 @@ export default function MainLayout({
               <X className="h-4 w-4" />
             </button>
             <div>
-              <h2 className="text-lg font-semibold mb-2 font-heading">
+              <h2 className="text-base sm:text-lg font-semibold mb-2 font-heading pr-8">
                 Cookie & Data Usage
               </h2>
-              <p className="text-sm text-muted-foreground mb-2">
+              <p className="text-xs sm:text-sm text-muted-foreground mb-2">
                 To provide you with the best experience, Largence uses cookies
                 and collects data for:
               </p>
-              <ul className="list-disc pl-5 text-sm text-muted-foreground mb-2">
+              <ul className="list-disc pl-5 text-xs sm:text-sm text-muted-foreground mb-2">
                 <li>Analytics & usage statistics</li>
                 <li>Personalized ads & marketing</li>
                 <li>Improving product features</li>
                 <li>Security & fraud prevention</li>
               </ul>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-[11px] sm:text-xs text-muted-foreground">
                 By continuing, you agree to our use of cookies and data
                 collection as described in our{" "}
                 <a href="/privacy" target="_blank" className="underline">
@@ -109,7 +109,7 @@ export default function MainLayout({
             <div className="flex items-center gap-2 justify-end">
               <Button
                 size="sm"
-                className="h-9 rounded-sm px-4 font-medium cursor-pointer"
+                className="h-9 rounded-sm px-4 font-medium cursor-pointer w-full sm:w-auto"
                 onClick={handleAcceptCookie}
               >
                 Accept & Continue

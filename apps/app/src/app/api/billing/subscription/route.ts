@@ -13,9 +13,9 @@ export async function PATCH(request: Request) {
     }
 
     const body = await request.json();
-    const { plan } = body;
+    const { plan, billingPeriod = "monthly" } = body;
 
-    if (!plan || !["STARTER", "PROFESSIONAL", "ENTERPRISE"].includes(plan)) {
+    if (!plan || !["STARTER", "PROFESSIONAL", "BUSINESS", "ENTERPRISE"].includes(plan)) {
       return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
     }
 
@@ -29,8 +29,11 @@ export async function PATCH(request: Request) {
     }
 
     const planConfig = PLANS[plan as keyof typeof PLANS];
+    const priceId = billingPeriod === "annual" 
+      ? planConfig.annualPriceId 
+      : planConfig.monthlyPriceId;
 
-    if (!planConfig.priceId) {
+    if (!priceId) {
       return NextResponse.json(
         { error: `No price ID configured for plan: ${plan}` },
         { status: 400 }
@@ -49,27 +52,34 @@ export async function PATCH(request: Request) {
         items: [
           {
             id: stripeSubscription.items.data[0].id,
-            price: planConfig.priceId,
+            price: priceId,
           },
         ],
         proration_behavior: "always_invoice", // Create invoice for proration
         metadata: {
           organizationId: orgId,
           plan,
+          billingPeriod,
         },
       }
     );
 
     // Update local database
+    // Map maxDocuments from PLANS to maxContracts in DB schema
     await prisma.subscription.update({
       where: { organizationId: orgId },
       data: {
-        stripePriceId: planConfig.priceId,
+        stripePriceId: priceId,
         plan: plan as any,
         maxTeamMembers: planConfig.maxTeamMembers,
-        maxContracts: planConfig.maxContracts,
-        maxStorage: planConfig.maxStorage,
-        ...planConfig.features,
+        maxContracts: planConfig.maxDocuments, // PLANS uses maxDocuments, schema uses maxContracts
+        maxStorage: Math.round(planConfig.maxStorage / 1000), // Convert MB to GB
+        hasAiDrafting: planConfig.features.hasAiDrafting,
+        hasComplianceAuto: planConfig.features.hasComplianceAuto,
+        hasAnalytics: planConfig.features.hasAnalytics,
+        hasCustomTemplates: planConfig.features.hasCustomTemplates,
+        hasPrioritySupport: planConfig.features.hasPrioritySupport,
+        hasCustomIntegrations: planConfig.features.hasCustomIntegrations,
       },
     });
 

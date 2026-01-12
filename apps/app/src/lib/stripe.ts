@@ -7,72 +7,244 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   typescript: true,
 });
 
-// Plan configuration
+/**
+ * LARGENCE PRICING STRUCTURE
+ * 
+ * Strategy: Value-based pricing targeting African enterprises
+ * - Free tier to drive adoption and word-of-mouth
+ * - Starter for solopreneurs and small firms (affordable entry)
+ * - Professional for growing teams (best value)
+ * - Business for medium enterprises (advanced features)
+ * - Enterprise for large organizations (custom pricing)
+ * 
+ * Annual plans: ~17% discount (2 months free)
+ * All prices in USD (convert to local currency via Stripe)
+ */
+
+// Monthly prices in cents
 export const PLANS = {
   FREE: {
     name: "Free",
-    price: 0,
-    priceId: null,
+    description: "Perfect for trying out Largence",
+    monthlyPrice: 0,
+    annualPrice: 0,
+    monthlyPriceId: null,
+    annualPriceId: null,
     maxTeamMembers: 1,
-    maxContracts: 2, // 2 free generations/compliance checks
-    maxStorage: 0,
+    maxDocuments: 5, // Total documents (not per month)
+    maxAiGenerations: 3, // Per month
+    maxComplianceChecks: 3, // Per month
+    maxStorage: 100, // MB
+    maxTemplates: 5,
     features: {
       hasAiDrafting: true,
+      hasComplianceBasic: true,
       hasComplianceAuto: false,
       hasAnalytics: false,
       hasCustomTemplates: false,
       hasPrioritySupport: false,
       hasCustomIntegrations: false,
+      hasESignatures: false,
+      hasAuditLogs: false,
+      hasApiAccess: false,
+      hasSso: false,
+      hasAdvancedExport: false,
+      hasClauseLibrary: false,
+      hasMatters: false,
+      hasBrandedDocs: false,
+      hasWhiteLabel: false,
     },
+    highlights: [
+      "5 documents total",
+      "3 AI generations/month",
+      "3 compliance checks/month",
+      "Basic templates",
+      "Email support",
+    ],
   },
   STARTER: {
     name: "Starter",
-    price: 29900, // $299 in cents
-    priceId: process.env.STRIPE_STARTER_PRICE_ID,
-    maxTeamMembers: 5,
-    maxContracts: 100,
-    maxStorage: 5,
+    description: "For solopreneurs and small legal practices",
+    monthlyPrice: 2900, // $29/month
+    annualPrice: 29000, // $290/year (~$24.17/month, 17% off)
+    monthlyPriceId: process.env.STRIPE_STARTER_MONTHLY_PRICE_ID,
+    annualPriceId: process.env.STRIPE_STARTER_ANNUAL_PRICE_ID,
+    maxTeamMembers: 3,
+    maxDocuments: 50, // Per month
+    maxAiGenerations: 30, // Per month
+    maxComplianceChecks: 20, // Per month
+    maxStorage: 2000, // 2 GB
+    maxTemplates: 25,
     features: {
       hasAiDrafting: true,
+      hasComplianceBasic: true,
       hasComplianceAuto: false,
       hasAnalytics: false,
-      hasCustomTemplates: false,
+      hasCustomTemplates: true,
       hasPrioritySupport: false,
       hasCustomIntegrations: false,
+      hasESignatures: true, // 10/month
+      hasAuditLogs: false,
+      hasApiAccess: false,
+      hasSso: false,
+      hasAdvancedExport: true,
+      hasClauseLibrary: true,
+      hasMatters: false,
+      hasBrandedDocs: false,
+      hasWhiteLabel: false,
     },
+    highlights: [
+      "Up to 3 team members",
+      "50 documents/month",
+      "30 AI generations/month",
+      "20 compliance checks/month",
+      "10 e-signatures/month",
+      "Clause library",
+      "Cloud exports (Notion, Dropbox)",
+      "Email support",
+    ],
   },
   PROFESSIONAL: {
     name: "Professional",
-    price: 79900, // $799 in cents
-    priceId: process.env.STRIPE_PROFESSIONAL_PRICE_ID,
-    maxTeamMembers: 20,
-    maxContracts: -1, // Unlimited
-    maxStorage: 50,
+    description: "For growing legal teams and law firms",
+    monthlyPrice: 7900, // $79/month
+    annualPrice: 79000, // $790/year (~$65.83/month, 17% off)
+    monthlyPriceId: process.env.STRIPE_PROFESSIONAL_MONTHLY_PRICE_ID,
+    annualPriceId: process.env.STRIPE_PROFESSIONAL_ANNUAL_PRICE_ID,
+    maxTeamMembers: 10,
+    maxDocuments: 200, // Per month
+    maxAiGenerations: 100, // Per month
+    maxComplianceChecks: 100, // Per month
+    maxStorage: 10000, // 10 GB
+    maxTemplates: 100,
     features: {
       hasAiDrafting: true,
-      hasComplianceAuto: true,
+      hasComplianceBasic: true,
+      hasComplianceAuto: true, // Automated compliance monitoring
       hasAnalytics: true,
       hasCustomTemplates: true,
       hasPrioritySupport: true,
-      hasCustomIntegrations: false,
+      hasCustomIntegrations: true, // DocuSign, etc.
+      hasESignatures: true, // 50/month
+      hasAuditLogs: true,
+      hasApiAccess: false,
+      hasSso: false,
+      hasAdvancedExport: true,
+      hasClauseLibrary: true,
+      hasMatters: true,
+      hasBrandedDocs: true,
+      hasWhiteLabel: false,
     },
+    highlights: [
+      "Up to 10 team members",
+      "200 documents/month",
+      "100 AI generations/month",
+      "Automated compliance monitoring",
+      "50 e-signatures/month",
+      "Full analytics dashboard",
+      "Matter management",
+      "Branded documents",
+      "DocuSign integration",
+      "Audit trails",
+      "Priority email support",
+    ],
+    popular: true, // Show as "Most Popular"
   },
-  ENTERPRISE: {
-    name: "Enterprise",
-    price: null, // Custom pricing
-    priceId: process.env.STRIPE_ENTERPRISE_PRICE_ID,
-    maxTeamMembers: -1, // Unlimited
-    maxContracts: -1, // Unlimited
-    maxStorage: -1, // Unlimited
+  BUSINESS: {
+    name: "Business",
+    description: "For medium-sized enterprises and legal departments",
+    monthlyPrice: 19900, // $199/month
+    annualPrice: 199000, // $1,990/year (~$165.83/month, 17% off)
+    monthlyPriceId: process.env.STRIPE_BUSINESS_MONTHLY_PRICE_ID,
+    annualPriceId: process.env.STRIPE_BUSINESS_ANNUAL_PRICE_ID,
+    maxTeamMembers: 30,
+    maxDocuments: -1, // Unlimited
+    maxAiGenerations: 500, // Per month
+    maxComplianceChecks: -1, // Unlimited
+    maxStorage: 50000, // 50 GB
+    maxTemplates: -1, // Unlimited
     features: {
       hasAiDrafting: true,
+      hasComplianceBasic: true,
       hasComplianceAuto: true,
       hasAnalytics: true,
       hasCustomTemplates: true,
       hasPrioritySupport: true,
       hasCustomIntegrations: true,
+      hasESignatures: true, // Unlimited
+      hasAuditLogs: true,
+      hasApiAccess: true,
+      hasSso: false,
+      hasAdvancedExport: true,
+      hasClauseLibrary: true,
+      hasMatters: true,
+      hasBrandedDocs: true,
+      hasWhiteLabel: false,
     },
+    highlights: [
+      "Up to 30 team members",
+      "Unlimited documents",
+      "500 AI generations/month",
+      "Unlimited compliance checks",
+      "Unlimited e-signatures",
+      "API access",
+      "Advanced analytics",
+      "Custom templates",
+      "Dedicated support",
+      "99.9% uptime SLA",
+    ],
   },
+  ENTERPRISE: {
+    name: "Enterprise",
+    description: "For large organizations with custom requirements",
+    monthlyPrice: null, // Custom pricing
+    annualPrice: null, // Custom pricing
+    monthlyPriceId: process.env.STRIPE_ENTERPRISE_PRICE_ID,
+    annualPriceId: process.env.STRIPE_ENTERPRISE_ANNUAL_PRICE_ID,
+    maxTeamMembers: -1, // Unlimited
+    maxDocuments: -1, // Unlimited
+    maxAiGenerations: -1, // Unlimited
+    maxComplianceChecks: -1, // Unlimited
+    maxStorage: -1, // Unlimited
+    maxTemplates: -1, // Unlimited
+    features: {
+      hasAiDrafting: true,
+      hasComplianceBasic: true,
+      hasComplianceAuto: true,
+      hasAnalytics: true,
+      hasCustomTemplates: true,
+      hasPrioritySupport: true,
+      hasCustomIntegrations: true,
+      hasESignatures: true,
+      hasAuditLogs: true,
+      hasApiAccess: true,
+      hasSso: true,
+      hasAdvancedExport: true,
+      hasClauseLibrary: true,
+      hasMatters: true,
+      hasBrandedDocs: true,
+      hasWhiteLabel: true,
+    },
+    highlights: [
+      "Unlimited everything",
+      "Single Sign-On (SSO)",
+      "White-label option",
+      "Custom AI training",
+      "On-premise deployment option",
+      "Dedicated account manager",
+      "Custom SLA",
+      "24/7 phone support",
+      "Security audit & compliance cert",
+      "Custom integrations",
+    ],
+  },
+} as const;
+
+// Legacy compatibility - map old plan names
+export const LEGACY_PLAN_MAPPING = {
+  STARTER: "STARTER",
+  PROFESSIONAL: "PROFESSIONAL",
+  ENTERPRISE: "ENTERPRISE",
 } as const;
 
 // Get or create Stripe customer
@@ -100,7 +272,8 @@ export async function getOrCreateStripeCustomer(
     },
   });
 
-  // Create or update subscription record
+  // Create or update subscription record with free plan
+  const freePlan = PLANS.FREE;
   await prisma.subscription.upsert({
     where: { organizationId },
     update: { stripeCustomerId: customer.id },
@@ -109,10 +282,15 @@ export async function getOrCreateStripeCustomer(
       stripeCustomerId: customer.id,
       plan: PlanType.FREE,
       status: SubscriptionStatus.ACTIVE,
-      maxTeamMembers: PLANS.FREE.maxTeamMembers,
-      maxContracts: PLANS.FREE.maxContracts,
-      maxStorage: PLANS.FREE.maxStorage,
-      ...PLANS.FREE.features,
+      maxTeamMembers: freePlan.maxTeamMembers,
+      maxContracts: freePlan.maxDocuments, // PLANS uses maxDocuments, schema uses maxContracts
+      maxStorage: Math.round(freePlan.maxStorage / 1000), // Convert MB to GB
+      hasAiDrafting: freePlan.features.hasAiDrafting,
+      hasComplianceAuto: freePlan.features.hasComplianceAuto,
+      hasAnalytics: freePlan.features.hasAnalytics,
+      hasCustomTemplates: freePlan.features.hasCustomTemplates,
+      hasPrioritySupport: freePlan.features.hasPrioritySupport,
+      hasCustomIntegrations: freePlan.features.hasCustomIntegrations,
     },
   });
 
@@ -124,13 +302,18 @@ export async function createCheckoutSession(
   organizationId: string,
   customerId: string,
   plan: keyof typeof PLANS,
+  billingPeriod: "monthly" | "annual",
   successUrl: string,
   cancelUrl: string
 ): Promise<Stripe.Checkout.Session> {
   const planConfig = PLANS[plan];
   
-  if (!planConfig.priceId) {
-    throw new Error(`No price ID configured for plan: ${plan}`);
+  const priceId = billingPeriod === "annual" 
+    ? planConfig.annualPriceId 
+    : planConfig.monthlyPriceId;
+  
+  if (!priceId) {
+    throw new Error(`No price ID configured for plan: ${plan} (${billingPeriod})`);
   }
 
   const session = await stripe.checkout.sessions.create({
@@ -139,26 +322,27 @@ export async function createCheckoutSession(
     payment_method_types: ["card"],
     line_items: [
       {
-        price: planConfig.priceId,
+        price: priceId,
         quantity: 1,
       },
     ],
     success_url: successUrl,
     cancel_url: cancelUrl,
     subscription_data: {
-      trial_period_days: 14,
+      trial_period_days: 14, // 14-day free trial on all paid plans
       metadata: {
         organizationId,
         plan,
+        billingPeriod,
       },
     },
     metadata: {
       organizationId,
       plan,
+      billingPeriod,
     },
     allow_promotion_codes: true,
     billing_address_collection: "required",
-    // Customer can update payment method in portal
     payment_method_collection: "always",
   });
 
@@ -218,9 +402,14 @@ export async function updateSubscriptionFromStripe(
         ? new Date(stripeSubscription.trial_end * 1000)
         : null,
       maxTeamMembers: planConfig.maxTeamMembers,
-      maxContracts: planConfig.maxContracts,
-      maxStorage: planConfig.maxStorage,
-      ...planConfig.features,
+      maxContracts: planConfig.maxDocuments, // PLANS uses maxDocuments, schema uses maxContracts
+      maxStorage: Math.round(planConfig.maxStorage / 1000), // Convert MB to GB
+      hasAiDrafting: planConfig.features.hasAiDrafting,
+      hasComplianceAuto: planConfig.features.hasComplianceAuto,
+      hasAnalytics: planConfig.features.hasAnalytics,
+      hasCustomTemplates: planConfig.features.hasCustomTemplates,
+      hasPrioritySupport: planConfig.features.hasPrioritySupport,
+      hasCustomIntegrations: planConfig.features.hasCustomIntegrations,
     },
   });
 }
@@ -242,9 +431,14 @@ export async function handleSubscriptionDeleted(
       plan: PlanType.FREE,
       status: SubscriptionStatus.CANCELED,
       maxTeamMembers: PLANS.FREE.maxTeamMembers,
-      maxContracts: PLANS.FREE.maxContracts,
-      maxStorage: PLANS.FREE.maxStorage,
-      ...PLANS.FREE.features,
+      maxContracts: PLANS.FREE.maxDocuments, // PLANS uses maxDocuments, schema uses maxContracts
+      maxStorage: Math.round(PLANS.FREE.maxStorage / 1000), // Convert MB to GB
+      hasAiDrafting: PLANS.FREE.features.hasAiDrafting,
+      hasComplianceAuto: PLANS.FREE.features.hasComplianceAuto,
+      hasAnalytics: PLANS.FREE.features.hasAnalytics,
+      hasCustomTemplates: PLANS.FREE.features.hasCustomTemplates,
+      hasPrioritySupport: PLANS.FREE.features.hasPrioritySupport,
+      hasCustomIntegrations: PLANS.FREE.features.hasCustomIntegrations,
       canceledAt: new Date(),
     },
   });
@@ -254,9 +448,27 @@ export async function handleSubscriptionDeleted(
 function getPlanFromPriceId(priceId: string | undefined): PlanType {
   if (!priceId) return PlanType.FREE;
   
+  // Check monthly prices
+  if (priceId === process.env.STRIPE_STARTER_MONTHLY_PRICE_ID || 
+      priceId === process.env.STRIPE_STARTER_ANNUAL_PRICE_ID) {
+    return PlanType.STARTER;
+  }
+  if (priceId === process.env.STRIPE_PROFESSIONAL_MONTHLY_PRICE_ID || 
+      priceId === process.env.STRIPE_PROFESSIONAL_ANNUAL_PRICE_ID) {
+    return PlanType.PROFESSIONAL;
+  }
+  if (priceId === process.env.STRIPE_BUSINESS_MONTHLY_PRICE_ID || 
+      priceId === process.env.STRIPE_BUSINESS_ANNUAL_PRICE_ID) {
+    return PlanType.BUSINESS;
+  }
+  if (priceId === process.env.STRIPE_ENTERPRISE_PRICE_ID || 
+      priceId === process.env.STRIPE_ENTERPRISE_ANNUAL_PRICE_ID) {
+    return PlanType.ENTERPRISE;
+  }
+  
+  // Legacy price IDs
   if (priceId === process.env.STRIPE_STARTER_PRICE_ID) return PlanType.STARTER;
   if (priceId === process.env.STRIPE_PROFESSIONAL_PRICE_ID) return PlanType.PROFESSIONAL;
-  if (priceId === process.env.STRIPE_ENTERPRISE_PRICE_ID) return PlanType.ENTERPRISE;
   
   return PlanType.FREE;
 }
@@ -336,7 +548,7 @@ export async function canPerformAction(
   // Check against limits - use PLANS config for FREE tier to ensure updates take effect
   let limit = subscription.maxContracts;
   if (subscription.plan === PlanType.FREE) {
-    limit = PLANS.FREE.maxContracts;
+    limit = PLANS.FREE.maxDocuments; // PLANS uses maxDocuments
   }
   
   // -1 means unlimited
@@ -374,9 +586,14 @@ export async function recordUsage(
         plan: PlanType.FREE,
         status: SubscriptionStatus.ACTIVE,
         maxTeamMembers: PLANS.FREE.maxTeamMembers,
-        maxContracts: PLANS.FREE.maxContracts,
-        maxStorage: PLANS.FREE.maxStorage,
-        ...PLANS.FREE.features,
+        maxContracts: PLANS.FREE.maxDocuments, // PLANS uses maxDocuments, schema uses maxContracts
+        maxStorage: Math.round(PLANS.FREE.maxStorage / 1000), // Convert MB to GB
+        hasAiDrafting: PLANS.FREE.features.hasAiDrafting,
+        hasComplianceAuto: PLANS.FREE.features.hasComplianceAuto,
+        hasAnalytics: PLANS.FREE.features.hasAnalytics,
+        hasCustomTemplates: PLANS.FREE.features.hasCustomTemplates,
+        hasPrioritySupport: PLANS.FREE.features.hasPrioritySupport,
+        hasCustomIntegrations: PLANS.FREE.features.hasCustomIntegrations,
       },
     });
   }
@@ -425,8 +642,8 @@ export async function getUsageStats(organizationId: string) {
   let documentsLimit = subscription.maxContracts;
   let complianceLimit = subscription.maxContracts;
   if (subscription.plan === PlanType.FREE) {
-    documentsLimit = PLANS.FREE.maxContracts;
-    complianceLimit = PLANS.FREE.maxContracts;
+    documentsLimit = PLANS.FREE.maxDocuments; // PLANS uses maxDocuments
+    complianceLimit = PLANS.FREE.maxDocuments; // PLANS uses maxDocuments
   }
 
   return {

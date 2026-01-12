@@ -17,21 +17,21 @@ export function WelcomeCTA() {
 
   return (
     <>
-      <div className="w-full bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 rounded-lg p-5 text-white relative overflow-hidden">
+      <div className="w-full bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 rounded-lg p-4 sm:p-5 text-white relative overflow-hidden">
         <div className="absolute inset-0 bg-linear-to-br from-primary/10 via-transparent to-primary/10" />
 
         <div className="max-w-4xl relative z-10">
-          <h1 className="text-2xl font-semibold mb-1.5 font-display">
+          <h1 className="text-xl sm:text-2xl font-semibold mb-1.5 font-display">
             {`Hi ${user?.lastName || "there"}, Welcome to Largence`}
           </h1>
-          <p className="text-sm text-white/70 mb-4">
+          <p className="text-xs sm:text-sm text-white/70 mb-4">
             Get started with AI-powered legal document generation and team
             collaboration.
           </p>
           <div className="flex flex-wrap gap-2">
             <Button 
               onClick={() => setDialogOpen(true)}
-              className="bg-white text-slate-900 hover:bg-white/90 rounded-sm h-8 px-3 text-sm font-medium cursor-pointer"
+              className="bg-white text-slate-900 hover:bg-white/90 rounded-sm h-8 px-3 text-sm font-medium cursor-pointer w-full sm:w-auto"
             >
               <Sparkles className="h-4 w-4" />
               Create New Document

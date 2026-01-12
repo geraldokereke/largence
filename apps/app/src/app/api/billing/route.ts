@@ -47,25 +47,43 @@ export async function GET() {
         : null,
       usage: usageStats,
       plans: {
+        FREE: {
+          name: PLANS.FREE.name,
+          monthlyPrice: PLANS.FREE.monthlyPrice,
+          maxTeamMembers: PLANS.FREE.maxTeamMembers,
+          maxDocuments: PLANS.FREE.maxDocuments,
+          maxStorage: PLANS.FREE.maxStorage,
+        },
         STARTER: {
           name: PLANS.STARTER.name,
-          price: PLANS.STARTER.price,
+          monthlyPrice: PLANS.STARTER.monthlyPrice,
+          annualPrice: PLANS.STARTER.annualPrice,
           maxTeamMembers: PLANS.STARTER.maxTeamMembers,
-          maxContracts: PLANS.STARTER.maxContracts,
+          maxDocuments: PLANS.STARTER.maxDocuments,
           maxStorage: PLANS.STARTER.maxStorage,
         },
         PROFESSIONAL: {
           name: PLANS.PROFESSIONAL.name,
-          price: PLANS.PROFESSIONAL.price,
+          monthlyPrice: PLANS.PROFESSIONAL.monthlyPrice,
+          annualPrice: PLANS.PROFESSIONAL.annualPrice,
           maxTeamMembers: PLANS.PROFESSIONAL.maxTeamMembers,
-          maxContracts: PLANS.PROFESSIONAL.maxContracts,
+          maxDocuments: PLANS.PROFESSIONAL.maxDocuments,
           maxStorage: PLANS.PROFESSIONAL.maxStorage,
+          isPopular: PLANS.PROFESSIONAL.popular,
+        },
+        BUSINESS: {
+          name: PLANS.BUSINESS.name,
+          monthlyPrice: PLANS.BUSINESS.monthlyPrice,
+          annualPrice: PLANS.BUSINESS.annualPrice,
+          maxTeamMembers: PLANS.BUSINESS.maxTeamMembers,
+          maxDocuments: PLANS.BUSINESS.maxDocuments,
+          maxStorage: PLANS.BUSINESS.maxStorage,
         },
         ENTERPRISE: {
           name: PLANS.ENTERPRISE.name,
-          price: PLANS.ENTERPRISE.price,
+          monthlyPrice: PLANS.ENTERPRISE.monthlyPrice,
           maxTeamMembers: PLANS.ENTERPRISE.maxTeamMembers,
-          maxContracts: PLANS.ENTERPRISE.maxContracts,
+          maxDocuments: PLANS.ENTERPRISE.maxDocuments,
           maxStorage: PLANS.ENTERPRISE.maxStorage,
         },
       },
@@ -89,10 +107,14 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { plan } = body;
+    const { plan, billingPeriod = "monthly" } = body;
 
-    if (!plan || !["STARTER", "PROFESSIONAL", "ENTERPRISE"].includes(plan)) {
+    if (!plan || !["STARTER", "PROFESSIONAL", "BUSINESS", "ENTERPRISE"].includes(plan)) {
       return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
+    }
+
+    if (!["monthly", "annual"].includes(billingPeriod)) {
+      return NextResponse.json({ error: "Invalid billing period" }, { status: 400 });
     }
 
     // Get user info for customer creation
@@ -108,7 +130,8 @@ export async function POST(request: Request) {
     const session = await createCheckoutSession(
       orgId,
       customerId,
-      plan as "STARTER" | "PROFESSIONAL" | "ENTERPRISE",
+      plan as "STARTER" | "PROFESSIONAL" | "BUSINESS" | "ENTERPRISE",
+      billingPeriod as "monthly" | "annual",
       `${baseUrl}/account?tab=billing&success=true`,
       `${baseUrl}/account?tab=billing&canceled=true`,
     );

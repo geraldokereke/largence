@@ -406,28 +406,29 @@ export default function CompliancePage() {
     <div className="flex flex-1 flex-col p-3">
       {/* Header */}
       <div className="mb-4">
-        <div className="flex items-center justify-between mb-1">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-1">
           <div>
-            <h1 className="text-xl font-semibold font-heading">Compliance Center</h1>
-            <p className="text-sm text-muted-foreground mt-1">
+            <h1 className="text-xl font-semibold font-display">Compliance Center</h1>
+            <p className="text-sm text-muted-foreground">
               Audit your documents for regulatory compliance across NDPR, GDPR, CCPA, and African data protection laws
             </p>
           </div>
           <div className="flex gap-2">
             <Button
               variant="outline"
-              className="h-8 rounded-sm text-sm"
+              className="h-8 rounded-sm text-sm flex-1 sm:flex-none"
               onClick={() => refetchCompliance()}
               disabled={complianceLoading}
             >
               <RefreshCw className={`h-4 w-4 ${complianceLoading ? "animate-spin" : ""}`} />
-              Refresh
+              <span className="hidden sm:inline ml-1">Refresh</span>
             </Button>
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <DialogTrigger asChild>
-                <Button className="h-8 rounded-sm text-sm gap-2">
+                <Button className="h-8 rounded-sm text-sm gap-2 flex-1 sm:flex-none">
                   <Play className="h-4 w-4" />
-                  Run Compliance Audit
+                  <span className="hidden sm:inline">Run Compliance Audit</span>
+                  <span className="sm:hidden">Audit</span>
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[600px]">
@@ -548,13 +549,13 @@ export default function CompliancePage() {
                           >
                             {uploadMutation.isPending ? (
                               <>
-                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                                 Analyzing...
+                                <Loader2 className="h-4 w-4 ml-2 animate-spin" />
                               </>
                             ) : (
                               <>
-                                <ShieldCheck className="h-4 w-4 mr-2" />
                                 Run Compliance Check
+                                <ShieldCheck className="h-4 w-4 ml-2" />
                               </>
                             )}
                           </Button>

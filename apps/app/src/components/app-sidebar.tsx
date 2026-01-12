@@ -18,6 +18,7 @@ import {
   Sparkles,
   Briefcase,
   ScrollText,
+  BarChart3,
 } from "lucide-react";
 
 import { NavMain } from "@largence/components/nav-main";
@@ -129,6 +130,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         title: "Templates Library",
         url: "/templates",
         icon: Folder,
+      },
+      {
+        title: "Analytics",
+        url: "/analytics",
+        icon: BarChart3,
       },
       {
         title: "Teams & Roles",

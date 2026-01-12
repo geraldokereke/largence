@@ -443,10 +443,10 @@ export default function AccountPage() {
     <div className="flex flex-1 flex-col p-4 w-full">
       {/* Header */}
       <div className="mb-4">
-        <h1 className="text-2xl font-semibold mb-1 font-heading">
+        <h1 className="text-xl font-semibold font-display">
           Account Settings
         </h1>
-        <p className="text-muted-foreground">
+        <p className="text-sm text-muted-foreground">
           Manage your profile, organization, and preferences
         </p>
       </div>

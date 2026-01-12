@@ -75,14 +75,14 @@ export function CompanyInfoStep({
       exit={{ opacity: 0, x: -20 }}
       className="space-y-6"
     >
-      <div className="space-y-2">
-        <Label htmlFor="companyName">Company Name *</Label>
+      <div className="space-y-1.5">
+        <Label htmlFor="companyName" className="text-sm">Company Name *</Label>
         <Input
           id="companyName"
           placeholder="Acme Corporation"
           value={formData.companyName}
           onChange={(e) => updateFormData({ companyName: e.target.value })}
-          className="rounded-sm"
+          className="h-9 rounded-sm text-sm"
         />
         {subdomain && (
           <p className="text-xs text-muted-foreground">
@@ -101,13 +101,13 @@ export function CompanyInfoStep({
         }
       />
 
-      <div className="space-y-2">
-        <Label htmlFor="industry">Industry *</Label>
+      <div className="space-y-1.5">
+        <Label htmlFor="industry" className="text-sm">Industry *</Label>
         <Select
           value={formData.industry}
           onValueChange={(value) => updateFormData({ industry: value })}
         >
-          <SelectTrigger className="rounded-sm">
+          <SelectTrigger className="h-9 rounded-sm text-sm">
             <SelectValue placeholder="Select your industry" />
           </SelectTrigger>
           <SelectContent>

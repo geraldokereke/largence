@@ -57,17 +57,17 @@ export function CountryCombobox({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-full h-10 rounded-sm justify-between"
+          className="w-full h-9 rounded-sm justify-between text-sm font-normal"
         >
           {selectedCountry ? (
-            <span className="flex items-center gap-2">
-              <span className="text-lg">{selectedCountry.flag}</span>
+            <span className="flex items-center gap-1.5">
+              <span className="text-base">{selectedCountry.flag}</span>
               <span>{selectedCountry.label}</span>
             </span>
           ) : (
             <span className="text-muted-foreground">{placeholder}</span>
           )}
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          <ChevronsUpDown className="ml-2 h-3.5 w-3.5 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-full p-0" align="start">
@@ -85,14 +85,15 @@ export function CountryCombobox({
                     onValueChange(currentValue === value ? "" : currentValue);
                     setOpen(false);
                   }}
+                  className="text-sm"
                 >
                   <Check
                     className={cn(
-                      "mr-2 h-4 w-4",
+                      "mr-1.5 h-3.5 w-3.5",
                       value === country.value ? "opacity-100" : "opacity-0",
                     )}
                   />
-                  <span className="text-lg mr-2">{country.flag}</span>
+                  <span className="text-base mr-1.5">{country.flag}</span>
                   <span>{country.label}</span>
                 </CommandItem>
               ))}

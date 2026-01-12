@@ -13,6 +13,7 @@ import {
 import { CountryCombobox } from "@largence/components/ui/country-combobox";
 import { DatePicker } from "@largence/components/ui/date-picker";
 import { format } from "date-fns";
+import { getDocumentTypeConfig, shouldShowField, getFieldLabel } from "@largence/lib/document-types";
 
 interface BasicInfoStepProps {
   formData: {
@@ -23,6 +24,7 @@ interface BasicInfoStepProps {
     endDate: string;
     duration: string;
   };
+  documentType?: string;
   jurisdictions: string[];
   industries: string[];
   onUpdate: (field: string, value: string) => void;
@@ -36,11 +38,25 @@ interface BasicInfoStepProps {
 
 export function BasicInfoStep({
   formData,
+  documentType,
   jurisdictions,
   industries,
   onUpdate,
   errors,
 }: BasicInfoStepProps) {
+  // Get document type configuration
+  const typeConfig = documentType ? getDocumentTypeConfig(documentType) : undefined;
+  
+  // Check which fields to show based on document type
+  const showIndustry = documentType ? shouldShowField(documentType, "industry") : true;
+  const showEndDate = documentType ? shouldShowField(documentType, "endDate") : true;
+  const showDuration = documentType ? shouldShowField(documentType, "duration") : true;
+  
+  // Get field labels from config
+  const startDateLabel = documentType ? getFieldLabel(documentType, "startDate", "Start Date") : "Start Date";
+  const endDateLabel = documentType ? getFieldLabel(documentType, "endDate", "End Date") : "End Date";
+  const durationLabel = documentType ? getFieldLabel(documentType, "duration", "Duration") : "Duration";
+
   const handleDateChange = (date: Date | undefined) => {
     if (date) {
       onUpdate("startDate", format(date, "yyyy-MM-dd"));
@@ -102,41 +118,41 @@ export function BasicInfoStep({
   }, [formData.startDate, formData.endDate]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div>
-        <h2 className="text-2xl font-semibold mb-2 font-title">
+        <h2 className="text-lg font-semibold mb-1 font-title">
           Basic Information
         </h2>
-        <p className="text-muted-foreground">
+        <p className="text-sm text-muted-foreground">
           Provide the essential details for your document
         </p>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-3">
         <div>
-          <Label htmlFor="documentName">
+          <Label htmlFor="documentName" className="text-sm">
             Document Name <span className="text-destructive">*</span>
           </Label>
           <Input
             id="documentName"
             placeholder="e.g., Senior Developer Employment Contract"
-            className={`h-10 rounded-sm mt-1.5 ${errors?.documentName ? "border-destructive" : ""}`}
+            className={`h-9 rounded-sm mt-1 text-sm ${errors?.documentName ? "border-destructive" : ""}`}
             value={formData.documentName}
             onChange={(e) => onUpdate("documentName", e.target.value)}
           />
           {errors?.documentName && (
-            <p className="text-sm text-destructive mt-1">
+            <p className="text-xs text-destructive mt-0.5">
               {errors.documentName}
             </p>
           )}
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className={`grid ${showIndustry ? "grid-cols-2" : "grid-cols-1"} gap-3`}>
           <div>
-            <Label htmlFor="jurisdiction">
+            <Label htmlFor="jurisdiction" className="text-sm">
               Jurisdiction <span className="text-destructive">*</span>
             </Label>
-            <div className="mt-1.5">
+            <div className="mt-1">
               <CountryCombobox
                 value={formData.jurisdiction.toLowerCase().replace(/ /g, "-")}
                 onValueChange={(value) => {
@@ -150,81 +166,88 @@ export function BasicInfoStep({
               />
             </div>
             {errors?.jurisdiction && (
-              <p className="text-sm text-destructive mt-1">
+              <p className="text-xs text-destructive mt-0.5">
                 {errors.jurisdiction}
               </p>
             )}
           </div>
 
-          <div>
-            <Label htmlFor="industry">
-              Industry <span className="text-destructive">*</span>
-            </Label>
-            <Select
-              value={formData.industry}
-              onValueChange={(value) => onUpdate("industry", value)}
-            >
-              <SelectTrigger
-                className={`h-10 rounded-sm mt-1.5 ${errors?.industry ? "border-destructive" : ""}`}
+          {showIndustry && (
+            <div>
+              <Label htmlFor="industry" className="text-sm">
+                Industry <span className="text-destructive">*</span>
+              </Label>
+              <Select
+                value={formData.industry}
+                onValueChange={(value) => onUpdate("industry", value)}
               >
-                <SelectValue placeholder="Select industry" />
-              </SelectTrigger>
-              <SelectContent>
-                {industries.map((industry) => (
-                  <SelectItem key={industry} value={industry}>
-                    {industry}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {errors?.industry && (
-              <p className="text-sm text-destructive mt-1">{errors.industry}</p>
-            )}
-          </div>
+                <SelectTrigger
+                  className={`h-9 rounded-sm mt-1 text-sm ${errors?.industry ? "border-destructive" : ""}`}
+                >
+                  <SelectValue placeholder="Select industry" />
+                </SelectTrigger>
+                <SelectContent>
+                  {industries.map((industry) => (
+                    <SelectItem key={industry} value={industry}>
+                      {industry}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors?.industry && (
+                <p className="text-xs text-destructive mt-0.5">{errors.industry}</p>
+              )}
+            </div>
+          )}
         </div>
 
-        <div className="grid grid-cols-3 gap-4">
+        <div className={`grid ${showEndDate ? "grid-cols-2" : "grid-cols-1"} gap-3`}>
           <div>
-            <Label htmlFor="startDate">
-              Start Date <span className="text-destructive">*</span>
+            <Label htmlFor="startDate" className="text-sm">
+              {startDateLabel} <span className="text-destructive">*</span>
             </Label>
-            <div className="mt-1.5">
+            <div className="mt-1">
               <DatePicker
                 date={selectedDate}
                 onDateChange={handleDateChange}
-                placeholder="Select start date"
+                placeholder="Select date"
                 className={errors?.startDate ? "border-destructive" : ""}
               />
             </div>
             {errors?.startDate && (
-              <p className="text-sm text-destructive mt-1">
+              <p className="text-xs text-destructive mt-0.5">
                 {errors.startDate}
               </p>
             )}
           </div>
 
-          <div>
-            <Label htmlFor="endDate">End Date (Optional)</Label>
-            <div className="mt-1.5">
-              <DatePicker
-                date={selectedEndDate}
-                onDateChange={handleEndDateChange}
-                placeholder="Select end date"
-              />
+          {showEndDate && (
+            <div>
+              <Label htmlFor="endDate" className="text-sm">{endDateLabel}</Label>
+              <div className="mt-1">
+                <DatePicker
+                  date={selectedEndDate}
+                  onDateChange={handleEndDateChange}
+                  placeholder="Select date"
+                  minDate={selectedDate || undefined}
+                />
+              </div>
             </div>
-          </div>
+          )}
+        </div>
 
+        {showDuration && (
           <div>
-            <Label htmlFor="duration">Duration</Label>
+            <Label htmlFor="duration" className="text-sm">{durationLabel}</Label>
             <Input
               id="duration"
-              placeholder="- - -"
-              className="rounded-sm mt-1.5 bg-muted"
+              placeholder="Calculated automatically"
+              className="rounded-sm mt-1 bg-muted h-9 text-sm"
               value={calculatedDuration}
               readOnly
             />
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

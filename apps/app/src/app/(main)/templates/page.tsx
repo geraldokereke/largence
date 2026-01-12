@@ -134,6 +134,9 @@ export default function TemplatesPage() {
   const [templateToDelete, setTemplateToDelete] = useState<UserTemplate | null>(null);
   const [previewUserTemplate, setPreviewUserTemplate] = useState<UserTemplate | null>(null);
   const [previewCommunityTemplate, setPreviewCommunityTemplate] = useState<CommunityTemplate | null>(null);
+  
+  // Loading states for template actions to prevent double-clicks
+  const [usingTemplateId, setUsingTemplateId] = useState<string | null>(null);
 
   // Fetch user templates
   const { data: userTemplatesData, isLoading: loadingUserTemplates } = useQuery({
@@ -277,11 +280,16 @@ export default function TemplatesPage() {
   };
 
   const handleUseCommunityTemplate = async (template: CommunityTemplate) => {
+    if (usingTemplateId) return; // Prevent double-click
+    setUsingTemplateId(template.id);
     // Redirect to create page with template ID
     router.push(`/create?template=${template.id}`);
   };
 
   const handleUseUserTemplate = async (template: UserTemplate) => {
+    if (usingTemplateId) return; // Prevent double-click
+    setUsingTemplateId(template.id);
+    
     // Create a new document from this template
     try {
       const response = await fetch("/api/documents", {
@@ -303,9 +311,11 @@ export default function TemplatesPage() {
         router.push(`/documents/${data.document.id}`);
       } else {
         toast.error("Failed to create document from template");
+        setUsingTemplateId(null);
       }
     } catch (error) {
       toast.error("Failed to create document from template");
+      setUsingTemplateId(null);
     }
   };
 
@@ -346,14 +356,14 @@ export default function TemplatesPage() {
       <div className="p-3 pb-6">
         {/* Header */}
         <div className="mb-4">
-          <div className="flex items-start justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
             <div>
-              <h1 className="text-xl font-semibold mb-1 font-heading">Templates</h1>
+              <h1 className="text-xl font-semibold font-display">Templates</h1>
               <p className="text-sm text-muted-foreground">
                 Browse the library or manage your saved templates
               </p>
             </div>
-            <Button onClick={() => router.push("/create")} className="rounded-sm h-8 text-sm">
+            <Button onClick={() => router.push("/create")} className="rounded-sm h-8 text-sm w-full sm:w-auto">
               <Sparkles className="h-3.5 w-3.5" />
               Create Custom
             </Button>
@@ -524,7 +534,7 @@ export default function TemplatesPage() {
                 </Button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
                 {displayedTemplates.map((template) => {
                   const Icon = template.icon;
                   return (

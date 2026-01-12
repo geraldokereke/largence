@@ -55,30 +55,61 @@ export async function POST(request: NextRequest) {
     if (file.type === "text/plain") {
       content = await file.text();
     } else if (file.type === "application/pdf") {
-      // For PDF files, try to use pdf-parse if available
+      // For PDF files, use pdf-parse
       const buffer = Buffer.from(await file.arrayBuffer());
       try {
-        const pdfParse = require("pdf-parse");
-        const pdfData = await pdfParse(buffer);
-        content = pdfData.text;
-      } catch {
-        // Fallback: return error if pdf-parse is not available
+        // Dynamically import pdf-parse v2.x (PDFParse is a named export)
+        const { PDFParse } = await import("pdf-parse");
+        
+        // Create parser with buffer data
+        const parser = new PDFParse({ data: buffer });
+        
+        // Parse PDF and get text
+        const textResult = await parser.getText();
+        content = textResult.pages.map((page) => page.text).join("\n\n") || "";
+        
+        // Clean up
+        await parser.destroy();
+        
+        // If we got very little text, it might be a scanned PDF
+        if (content.trim().length < 50) {
+          console.warn("PDF appears to have very little extractable text - may be scanned/image-based");
+        }
+      } catch (error) {
+        console.error("PDF parsing error:", error);
+        const errorMessage = error instanceof Error ? error.message : "Unknown error";
+        
+        // Provide specific error messages based on common issues
+        if (errorMessage.includes("encrypted") || errorMessage.includes("password")) {
+          return NextResponse.json(
+            { error: "This PDF appears to be password-protected. Please upload an unprotected PDF or convert to TXT format." },
+            { status: 400 }
+          );
+        }
+        
+        if (errorMessage.includes("Invalid") || errorMessage.includes("corrupt")) {
+          return NextResponse.json(
+            { error: "This PDF appears to be corrupted or invalid. Please try re-exporting the PDF or convert to TXT format." },
+            { status: 400 }
+          );
+        }
+        
         return NextResponse.json(
-          { error: "PDF parsing is not available. Please upload a TXT file instead." },
+          { error: "Failed to parse PDF file. This may be a scanned document or image-based PDF. Please convert to a text-based format and try again." },
           { status: 400 }
         );
       }
     } else if (file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
-      // For DOCX files, try to use mammoth if available
+      // For DOCX files, use mammoth
       const buffer = Buffer.from(await file.arrayBuffer());
       try {
-        const mammoth = require("mammoth");
+        const mammoth = await import("mammoth");
         const result = await mammoth.extractRawText({ buffer });
         content = result.value;
-      } catch {
-        // Fallback: return error if mammoth is not available
+      } catch (error) {
+        console.error("DOCX parsing error:", error);
         return NextResponse.json(
-          { error: "DOCX parsing is not available. Please upload a TXT file instead." },
+          { error: "Failed to parse DOCX file. Please ensure it contains readable text or try uploading a TXT file." },
           { status: 400 }
         );
       }

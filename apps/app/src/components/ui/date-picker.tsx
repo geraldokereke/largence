@@ -18,6 +18,8 @@ interface DatePickerProps {
   onDateChange: (date: Date | undefined) => void;
   placeholder?: string;
   className?: string;
+  disablePast?: boolean;
+  minDate?: Date;
 }
 
 export function DatePicker({
@@ -25,20 +27,28 @@ export function DatePicker({
   onDateChange,
   placeholder = "Pick a date",
   className,
+  disablePast = true,
+  minDate,
 }: DatePickerProps) {
+  // Calculate the minimum selectable date
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  const effectiveMinDate = minDate || (disablePast ? today : undefined);
+  
   return (
     <Popover>
       <PopoverTrigger asChild>
         <Button
           variant="outline"
           className={cn(
-            "w-full h-10 rounded-sm justify-start text-left font-normal",
+            "w-full h-9 rounded-sm justify-start text-left font-normal text-sm overflow-hidden",
             !date && "text-muted-foreground",
             className,
           )}
         >
-          <CalendarIcon className="mr-2 h-4 w-4" />
-          {date ? format(date, "PPP") : <span>{placeholder}</span>}
+          <CalendarIcon className="mr-2 h-3.5 w-3.5 shrink-0" />
+          <span className="truncate">{date ? format(date, "PPP") : placeholder}</span>
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
@@ -47,6 +57,7 @@ export function DatePicker({
           selected={date}
           onSelect={onDateChange}
           initialFocus
+          disabled={effectiveMinDate ? { before: effectiveMinDate } : undefined}
         />
       </PopoverContent>
     </Popover>

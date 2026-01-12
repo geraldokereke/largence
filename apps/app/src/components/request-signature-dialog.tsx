@@ -25,6 +25,7 @@ import {
   Plus,
   ExternalLink,
   Send,
+  Eye,
 } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -70,6 +71,7 @@ export function RequestSignatureDialog({
   const [loading, setLoading] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [viewingSignature, setViewingSignature] = useState<DocumentSignature | null>(null);
 
   // New signer form state
   const [signerName, setSignerName] = useState("");
@@ -267,12 +269,12 @@ export function RequestSignatureDialog({
               disabled={isCreating || !signerName.trim() || !signerEmail.trim()}
               className="w-full"
             >
-              {isCreating ? (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              ) : (
-                <Plus className="h-4 w-4 mr-2" />
-              )}
               Add Signer
+              {isCreating ? (
+                <Loader2 className="h-4 w-4 ml-2 animate-spin" />
+              ) : (
+                <Plus className="h-4 w-4 ml-2" />
+              )}
             </Button>
           </div>
 
@@ -363,9 +365,20 @@ export function RequestSignatureDialog({
                       )}
 
                       {signature.status === "SIGNED" && signature.signedAt && (
-                        <span className="text-xs text-muted-foreground">
-                          {format(new Date(signature.signedAt), "MMM d, h:mm a")}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => setViewingSignature(signature)}
+                            title="View signature"
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <span className="text-xs text-muted-foreground">
+                            {format(new Date(signature.signedAt), "MMM d, h:mm a")}
+                          </span>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -373,6 +386,40 @@ export function RequestSignatureDialog({
               </div>
             )}
           </div>
+
+          {/* View Signature Modal */}
+          {viewingSignature && viewingSignature.signatureData && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setViewingSignature(null)}>
+              <div 
+                className="bg-background rounded-lg shadow-xl p-6 max-w-md w-full mx-4 space-y-4"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center justify-between">
+                  <h3 className="font-semibold">Signature from {viewingSignature.signerName}</h3>
+                  <Button variant="ghost" size="sm" onClick={() => setViewingSignature(null)}>
+                    ✕
+                  </Button>
+                </div>
+                <div className="border rounded-lg p-4 bg-white">
+                  <img 
+                    src={viewingSignature.signatureData} 
+                    alt={`Signature by ${viewingSignature.signerName}`}
+                    className="w-full h-auto max-h-48 object-contain"
+                  />
+                </div>
+                <div className="text-sm text-muted-foreground space-y-1">
+                  <p><strong>Email:</strong> {viewingSignature.signerEmail}</p>
+                  {viewingSignature.signerRole && (
+                    <p><strong>Role:</strong> {viewingSignature.signerRole}</p>
+                  )}
+                  <p><strong>Type:</strong> {viewingSignature.signatureType === "DRAW" ? "Hand-drawn" : viewingSignature.signatureType === "TYPE" ? "Typed" : "Uploaded"}</p>
+                  {viewingSignature.signedAt && (
+                    <p><strong>Signed:</strong> {format(new Date(viewingSignature.signedAt), "MMMM d, yyyy 'at' h:mm a")}</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         <DialogFooter>

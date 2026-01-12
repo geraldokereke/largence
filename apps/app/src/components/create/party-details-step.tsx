@@ -10,6 +10,7 @@ import {
   SelectValue,
 } from "@largence/components/ui/select";
 import { useOrganization } from "@clerk/nextjs";
+import { getDocumentTypeConfig, shouldShowField, getFieldLabel } from "@largence/lib/document-types";
 
 interface PartyDetailsStepProps {
   formData: {
@@ -20,6 +21,7 @@ interface PartyDetailsStepProps {
     compensationType: string;
     compensationAmount: string;
   };
+  documentType?: string;
   onUpdate: (field: string, value: string) => void;
   errors?: {
     partyName?: string;
@@ -47,12 +49,29 @@ const getCurrencySymbol = (country: string): string => {
 
 export function PartyDetailsStep({
   formData,
+  documentType,
   onUpdate,
   errors,
 }: PartyDetailsStepProps) {
   const { organization } = useOrganization();
   const country = (organization?.publicMetadata?.country as string) || "";
   const currencySymbol = getCurrencySymbol(country);
+  
+  // Get document type configuration
+  const typeConfig = documentType ? getDocumentTypeConfig(documentType) : undefined;
+  
+  // Check if compensation section should be shown based on document type config
+  const showCompensation = documentType ? shouldShowField(documentType, "compensation") : true;
+  
+  // Get party labels from config
+  const party1Label = typeConfig?.parties.party1.label || "First Party";
+  const party1Placeholder = typeConfig?.parties.party1.placeholder || "e.g., John Doe, ABC Company Ltd";
+  const party2Label = typeConfig?.parties.party2.label || "Second Party";
+  const party2Placeholder = typeConfig?.parties.party2.placeholder || "e.g., XYZ Corporation, Jane Smith";
+  
+  // Get compensation label from config
+  const compensationLabel = typeConfig?.fields.compensation.label || "Compensation";
+  
   const formatAmount = (value: string) => {
     // Remove all non-numeric characters
     const numbers = value.replace(/[^0-9]/g, "");
@@ -80,7 +99,7 @@ export function PartyDetailsStep({
       <div className="space-y-4">
         <div className="space-y-3">
           <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-            First Party
+            {party1Label}
           </div>
           <div>
             <Label htmlFor="partyName">
@@ -88,7 +107,7 @@ export function PartyDetailsStep({
             </Label>
             <Input
               id="partyName"
-              placeholder="e.g., John Doe, ABC Company Ltd"
+              placeholder={party1Placeholder}
               className={`rounded-sm mt-1.5 ${errors?.partyName ? "border-destructive" : ""}`}
               value={formData.partyName}
               onChange={(e) => onUpdate("partyName", e.target.value)}
@@ -117,7 +136,7 @@ export function PartyDetailsStep({
 
         <div className="space-y-3">
           <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-            Second Party
+            {party2Label}
           </div>
           <div>
             <Label htmlFor="party2Name">
@@ -125,7 +144,7 @@ export function PartyDetailsStep({
             </Label>
             <Input
               id="party2Name"
-              placeholder="e.g., XYZ Corporation, Jane Smith"
+              placeholder={party2Placeholder}
               className={`rounded-sm mt-1.5 ${errors?.party2Name ? "border-destructive" : ""}`}
               value={formData.party2Name}
               onChange={(e) => onUpdate("party2Name", e.target.value)}
@@ -150,49 +169,54 @@ export function PartyDetailsStep({
           </div>
         </div>
 
-        <div className="h-px bg-border my-6" />
+        {showCompensation && (
+          <>
+            <div className="h-px bg-border my-6" />
 
-        <div className="space-y-3">
-          <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-            Compensation Terms (Optional)
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="compensationType">Compensation Type</Label>
-              <Select
-                value={formData.compensationType}
-                onValueChange={(value) => onUpdate("compensationType", value)}
-              >
-                <SelectTrigger className="rounded-sm mt-1.5">
-                  <SelectValue placeholder="Select type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="monthly">Monthly Salary</SelectItem>
-                  <SelectItem value="annual">Annual Salary</SelectItem>
-                  <SelectItem value="hourly">Hourly Rate</SelectItem>
-                  <SelectItem value="fixed">Fixed Fee</SelectItem>
-                  <SelectItem value="commission">Commission Based</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            <div className="space-y-3">
+              <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                {compensationLabel} {typeConfig?.fields.compensation.required ? "" : "(Optional)"}
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="compensationType">Type</Label>
+                  <Select
+                    value={formData.compensationType}
+                    onValueChange={(value) => onUpdate("compensationType", value)}
+                  >
+                    <SelectTrigger className="rounded-sm mt-1.5">
+                      <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="monthly">Monthly</SelectItem>
+                      <SelectItem value="annual">Annual</SelectItem>
+                      <SelectItem value="hourly">Hourly Rate</SelectItem>
+                      <SelectItem value="fixed">Fixed Amount</SelectItem>
+                      <SelectItem value="commission">Commission Based</SelectItem>
+                      <SelectItem value="milestone">Per Milestone</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
-            <div>
-              <Label htmlFor="compensationAmount">Amount</Label>
-              <div className="relative mt-1.5">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">
-                  {currencySymbol}
-                </span>
-                <Input
-                  id="compensationAmount"
-                  placeholder="5,000"
-                  className="rounded-sm pl-10"
-                  value={formData.compensationAmount}
-                  onChange={handleAmountChange}
-                />
+                <div>
+                  <Label htmlFor="compensationAmount">Amount</Label>
+                  <div className="relative mt-1.5">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">
+                      {currencySymbol}
+                    </span>
+                    <Input
+                      id="compensationAmount"
+                      placeholder="5,000"
+                      className="rounded-sm pl-10"
+                      value={formData.compensationAmount}
+                      onChange={handleAmountChange}
+                    />
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
+          </>
+        )}
       </div>
     </div>
   );

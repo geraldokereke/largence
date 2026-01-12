@@ -1,7 +1,7 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
+import prisma from "@largence/lib/prisma";
 import {
-  connectedIntegrationsStore,
   INTEGRATION_CATALOG,
   type IntegrationProviderType,
 } from "../route";
@@ -19,29 +19,12 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const orgIntegrations = connectedIntegrationsStore.get(orgId);
-    if (!orgIntegrations) {
-      return NextResponse.json(
-        { error: "Integration not found" },
-        { status: 404 },
-      );
-    }
-
-    let integration = null;
-    for (const [provider, int] of orgIntegrations.entries()) {
-      if (int.id === id) {
-        const catalog =
-          INTEGRATION_CATALOG[provider as IntegrationProviderType];
-        integration = {
-          ...int,
-          name: catalog?.name,
-          description: catalog?.description,
-          category: catalog?.category,
-          features: catalog?.features,
-        };
-        break;
-      }
-    }
+    const integration = await prisma.integration.findFirst({
+      where: {
+        id,
+        organizationId: orgId,
+      },
+    });
 
     if (!integration) {
       return NextResponse.json(
@@ -50,7 +33,26 @@ export async function GET(
       );
     }
 
-    return NextResponse.json({ integration });
+    const catalog = INTEGRATION_CATALOG[integration.provider as IntegrationProviderType];
+
+    return NextResponse.json({
+      integration: {
+        id: integration.id,
+        provider: integration.provider,
+        name: integration.name,
+        description: catalog?.description,
+        category: catalog?.category,
+        features: catalog?.features,
+        status: integration.status,
+        externalEmail: integration.externalEmail,
+        syncEnabled: integration.syncEnabled,
+        lastSyncAt: integration.lastSyncAt?.toISOString(),
+        lastSyncStatus: integration.lastSyncStatus,
+        syncedItemsCount: integration.syncedItemsCount,
+        connectedAt: integration.connectedAt.toISOString(),
+        settings: integration.settings,
+      },
+    });
   } catch (error) {
     console.error("Error fetching integration:", error);
     return NextResponse.json(
@@ -72,31 +74,32 @@ export async function PATCH(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const orgIntegrations = connectedIntegrationsStore.get(orgId);
-    if (!orgIntegrations) {
+    const body = await request.json();
+    const { syncEnabled, settings } = body;
+
+    const integration = await prisma.integration.findFirst({
+      where: {
+        id,
+        organizationId: orgId,
+      },
+    });
+
+    if (!integration) {
       return NextResponse.json(
         { error: "Integration not found" },
         { status: 404 },
       );
     }
 
-    let foundProvider: string | null = null;
-    for (const [provider, int] of orgIntegrations.entries()) {
-      if (int.id === id) {
-        foundProvider = provider;
-        break;
-      }
-    }
+    const updated = await prisma.integration.update({
+      where: { id },
+      data: {
+        ...(syncEnabled !== undefined && { syncEnabled }),
+        ...(settings && { settings }),
+      },
+    });
 
-    if (!foundProvider) {
-      return NextResponse.json(
-        { error: "Integration not found" },
-        { status: 404 },
-      );
-    }
-
-    // For now, just return success (settings would be updated in a real implementation)
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, integration: updated });
   } catch (error) {
     console.error("Error updating integration:", error);
     return NextResponse.json(
@@ -118,35 +121,26 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const orgIntegrations = connectedIntegrationsStore.get(orgId);
-    if (!orgIntegrations) {
+    const integration = await prisma.integration.findFirst({
+      where: {
+        id,
+        organizationId: orgId,
+      },
+    });
+
+    if (!integration) {
       return NextResponse.json(
         { error: "Integration not found" },
         { status: 404 },
       );
     }
 
-    let foundProvider: string | null = null;
-    for (const [provider, int] of orgIntegrations.entries()) {
-      if (int.id === id) {
-        foundProvider = provider;
-        break;
-      }
-    }
+    const catalog = INTEGRATION_CATALOG[integration.provider as IntegrationProviderType];
 
-    if (!foundProvider) {
-      return NextResponse.json(
-        { error: "Integration not found" },
-        { status: 404 },
-      );
-    }
-
-    // Get integration info before deleting for audit log
-    const catalog =
-      INTEGRATION_CATALOG[foundProvider as IntegrationProviderType];
-
-    // Remove the integration
-    orgIntegrations.delete(foundProvider);
+    // Delete the integration from database
+    await prisma.integration.delete({
+      where: { id },
+    });
 
     // Log audit event for integration disconnection
     const user = await currentUser();
@@ -154,12 +148,12 @@ export async function DELETE(
       userId,
       organizationId: orgId,
       action: "INTEGRATION_DISCONNECTED",
-      actionLabel: `Disconnected ${catalog?.name || foundProvider} integration`,
+      actionLabel: `Disconnected ${catalog?.name || integration.provider} integration`,
       entityType: "Integration",
       entityId: id,
-      entityName: catalog?.name || foundProvider,
+      entityName: catalog?.name || integration.provider,
       metadata: {
-        provider: foundProvider,
+        provider: integration.provider,
         category: catalog?.category,
       },
       userName: user

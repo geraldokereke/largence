@@ -22,17 +22,16 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen grid lg:grid-cols-2">
+    <div className="min-h-svh flex flex-col lg:grid lg:grid-cols-2">
       {/* Left side - Signup Form */}
-      <div className="flex items-center justify-center p-8">
-        <div className="w-full max-w-md">
-          <div className="mb-8">
+      <div className="flex flex-col items-center justify-center p-4 sm:p-6 md:p-8 flex-1 overflow-y-auto">
+        <div className="w-full max-w-md py-6 sm:py-8 px-2 sm:px-0">
+          <div className="mb-6 sm:mb-8 flex justify-center lg:justify-start">
             <Image
               src="/logo.png"
               alt="Largence Logo"
               width={40}
               height={40}
-              className="mb-6"
             />
           </div>
           <SignupForm />

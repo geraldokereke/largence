@@ -10,16 +10,16 @@ export function Hero() {
     <section className="pt-28 pb-16 px-4 sm:px-6">
       <div className="max-w-5xl mx-auto text-center">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/20 bg-primary/5 text-sm font-medium text-primary mb-6">
-          Now available in Beta
+          Beta - Early Access
         </div>
 
         <h1 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-foreground mb-4">
           Legal Intelligence{" "}<br/>
-          <span className="text-primary">for Enterprises</span>
+          <span className="text-primary">Made Simple</span>
         </h1>
 
         <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
-          AI-powered contract drafting and compliance automation built for African enterprises.
+          Create, manage, and track legal documents with AI assistance. Built for teams that need compliance without complexity.
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-12">
@@ -64,18 +64,14 @@ export function Hero() {
           </div>
         </div>
 
-        <div className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-          {[
-            { label: "Countries", value: "54" },
-            { label: "Uptime", value: "99.9%" },
-            { label: "Templates", value: "100+" },
-            { label: "Support", value: "24/7" },
-          ].map((stat, i) => (
-            <div key={i}>
-              <div className="font-heading text-2xl font-bold text-foreground">{stat.value}</div>
-              <div className="text-sm text-muted-foreground">{stat.label}</div>
-            </div>
-          ))}
+        <div className="mt-12 flex flex-wrap items-center justify-center gap-x-8 gap-y-4 text-sm text-muted-foreground">
+          <div className="flex items-center gap-2">
+            <div className="h-2 w-2 rounded-full bg-green-500"></div>
+            <span>In active development</span>
+          </div>
+          <div>Free tier available</div>
+          <div>Cloud storage integrations</div>
+          <div>E-signature support</div>
         </div>
       </div>
     </section>

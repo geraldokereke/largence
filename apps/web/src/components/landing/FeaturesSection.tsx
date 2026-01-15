@@ -1,43 +1,43 @@
 "use client";
 
-import { FileText, Shield, Users, BarChart3, Lock, Globe } from "lucide-react";
+import { FileText, Shield, Users, Cloud, MessageSquare, FileSignature } from "lucide-react";
 
 const features = [
   {
     icon: FileText,
-    title: "AI Contract Drafting",
+    title: "Document Creation",
     description:
-      "Generate legally sound contracts in minutes with AI trained on African legal frameworks.",
+      "Create legal documents from templates or use AI to help draft new ones. Export to DOCX when needed.",
   },
   {
     icon: Shield,
-    title: "Compliance Automation",
+    title: "Compliance Checks",
     description:
-      "Stay compliant with real-time monitoring and automatic regulatory updates.",
+      "Run automated compliance analysis on your documents. Get flagged for potential issues.",
   },
   {
     icon: Users,
     title: "Team Collaboration",
     description:
-      "Streamline workflows with centralized document management and real-time collaboration.",
+      "Share documents with your team, set permissions, and track changes. Work together in one place.",
   },
   {
-    icon: BarChart3,
-    title: "Analytics & Insights",
+    icon: Cloud,
+    title: "Cloud Integration",
     description:
-      "Get actionable insights with comprehensive analytics on contract performance.",
+      "Import from and sync to Dropbox, Google Drive, and Notion. Keep your files where you need them.",
   },
   {
-    icon: Lock,
-    title: "Enterprise Security",
+    icon: MessageSquare,
+    title: "Team Messaging",
     description:
-      "Bank-grade encryption and SOC 2 compliance to protect sensitive data.",
+      "Discuss documents and matters with your team in organized channels. No more email threads.",
   },
   {
-    icon: Globe,
-    title: "Multi-Jurisdiction",
+    icon: FileSignature,
+    title: "E-Signatures",
     description:
-      "Handle legal operations across multiple African countries seamlessly.",
+      "Send documents for signature via DocuSign integration. Track signing status in real-time.",
   },
 ];
 
@@ -47,11 +47,10 @@ export function FeaturesSection() {
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-12">
           <h2 className="font-display text-2xl md:text-3xl font-bold mb-4">
-            Built for African Legal Operations
+            What You Get
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Everything you need to manage legal workflows, compliance, and
-            governance at enterprise scale.
+            A straightforward platform for managing legal documents. No fluff, just the features you actually need.
           </p>
         </div>
 

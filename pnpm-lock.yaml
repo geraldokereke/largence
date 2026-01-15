@@ -170,6 +170,9 @@ importers:
       lucide-react:
         specifier: ^0.548.0
         version: 0.548.0(react@19.2.0)
+      maath:
+        specifier: ^0.10.8
+        version: 0.10.8(@types/three@0.181.0)(three@0.181.2)
       mammoth:
         specifier: ^1.11.0
         version: 1.11.0
@@ -285,6 +288,9 @@ importers:
       lucide-react:
         specifier: ^0.548.0
         version: 0.548.0(react@19.2.0)
+      maath:
+        specifier: ^0.10.8
+        version: 0.10.8(@types/three@0.181.0)(three@0.181.2)
       next:
         specifier: 16.0.7
         version: 16.0.7(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)

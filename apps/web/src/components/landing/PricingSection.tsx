@@ -1,8 +1,10 @@
 "use client";
 
+import { useRef } from "react";
 import Link from "next/link";
 import { Button } from "@largence/ui";
 import { Check } from "lucide-react";
+import { motion, useInView } from "framer-motion";
 
 const plans = [
   {
@@ -62,10 +64,18 @@ const plans = [
 ];
 
 export function PricingSection() {
+  const sectionRef = useRef(null);
+  const isInView = useInView(sectionRef, { once: true, margin: "-100px" });
+
   return (
-    <section id="pricing" className="py-16 md:py-24 px-4 sm:px-6">
-      <div className="max-w-5xl mx-auto">
-        <div className="text-center mb-12">
+    <section id="pricing" className="py-16 md:py-24 px-4 sm:px-6" ref={sectionRef}>
+      <div className="max-w-6xl mx-auto">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.5 }}
+          className="text-center mb-12"
+        >
           <h2 className="font-display text-2xl md:text-3xl font-bold mb-4">
             Choose the Right Plan for Your Team
           </h2>
@@ -73,16 +83,19 @@ export function PricingSection() {
             Transparent pricing with no hidden fees. All plans include a 14-day
             free trial.
           </p>
-        </div>
+        </motion.div>
 
         <div className="grid md:grid-cols-3 gap-6">
-          {plans.map((plan) => (
-            <div
+          {plans.map((plan, index) => (
+            <motion.div
               key={plan.name}
-              className={`relative p-6 rounded-lg border flex flex-col ${
+              initial={{ opacity: 0, y: 20 }}
+              animate={isInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.4, delay: 0.1 + index * 0.1 }}
+              className={`relative p-6 rounded-lg border flex flex-col transition-all duration-200 hover:shadow-lg ${
                 plan.popular
                   ? "border-primary bg-primary/5"
-                  : "border-border bg-card hover:border-primary/30 transition-colors"
+                  : "border-border bg-card hover:border-primary/30"
               }`}
             >
               {plan.popular && (
@@ -129,16 +142,21 @@ export function PricingSection() {
                   {plan.cta}
                 </Button>
               </Link>
-            </div>
+            </motion.div>
           ))}
         </div>
 
-        <div className="mt-10 text-center">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : {}}
+          transition={{ duration: 0.5, delay: 0.4 }}
+          className="mt-10 text-center"
+        >
           <p className="text-sm text-muted-foreground">
             All plans include: SOC 2 compliance, 256-bit encryption, GDPR
             compliance, and regular security audits
           </p>
-        </div>
+        </motion.div>
       </div>
     </section>
   );

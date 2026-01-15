@@ -128,7 +128,7 @@ export default function DocumentEditorPage() {
     editorProps: {
       attributes: {
         class:
-          "prose max-w-none focus:outline-none min-h-[600px] p-6 sm:p-8 md:p-10",
+          "prose max-w-none focus:outline-none min-h-[600px] p-3 sm:p-8 md:p-10",
       },
     },
   });

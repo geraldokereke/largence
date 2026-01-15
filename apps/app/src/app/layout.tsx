@@ -115,6 +115,18 @@ const satoshi = localFont({
   display: "swap",
 });
 
+const switzer = localFont({
+  src: [
+    { path: "../../../../packages/fonts/Switzer-Light.woff2", weight: "300", style: "normal" },
+    { path: "../../../../packages/fonts/Switzer-Regular.woff2", weight: "400", style: "normal" },
+    { path: "../../../../packages/fonts/Switzer-Medium.woff2", weight: "500", style: "normal" },
+    { path: "../../../../packages/fonts/Switzer-Bold.woff2", weight: "700", style: "normal" },
+    { path: "../../../../packages/fonts/Switzer-Black.woff2", weight: "900", style: "normal" },
+  ],
+  variable: "--font-switzer",
+  display: "swap",
+});
+
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
@@ -167,7 +179,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${generalSans.variable} ${polySans.variable} ${satoshi.variable} ${geistMono.variable} font-sans antialiased overflow-hidden`}
+        className={`${generalSans.variable} ${polySans.variable} ${switzer.variable} ${geistMono.variable} font-sans antialiased overflow-hidden`}
       >
         <Providers>{children}</Providers>
       </body>

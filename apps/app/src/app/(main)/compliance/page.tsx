@@ -37,12 +37,13 @@ import {
   Upload,
   Download,
   Calendar,
-  File,
+  File as FileIcon,
   X,
   Loader2,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
+import { ImportDialog } from "@/components/import-dialog";
 
 interface ComplianceCheck {
   id: string;
@@ -134,12 +135,18 @@ export default function CompliancePage() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [dialogTab, setDialogTab] = useState<"documents" | "upload">("documents");
+  const [dialogTab, setDialogTab] = useState<"documents" | "upload" | "cloud">("documents");
   const [searchQuery, setSearchQuery] = useState("");
   const [filterSearch, setFilterSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [cloudImportOpen, setCloudImportOpen] = useState(false);
+  const [cloudImportedContent, setCloudImportedContent] = useState<{
+    title: string;
+    content: string;
+    provider: string;
+  } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Fetch compliance checks
@@ -439,15 +446,19 @@ export default function CompliancePage() {
                   </DialogDescription>
                 </DialogHeader>
 
-                <Tabs value={dialogTab} onValueChange={(v) => setDialogTab(v as "documents" | "upload")}>
+                <Tabs value={dialogTab} onValueChange={(v) => setDialogTab(v as "documents" | "upload" | "cloud")}>
                   <TabsList className="mb-4 h-9 p-1 rounded-sm w-full">
                     <TabsTrigger value="documents" className="flex-1 text-sm rounded-sm h-7">
                       <FileText className="h-3.5 w-3.5 mr-1.5" />
-                      My Documents
+                      Documents
                     </TabsTrigger>
                     <TabsTrigger value="upload" className="flex-1 text-sm rounded-sm h-7">
                       <Upload className="h-3.5 w-3.5 mr-1.5" />
-                      Upload File
+                      Upload
+                    </TabsTrigger>
+                    <TabsTrigger value="cloud" className="flex-1 text-sm rounded-sm h-7">
+                      <Download className="h-3.5 w-3.5 mr-1.5" />
+                      Cloud
                     </TabsTrigger>
                   </TabsList>
 
@@ -526,7 +537,7 @@ export default function CompliancePage() {
                       {uploadedFile ? (
                         <div className="space-y-4">
                           <div className="flex items-center justify-center gap-3 p-3 rounded-sm bg-muted">
-                            <File className="h-8 w-8 text-primary" />
+                            <FileIcon className="h-8 w-8 text-primary" />
                             <div className="text-left">
                               <p className="font-medium text-sm">{uploadedFile.name}</p>
                               <p className="text-xs text-muted-foreground">
@@ -588,9 +599,82 @@ export default function CompliancePage() {
                       )}
                     </div>
                   </TabsContent>
+
+                  <TabsContent value="cloud" className="mt-0">
+                    {cloudImportedContent ? (
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-center gap-3 p-3 rounded-sm bg-muted">
+                          <Download className="h-8 w-8 text-primary" />
+                          <div className="text-left flex-1">
+                            <p className="font-medium text-sm">{cloudImportedContent.title}</p>
+                            <p className="text-xs text-muted-foreground">
+                              Imported from {cloudImportedContent.provider}
+                            </p>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="ml-auto h-7 w-7 p-0"
+                            onClick={() => setCloudImportedContent(null)}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        <Button
+                          onClick={() => {
+                            // Run compliance check on imported content
+                            const blob = new Blob([cloudImportedContent.content], { type: 'text/html' });
+                            const file = new File([blob], `${cloudImportedContent.title}.html`, { type: 'text/html' });
+                            uploadMutation.mutate(file);
+                            setCloudImportedContent(null);
+                          }}
+                          disabled={uploadMutation.isPending}
+                          className="h-8 rounded-sm text-sm"
+                        >
+                          {uploadMutation.isPending ? (
+                            <>
+                              Analyzing...
+                              <Loader2 className="h-4 w-4 ml-2 animate-spin" />
+                            </>
+                          ) : (
+                            <>
+                              Run Compliance Check
+                              <ShieldCheck className="h-4 w-4 ml-2" />
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="border-2 border-dashed rounded-sm p-8 text-center">
+                        <Download className="h-10 w-10 text-muted-foreground mx-auto mb-4" />
+                        <h3 className="text-sm font-semibold mb-1">Import from Cloud Storage</h3>
+                        <p className="text-xs text-muted-foreground mb-4">
+                          Import a document from Dropbox or Google Drive
+                        </p>
+                        <Button
+                          variant="outline"
+                          className="h-8 rounded-sm text-sm"
+                          onClick={() => setCloudImportOpen(true)}
+                        >
+                          Browse Cloud Files
+                        </Button>
+                      </div>
+                    )}
+                  </TabsContent>
                 </Tabs>
               </DialogContent>
             </Dialog>
+
+            {/* Cloud Import Dialog */}
+            <ImportDialog
+              open={cloudImportOpen}
+              onOpenChange={setCloudImportOpen}
+              mode="content"
+              onContentImport={(content) => {
+                setCloudImportedContent(content);
+                setCloudImportOpen(false);
+              }}
+            />
           </div>
         </div>
       </div>

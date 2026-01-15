@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import prisma from "@largence/lib/prisma";
 import { createAuditLog } from "@/lib/audit";
+import { htmlToDocx } from "@/lib/document-converter";
 
 interface DocuSignTokenResponse {
   access_token: string;
@@ -199,11 +200,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Prepare document content as base64
-    // For now, we'll send as a text document
+    // Prepare document content as DOCX
     const documentContent = document.content || "";
-    const documentBase64 = Buffer.from(documentContent).toString("base64");
-    const fileName = `${document.title.replace(/[/\\?%*:|"<>]/g, "-")}.txt`;
+    const docxBuffer = await htmlToDocx(documentContent, {
+      title: document.title,
+      createdAt: document.createdAt,
+      updatedAt: document.updatedAt,
+    });
+    const documentBase64 = docxBuffer.toString("base64");
+    const fileName = `${document.title.replace(/[/\\?%*:|"<>]/g, "-")}.docx`;
 
     // Build DocuSign envelope request
     // Create signer objects with signature tabs
@@ -239,7 +244,7 @@ export async function POST(request: NextRequest) {
         {
           documentId: "1",
           name: fileName,
-          fileExtension: "txt",
+          fileExtension: "docx",
           documentBase64,
         },
       ],

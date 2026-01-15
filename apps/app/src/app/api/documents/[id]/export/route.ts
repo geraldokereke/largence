@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { htmlToDocx } from "@/lib/document-converter";
 
 export async function GET(
   request: Request,
@@ -42,7 +43,7 @@ export async function GET(
     if (format === "pdf") {
       return generatePDF(document);
     } else if (format === "docx") {
-      return generateDocx(document);
+      return await generateDocx(document);
     } else if (format === "html") {
       return generateHTML(document);
     } else {
@@ -211,10 +212,37 @@ async function generatePDF(document: DocumentWithSignatures) {
 }
 
 async function generateDocx(document: DocumentWithSignatures) {
-  // Generate a simple DOCX-compatible format
-  // In production, use libraries like docx-js or pandoc
-  // For now, we return an HTML file that Word can open
-  
+  try {
+    // Use the document-converter library for proper DOCX generation
+    const docxBuffer = await htmlToDocx(
+      document.content,
+      {
+        title: document.title,
+        createdAt: document.createdAt,
+        updatedAt: document.updatedAt,
+      },
+      document.signatures.map(sig => ({
+        signerName: sig.signerName,
+        signerRole: sig.signerRole,
+        signedAt: sig.signedAt,
+        signatureData: sig.signatureData,
+      }))
+    );
+
+    return new NextResponse(new Uint8Array(docxBuffer), {
+      headers: {
+        "Content-Type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "Content-Disposition": `attachment; filename="${sanitizeFilename(document.title)}.docx"`,
+      },
+    });
+  } catch (error) {
+    console.error("Error generating DOCX:", error);
+    // Fallback to basic HTML-based .doc if DOCX generation fails
+    return generateFallbackDoc(document);
+  }
+}
+
+function generateFallbackDoc(document: DocumentWithSignatures) {
   const html = `
 <!DOCTYPE html>
 <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Bell,
   Check,
@@ -10,6 +10,12 @@ import {
   Info,
   CheckCheck,
   Clock,
+  Share2,
+  Pen,
+  Users,
+  Mail,
+  Shield,
+  RefreshCw,
 } from "lucide-react";
 import { Button } from "@largence/components/ui/button";
 import {
@@ -24,6 +30,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
+import { cn } from "@/lib/utils";
 
 interface Notification {
   id: string;
@@ -42,13 +49,11 @@ export function NotificationDrawer() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [open, setOpen] = useState(false);
 
-  useEffect(() => {
-    fetchNotifications();
-  }, []);
-
-  const fetchNotifications = async () => {
+  const fetchNotifications = useCallback(async (showRefreshing = false) => {
+    if (showRefreshing) setRefreshing(true);
     try {
       const response = await fetch("/api/notifications");
       const data = await response.json();
@@ -58,8 +63,29 @@ export function NotificationDrawer() {
       console.error("Failed to fetch notifications:", error);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchNotifications();
+    
+    // Poll for new notifications every 30 seconds
+    const interval = setInterval(() => {
+      if (!document.hidden) {
+        fetchNotifications();
+      }
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [fetchNotifications]);
+
+  // Refresh when drawer opens
+  useEffect(() => {
+    if (open) {
+      fetchNotifications(true);
+    }
+  }, [open, fetchNotifications]);
 
   const markAsRead = async (id: string) => {
     try {
@@ -102,14 +128,39 @@ export function NotificationDrawer() {
   const getNotificationIcon = (type: string) => {
     switch (type) {
       case "COMPLIANCE_COMPLETED":
-        return <CheckCheck className="h-5 w-5 text-green-600 dark:text-green-400" />;
+        return <Shield className="h-5 w-5 text-green-600 dark:text-green-400" />;
       case "COMPLIANCE_FAILED":
         return <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />;
+      case "DOCUMENT_SHARED":
+        return <Share2 className="h-5 w-5 text-purple-600 dark:text-purple-400" />;
       case "DOCUMENT_CREATED":
       case "DOCUMENT_UPDATED":
         return <FileText className="h-5 w-5 text-blue-600 dark:text-blue-400" />;
+      case "SIGNATURE_REQUEST":
+        return <Pen className="h-5 w-5 text-orange-600 dark:text-orange-400" />;
+      case "TEAM_INVITE":
+        return <Users className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />;
+      case "SYSTEM_ALERT":
+        return <AlertTriangle className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />;
       default:
         return <Info className="h-5 w-5 text-muted-foreground" />;
+    }
+  };
+
+  const getNotificationColor = (type: string) => {
+    switch (type) {
+      case "COMPLIANCE_COMPLETED":
+        return "bg-green-50 dark:bg-green-950/30";
+      case "COMPLIANCE_FAILED":
+        return "bg-red-50 dark:bg-red-950/30";
+      case "DOCUMENT_SHARED":
+        return "bg-purple-50 dark:bg-purple-950/30";
+      case "SIGNATURE_REQUEST":
+        return "bg-orange-50 dark:bg-orange-950/30";
+      case "SYSTEM_ALERT":
+        return "bg-yellow-50 dark:bg-yellow-950/30";
+      default:
+        return "bg-muted";
     }
   };
 
@@ -128,9 +179,9 @@ export function NotificationDrawer() {
         </Button>
       </SheetTrigger>
       <SheetContent side="right" className="w-full sm:max-w-md p-0 bg-card">
-        <SheetHeader className="border-b border-border px-6 py-4">
+        <SheetHeader className="border-b border-border px-6 py-4 pr-12">
           <div className="flex items-center justify-between">
-            <div>
+            <div className="flex-1">
               <SheetTitle className="text-lg font-semibold text-foreground">
                 Notifications
               </SheetTitle>
@@ -140,9 +191,21 @@ export function NotificationDrawer() {
                   : "You're all caught up!"}
               </SheetDescription>
             </div>
+          </div>
+          <div className="flex items-center gap-2 mt-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => fetchNotifications(true)}
+              disabled={refreshing}
+              className="h-8 gap-1.5"
+            >
+              <RefreshCw className={cn("h-3.5 w-3.5", refreshing && "animate-spin")} />
+              Refresh
+            </Button>
             {unreadCount > 0 && (
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
                 onClick={markAllAsRead}
                 className="text-xs h-8"
@@ -175,17 +238,24 @@ export function NotificationDrawer() {
                 <div
                   key={notification.id}
                   onClick={() => handleNotificationClick(notification)}
-                  className={`p-4 hover:bg-accent transition-colors cursor-pointer ${
-                    !notification.read ? "bg-primary/5 dark:bg-primary/10" : ""
-                  }`}
+                  className={cn(
+                    "p-4 hover:bg-accent transition-colors cursor-pointer",
+                    !notification.read && "bg-primary/5 dark:bg-primary/10"
+                  )}
                 >
                   <div className="flex gap-3">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm bg-muted">
+                    <div className={cn(
+                      "flex h-10 w-10 shrink-0 items-center justify-center rounded-full",
+                      getNotificationColor(notification.type)
+                    )}>
                       {getNotificationIcon(notification.type)}
                     </div>
                     <div className="flex-1 space-y-1">
                       <div className="flex items-start justify-between gap-2">
-                        <p className="text-sm font-medium leading-tight text-foreground">
+                        <p className={cn(
+                          "text-sm leading-tight text-foreground",
+                          !notification.read && "font-semibold"
+                        )}>
                           {notification.title}
                         </p>
                         {!notification.read && (

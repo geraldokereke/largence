@@ -364,6 +364,13 @@ Please generate a comprehensive, legally sound document with:
     }));
   };
 
+  // Redirect to document when generation is complete
+  useEffect(() => {
+    if (isGenerated && documentId) {
+      router.push(`/documents/${documentId}`);
+    }
+  }, [isGenerated, documentId, router]);
+
   // If loading template, show loading state
   if (loadingTemplate) {
     return (
@@ -374,10 +381,8 @@ Please generate a comprehensive, legally sound document with:
     );
   }
 
-  // If document is generated, show the editor
+  // If document is generated, show loading while redirecting
   if (isGenerated && documentId) {
-    // Redirect to the document editor page
-    router.push(`/documents/${documentId}`);
     return (
       <div className="flex items-center justify-center h-screen w-full">
         <Spinner size="sm" />

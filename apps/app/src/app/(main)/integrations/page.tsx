@@ -20,6 +20,9 @@ import {
   Sparkles,
   BellRing,
   Link2,
+  ArrowRight,
+  FileText,
+  HelpCircle,
 } from "lucide-react";
 import {
   SiNotion,
@@ -105,6 +108,42 @@ const PROVIDER_COLORS: Record<string, { text: string; bg: string }> = {
   HUBSPOT: { text: "text-[#FF7A59]", bg: "bg-orange-400/10" },
 };
 
+// Usage instructions for each integration
+const INTEGRATION_USAGE: Record<string, { title: string; steps: string[] }> = {
+  NOTION: {
+    title: "Export documents to Notion",
+    steps: [
+      "Go to Documents → click menu (...) on any document",
+      "Select 'Export to Cloud' → choose Notion",
+      "Document will be created as a Notion page",
+    ],
+  },
+  DROPBOX: {
+    title: "Backup documents to Dropbox",
+    steps: [
+      "Go to Documents → click menu (...) on any document",
+      "Select 'Export to Cloud' → choose Dropbox",
+      "Document will be saved to /Largence folder",
+    ],
+  },
+  DOCUSIGN: {
+    title: "Send documents for signature",
+    steps: [
+      "Open any document in the editor",
+      "Click 'Save' dropdown → 'Request Signature'",
+      "Select recipients and send via DocuSign",
+    ],
+  },
+  GOOGLE_DRIVE: {
+    title: "Sync with Google Drive",
+    steps: [
+      "Go to Documents → click menu (...) on any document",
+      "Select 'Export to Cloud' → choose Google Drive",
+      "Document will be synced to your Drive",
+    ],
+  },
+};
+
 interface Integration {
   id: string;
   provider: string;
@@ -187,6 +226,8 @@ export default function IntegrationsPage() {
   const [showComingSoonDialog, setShowComingSoonDialog] = useState(false);
   const [comingSoonIntegration, setComingSoonIntegration] = useState<string | null>(null);
   const [notifiedIntegrations, setNotifiedIntegrations] = useState<Set<string>>(new Set());
+  const [showUsageDialog, setShowUsageDialog] = useState(false);
+  const [selectedUsageProvider, setSelectedUsageProvider] = useState<string | null>(null);
 
   // Track if OAuth toast has been shown to prevent duplicates
   const oauthToastShown = useRef(false);
@@ -481,20 +522,20 @@ export default function IntegrationsPage() {
             </p>
           </div>
           {stats && stats.connectedCount > 0 && (
-            <div className="hidden md:flex items-center gap-4">
-              <div className="text-center">
-                <div className="text-xl font-semibold">
-                  {stats.connectedCount}
-                </div>
-                <div className="text-xs text-muted-foreground">Connected</div>
+            <div className="hidden md:flex items-center gap-3">
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-sm border bg-emerald-500/10 border-emerald-500/20">
+                <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
+                  {stats.connectedCount} Connected
+                </span>
               </div>
-              <div className="text-center">
-                <div className="text-2xl font-semibold">
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-md border bg-muted/50">
+                <span className="text-sm font-medium">
                   {stats.totalSyncedItems.toLocaleString()}
-                </div>
-                <div className="text-xs text-muted-foreground">
-                  Items Synced
-                </div>
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  items synced
+                </span>
               </div>
             </div>
           )}
@@ -554,101 +595,67 @@ export default function IntegrationsPage() {
           return (
             <div
               key={integration.id}
-              className="group flex flex-col rounded-sm border bg-card p-3 hover:border-primary/50 transition-all"
+              className="group flex flex-col rounded-lg border bg-card p-4 hover:border-primary/50 hover:shadow-sm transition-all h-[200px]"
             >
               {/* Header */}
-              <div className="flex items-start gap-2 mb-2">
-                <div className={`p-1.5 rounded-sm ${colors.bg} shrink-0`}>
+              <div className="flex items-center gap-3 mb-3">
+                <div className={`p-2 rounded-lg ${colors.bg} shrink-0`}>
                   <Icon className={`h-5 w-5 ${colors.text}`} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-0.5">
-                    <h3 className="text-sm font-semibold font-heading truncate">
-                      {integration.name}
-                    </h3>
+                  <h3 className="text-sm font-semibold truncate">
+                    {integration.name}
+                  </h3>
+                  <div className="flex items-center gap-2 mt-0.5">
                     {isConnected ? (
-                      <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                      <span className="flex items-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-400">
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                         Connected
-                      </Badge>
+                      </span>
                     ) : OAUTH_ENABLED_PROVIDERS.includes(integration.provider) ? (
-                      <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
-                        Available
-                      </Badge>
+                      <span className="text-[10px] text-blue-600 dark:text-blue-400">Available</span>
                     ) : (
-                      <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
-                        Soon
-                      </Badge>
+                      <span className="text-[10px] text-amber-600 dark:text-amber-400">Coming Soon</span>
                     )}
                   </div>
-                  <span className="text-xs text-muted-foreground">
-                    {integration.category}
-                  </span>
                 </div>
               </div>
 
               {/* Description */}
-              <p className="text-xs text-muted-foreground mb-3 line-clamp-2">
+              <p className="text-xs text-muted-foreground mb-auto line-clamp-2 leading-relaxed">
                 {integration.description}
               </p>
 
-              {/* Connected Email */}
-              {isConnected && integration.externalEmail && (
-                <div className="mb-3 pb-3 border-b">
-                  <div className="flex items-center gap-1.5 text-xs">
-                    <span className="text-muted-foreground">Connected as:</span>
-                    <span className="font-medium truncate">{integration.externalEmail}</span>
-                  </div>
-                </div>
-              )}
-
-              {/* Features */}
-              <div className="flex-1 mb-3">
-                <div className="space-y-1">
-                  {integration.features.slice(0, 2).map((feature, idx) => (
-                    <div key={idx} className="flex items-center gap-1.5 text-xs">
-                      <CheckCircle2 className="h-3 w-3 text-primary shrink-0" />
-                      <span className="text-muted-foreground truncate">{feature}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Stats (only for connected) */}
-              {isConnected && integration.lastSyncAt && (
-                <div className="mb-3 pb-3 border-b space-y-1">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground">Last sync</span>
-                    <div className="flex items-center gap-1">
-                      <Clock className="h-3 w-3 text-emerald-600" />
-                      <span className="font-medium">
-                        {formatDistanceToNow(new Date(integration.lastSyncAt), {
-                          addSuffix: true,
-                        })}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              )}
-
               {/* Actions */}
-              <div className="mt-auto">
+              <div className="mt-3 pt-3 border-t flex gap-2">
                 {isConnected ? (
-                  <div className="flex gap-2">
+                  <>
+                    <Button
+                      variant="default"
+                      size="sm"
+                      className="flex-1 h-8 rounded-md text-xs"
+                      onClick={() => {
+                        setSelectedUsageProvider(integration.provider);
+                        setShowUsageDialog(true);
+                      }}
+                    >
+                      <HelpCircle className="h-3.5 w-3.5 mr-1.5" />
+                      How to Use
+                    </Button>
                     <Button
                       variant="outline"
                       size="sm"
-                      className="flex-1 h-8 rounded-sm text-xs"
+                      className="h-8 w-8 rounded-md p-0"
                       onClick={() => handleDisconnectClick(integration)}
                     >
-                      <Trash2 className="h-3.5 w-3.5 mr-1.5" />
-                      Disconnect
+                      <Trash2 className="h-3.5 w-3.5" />
                     </Button>
-                  </div>
+                  </>
                 ) : OAUTH_ENABLED_PROVIDERS.includes(integration.provider) ? (
                   <Button
                     variant="default"
                     size="sm"
-                    className="w-full h-8 rounded-sm text-xs"
+                    className="w-full h-8 rounded-md text-xs"
                     onClick={() => handleConnect(integration.provider, integration.name)}
                     disabled={isConnecting}
                   >
@@ -666,9 +673,9 @@ export default function IntegrationsPage() {
                   </Button>
                 ) : notifiedIntegrations.has(integration.provider) ? (
                   <Button
-                    variant="default"
+                    variant="secondary"
                     size="sm"
-                    className="w-full h-8 rounded-sm text-xs bg-primary"
+                    className="w-full h-8 rounded-md text-xs"
                     onClick={() => handleNotifyMe(integration.provider, integration.name)}
                   >
                     <BellRing className="h-3.5 w-3.5 mr-1.5" />
@@ -678,7 +685,7 @@ export default function IntegrationsPage() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="w-full h-8 rounded-sm text-xs hover:border-primary/50 hover:bg-primary/5"
+                    className="w-full h-8 rounded-md text-xs"
                     onClick={() => handleNotifyMe(integration.provider, integration.name)}
                   >
                     <Bell className="h-3.5 w-3.5 mr-1.5" />
@@ -745,6 +752,62 @@ export default function IntegrationsPage() {
               ) : (
                 <Trash2 className="h-4 w-4 ml-2" />
               )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Usage Instructions Dialog */}
+      <Dialog open={showUsageDialog} onOpenChange={setShowUsageDialog}>
+        <DialogContent className="rounded-sm sm:max-w-[450px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              {selectedUsageProvider && PROVIDER_ICONS[selectedUsageProvider] && (
+                (() => {
+                  const Icon = PROVIDER_ICONS[selectedUsageProvider];
+                  const colors = PROVIDER_COLORS[selectedUsageProvider] || { text: "text-primary", bg: "bg-primary/10" };
+                  return (
+                    <div className={`p-1.5 rounded-sm ${colors.bg}`}>
+                      <Icon className={`h-4 w-4 ${colors.text}`} />
+                    </div>
+                  );
+                })()
+              )}
+              How to use {selectedUsageProvider && INTEGRATION_CATALOG_UI[selectedUsageProvider]?.name}
+            </DialogTitle>
+            <DialogDescription>
+              {selectedUsageProvider && INTEGRATION_USAGE[selectedUsageProvider]?.title}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="py-4 space-y-3">
+            {selectedUsageProvider && INTEGRATION_USAGE[selectedUsageProvider]?.steps.map((step, idx) => (
+              <div key={idx} className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-medium">
+                  {idx + 1}
+                </span>
+                <p className="text-sm text-foreground pt-0.5">{step}</p>
+              </div>
+            ))}
+          </div>
+
+          <DialogFooter className="sm:justify-between">
+            <Button
+              variant="outline"
+              onClick={() => setShowUsageDialog(false)}
+              className="rounded-sm"
+            >
+              Close
+            </Button>
+            <Button
+              onClick={() => {
+                setShowUsageDialog(false);
+                window.location.href = "/documents";
+              }}
+              className="rounded-sm"
+            >
+              <FileText className="h-4 w-4 mr-2" />
+              Go to Documents
             </Button>
           </DialogFooter>
         </DialogContent>

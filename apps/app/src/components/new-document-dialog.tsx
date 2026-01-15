@@ -32,7 +32,7 @@ export function NewDocumentDialog({ open, onOpenChange }: NewDocumentDialogProps
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md rounded-sm p-0 gap-0 overflow-hidden">
-        <DialogHeader className="p-4 pb-3 border-b">
+        <DialogHeader className="px-4 pb-3">
           <DialogTitle className="text-base font-medium">Create New Document</DialogTitle>
           <DialogDescription className="text-sm">
             Choose how you&apos;d like to create your document

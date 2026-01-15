@@ -104,7 +104,10 @@ export async function POST(request: NextRequest) {
     const document = await prisma.document.findFirst({
       where: {
         id: documentId,
-        organizationId: orgId,
+        OR: [
+          { organizationId: orgId },
+          { userId: userId },
+        ],
       },
     });
 

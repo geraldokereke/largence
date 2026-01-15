@@ -43,11 +43,24 @@ export function NavMain({
     router.push(url);
   };
 
+  // Map of nav items to their walkthrough data attributes
+  const getWalkthroughAttr = (url: string): string | undefined => {
+    const walkthroughMap: Record<string, string> = {
+      "/documents": "documents-nav",
+      "/matters": "matters-nav",
+      "/templates": "templates-nav",
+      "/messages": "messages-nav",
+      "/compliance": "compliance-nav",
+    };
+    return walkthroughMap[url];
+  };
+
   return (
     <SidebarGroup>
       <SidebarMenu className="gap-1 px-0 relative">
         {items.map((item, index) => {
           const isActive = pathname === item.url;
+          const walkthroughAttr = getWalkthroughAttr(item.url);
           return (
             <Collapsible key={item.title} asChild defaultOpen={isActive}>
               <SidebarMenuItem>
@@ -59,6 +72,7 @@ export function NavMain({
                     handleNavigation(item.url);
                   }}
                   className="h-8 rounded-md data-[active=true]:bg-primary/10 data-[active=true]:text-primary data-[active=true]:shadow-sm data-[active=true]:shadow-primary/5 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-all duration-200 group-data-[collapsible=icon]:h-8 group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:justify-center cursor-pointer"
+                  {...(walkthroughAttr && { "data-walkthrough": walkthroughAttr })}
                 >
                   <div className="flex items-center gap-2 w-full">
                     <item.icon className="h-4 w-4 shrink-0" />

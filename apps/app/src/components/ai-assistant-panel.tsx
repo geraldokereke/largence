@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@largence/components/ui/button";
 import { Textarea } from "@largence/components/ui/textarea";
 import { ScrollArea } from "@largence/components/ui/scroll-area";
@@ -29,11 +29,64 @@ import {
 } from "lucide-react";
 import { cn } from "@largence/lib/utils";
 
+// Thinking animation component
+const ThinkingIndicator = () => {
+  const [thinkingText, setThinkingText] = useState("Analyzing document");
+  const [dots, setDots] = useState("");
+  
+  const thinkingStates = [
+    "Analyzing document",
+    "Understanding context",
+    "Processing request",
+    "Generating response",
+    "Refining content",
+    "Applying changes",
+  ];
+
+  useEffect(() => {
+    // Animate dots
+    const dotsInterval = setInterval(() => {
+      setDots((prev) => (prev.length >= 3 ? "" : prev + "."));
+    }, 400);
+
+    // Cycle through thinking states
+    let stateIndex = 0;
+    const stateInterval = setInterval(() => {
+      stateIndex = (stateIndex + 1) % thinkingStates.length;
+      setThinkingText(thinkingStates[stateIndex]);
+    }, 2500);
+
+    return () => {
+      clearInterval(dotsInterval);
+      clearInterval(stateInterval);
+    };
+  }, []);
+
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex items-center gap-2">
+        <div className="flex gap-1">
+          <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce [animation-delay:-0.3s]" />
+          <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce [animation-delay:-0.15s]" />
+          <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce" />
+        </div>
+        <span className="text-xs text-muted-foreground">
+          {thinkingText}<span className="inline-block w-4">{dots}</span>
+        </span>
+      </div>
+      <div className="h-1 w-full bg-muted rounded-full overflow-hidden">
+        <div className="h-full bg-primary/60 rounded-full animate-pulse" style={{ width: "60%" }} />
+      </div>
+    </div>
+  );
+};
+
 interface Message {
   id: string;
   role: "user" | "assistant";
   content: string;
   timestamp: Date;
+  isStreaming?: boolean;
 }
 
 interface AiAssistantPanelProps {
@@ -111,8 +164,9 @@ export function AiAssistantPanel({
       {
         id: assistantMessageId,
         role: "assistant",
-        content: "",
+        content: "Analyzing your request and updating the document...",
         timestamp: new Date(),
+        isStreaming: true,
       },
     ]);
 
@@ -152,13 +206,7 @@ export function AiAssistantPanel({
               const data = JSON.parse(line.slice(6));
               if (data.text) {
                 fullContent += data.text;
-                setMessages((prev) =>
-                  prev.map((msg) =>
-                    msg.id === assistantMessageId
-                      ? { ...msg, content: fullContent }
-                      : msg
-                  )
-                );
+                // Don't update message content during streaming - just accumulate
               }
               if (data.done) {
                 // Update the editor with the new content
@@ -167,7 +215,7 @@ export function AiAssistantPanel({
                 setMessages((prev) =>
                   prev.map((msg) =>
                     msg.id === assistantMessageId
-                      ? { ...msg, content: "✓ Document updated successfully!" }
+                      ? { ...msg, content: "✓ Document updated successfully!", isStreaming: false }
                       : msg
                   )
                 );
@@ -186,7 +234,7 @@ export function AiAssistantPanel({
         setMessages((prev) =>
           prev.map((msg) =>
             msg.id === assistantMessageId
-              ? { ...msg, content: "Request cancelled." }
+              ? { ...msg, content: "Request cancelled.", isStreaming: false }
               : msg
           )
         );
@@ -194,7 +242,7 @@ export function AiAssistantPanel({
         setMessages((prev) =>
           prev.map((msg) =>
             msg.id === assistantMessageId
-              ? { ...msg, content: "Sorry, something went wrong. Please try again." }
+              ? { ...msg, content: "Sorry, something went wrong. Please try again.", isStreaming: false }
               : msg
           )
         );
@@ -309,15 +357,19 @@ export function AiAssistantPanel({
                         : "bg-muted"
                     )}
                   >
-                    <p className="whitespace-pre-wrap break-words text-xs leading-relaxed">
-                      {message.content || (
-                        <span className="flex items-center gap-1.5">
-                          <Loader2 className="h-3 w-3 animate-spin" />
-                          Processing...
-                        </span>
-                      )}
-                    </p>
-                    {message.role === "assistant" && message.content && !message.content.startsWith("✓") && !message.content.includes("cancelled") && !message.content.includes("wrong") && (
+                    {message.isStreaming ? (
+                      <ThinkingIndicator />
+                    ) : (
+                      <p className="whitespace-pre-wrap break-words text-xs leading-relaxed">
+                        {message.content || (
+                          <span className="flex items-center gap-1.5">
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                            Processing...
+                          </span>
+                        )}
+                      </p>
+                    )}
+                    {message.role === "assistant" && message.content && !message.isStreaming && !message.content.startsWith("✓") && !message.content.includes("cancelled") && !message.content.includes("wrong") && (
                       <button
                         onClick={() => handleCopy(message.content, message.id)}
                         className="mt-1.5 text-[10px] text-muted-foreground hover:text-foreground flex items-center gap-1"

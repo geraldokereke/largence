@@ -317,23 +317,62 @@ export function EditorSidebar({
       }
 
       const data = await response.json();
-      setComplianceResult(data);
+      
+      // Parse response - API returns { success, complianceCheck } with overallScore
+      const complianceCheck = data.complianceCheck || data;
+      const score = complianceCheck.overallScore ?? complianceCheck.score ?? 0;
+      const issues = complianceCheck.issues || [];
+      const warnings = complianceCheck.warnings || [];
+      const suggestions = complianceCheck.suggestions || [];
+      
+      // Map issues to the expected format
+      const mappedIssues: ComplianceIssue[] = [
+        ...issues.map((issue: { title?: string; message?: string; description?: string; suggestion?: string }) => ({
+          severity: "error" as const,
+          title: issue.title || "Issue",
+          description: issue.message || issue.description || "",
+          suggestion: issue.suggestion,
+        })),
+        ...warnings.map((warning: { title?: string; message?: string; description?: string; suggestion?: string }) => ({
+          severity: "warning" as const,
+          title: warning.title || "Warning",
+          description: warning.message || warning.description || "",
+          suggestion: warning.suggestion,
+        })),
+        ...suggestions.map((sugg: { title?: string; message?: string; description?: string; suggestion?: string }) => ({
+          severity: "info" as const,
+          title: sugg.title || "Suggestion",
+          description: sugg.message || sugg.description || "",
+          suggestion: sugg.suggestion,
+        })),
+      ];
+      
+      const result: ComplianceResult = {
+        score,
+        issues: mappedIssues,
+        summary: score >= 80 
+          ? "Your document is compliant with most standards."
+          : score >= 60
+            ? "Your document needs some improvements."
+            : "Your document has significant compliance issues.",
+      };
+      
+      setComplianceResult(result);
 
-      const issues = data.issues || [];
-      if (issues.length === 0) {
+      if (mappedIssues.length === 0) {
         toast.success("Compliance check passed!", {
-          description: "No issues found in your document.",
+          description: `Score: ${score}/100. No issues found in your document.`,
         });
       } else {
-        const errorCount = issues.filter(
+        const errorCount = mappedIssues.filter(
           (i: ComplianceIssue) => i.severity === "error"
         ).length;
-        const warningCount = issues.filter(
+        const warningCount = mappedIssues.filter(
           (i: ComplianceIssue) => i.severity === "warning"
         ).length;
 
         toast.warning("Compliance check complete", {
-          description: `Found ${errorCount} error(s) and ${warningCount} warning(s).`,
+          description: `Score: ${score}/100. Found ${errorCount} error(s) and ${warningCount} warning(s).`,
         });
       }
     } catch (error) {
@@ -517,12 +556,57 @@ export function EditorSidebar({
                     </div>
                   )}
 
-                  {(!complianceResult.issues || complianceResult.issues.length === 0) && (
+                  {/* Show suggestions when score < 100 but no critical issues */}
+                  {complianceResult.score < 100 && complianceResult.score >= 80 && (!complianceResult.issues || complianceResult.issues.length === 0) && (
+                    <div className="space-y-2">
+                      <h4 className="text-sm font-medium">Suggestions for Improvement</h4>
+                      <div className="p-3 rounded-lg border bg-blue-500/10 border-blue-500/20">
+                        <div className="flex items-start gap-2">
+                          <Info className="h-4 w-4 mt-0.5 text-blue-600 dark:text-blue-500" />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium">Consider Adding More Detail</p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Your document covers the basics but could benefit from additional clauses or more specific terms.
+                            </p>
+                            <p className="text-xs text-primary mt-2">
+                              💡 Review industry-standard templates for additional recommended clauses.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-3 rounded-lg border bg-yellow-500/10 border-yellow-500/20">
+                        <div className="flex items-start gap-2">
+                          <AlertTriangle className="h-4 w-4 mt-0.5 text-yellow-600 dark:text-yellow-500" />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium">Optional Enhancements</p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Consider adding force majeure, dispute resolution, or amendment procedures.
+                            </p>
+                            <p className="text-xs text-primary mt-2">
+                              💡 Use AI Auto-Fix to automatically add recommended clauses.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {complianceResult.score === 100 && (!complianceResult.issues || complianceResult.issues.length === 0) && (
                     <div className="text-center py-8">
                       <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-3" />
-                      <h4 className="text-sm font-medium">All Clear!</h4>
+                      <h4 className="text-sm font-medium">Perfect Score!</h4>
                       <p className="text-xs text-muted-foreground mt-1">
-                        No compliance issues found in your document.
+                        Your document meets all compliance requirements.
+                      </p>
+                    </div>
+                  )}
+
+                  {complianceResult.score < 80 && (!complianceResult.issues || complianceResult.issues.length === 0) && (
+                    <div className="text-center py-8">
+                      <AlertTriangle className="h-12 w-12 text-yellow-500 mx-auto mb-3" />
+                      <h4 className="text-sm font-medium">Needs Attention</h4>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Your document may be missing important clauses. Consider using AI Auto-Fix to improve it.
                       </p>
                     </div>
                   )}

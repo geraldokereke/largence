@@ -105,6 +105,30 @@ const BILLING_TYPES = [
   { value: "PRO_BONO", label: "Pro Bono" },
 ];
 
+const CURRENCIES = [
+  { value: "USD", label: "US Dollar", symbol: "$" },
+  { value: "EUR", label: "Euro", symbol: "€" },
+  { value: "GBP", label: "British Pound", symbol: "£" },
+  { value: "NGN", label: "Nigerian Naira", symbol: "₦" },
+  { value: "GHS", label: "Ghanaian Cedi", symbol: "GH₵" },
+  { value: "KES", label: "Kenyan Shilling", symbol: "KSh" },
+  { value: "ZAR", label: "South African Rand", symbol: "R" },
+  { value: "CAD", label: "Canadian Dollar", symbol: "CA$" },
+  { value: "AUD", label: "Australian Dollar", symbol: "A$" },
+  { value: "JPY", label: "Japanese Yen", symbol: "¥" },
+  { value: "CNY", label: "Chinese Yuan", symbol: "¥" },
+  { value: "INR", label: "Indian Rupee", symbol: "₹" },
+  { value: "BRL", label: "Brazilian Real", symbol: "R$" },
+  { value: "MXN", label: "Mexican Peso", symbol: "MX$" },
+  { value: "CHF", label: "Swiss Franc", symbol: "CHF" },
+  { value: "AED", label: "UAE Dirham", symbol: "د.إ" },
+  { value: "SGD", label: "Singapore Dollar", symbol: "S$" },
+];
+
+const getCurrencySymbol = (code: string) => {
+  return CURRENCIES.find((c) => c.value === code)?.symbol || "$";
+};
+
 const MATTER_TYPES = [
   "Litigation",
   "Corporate",
@@ -189,6 +213,7 @@ export default function MattersPage() {
     practiceArea: "",
     dueDate: "",
     billingType: "HOURLY",
+    currency: "USD",
     hourlyRate: "",
     flatFee: "",
     retainerAmount: "",
@@ -271,6 +296,7 @@ export default function MattersPage() {
       practiceArea: "",
       dueDate: "",
       billingType: "HOURLY",
+      currency: "USD",
       hourlyRate: "",
       flatFee: "",
       retainerAmount: "",
@@ -313,6 +339,7 @@ export default function MattersPage() {
       practiceArea: matter.practiceArea || "",
       dueDate: matter.dueDate ? matter.dueDate.split("T")[0] : "",
       billingType: matter.billingType,
+      currency: (matter as any).currency || "USD",
       hourlyRate: matter.hourlyRate?.toString() || "",
       flatFee: matter.flatFee?.toString() || "",
       retainerAmount: matter.retainerAmount?.toString() || "",
@@ -594,6 +621,24 @@ export default function MattersPage() {
             </Select>
           </div>
           <div className="space-y-1.5">
+            <Label htmlFor="currency" className="text-xs">Currency</Label>
+            <Select
+              value={formData.currency}
+              onValueChange={(value) => setFormData({ ...formData, currency: value })}
+            >
+              <SelectTrigger className="h-8 text-sm rounded-sm">
+                <SelectValue placeholder="Select currency" />
+              </SelectTrigger>
+              <SelectContent>
+                {CURRENCIES.map((curr) => (
+                  <SelectItem key={curr.value} value={curr.value} className="text-sm">
+                    {curr.symbol} {curr.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
             <Label htmlFor="dueDate" className="text-xs">Due Date</Label>
             <Input
               id="dueDate"
@@ -605,7 +650,7 @@ export default function MattersPage() {
           </div>
           {formData.billingType === "HOURLY" && (
             <div className="space-y-1.5">
-              <Label htmlFor="hourlyRate" className="text-xs">Hourly Rate ($)</Label>
+              <Label htmlFor="hourlyRate" className="text-xs">Hourly Rate ({getCurrencySymbol(formData.currency)})</Label>
               <Input
                 id="hourlyRate"
                 type="number"
@@ -618,7 +663,7 @@ export default function MattersPage() {
           )}
           {formData.billingType === "FLAT_FEE" && (
             <div className="space-y-1.5">
-              <Label htmlFor="flatFee" className="text-xs">Flat Fee ($)</Label>
+              <Label htmlFor="flatFee" className="text-xs">Flat Fee ({getCurrencySymbol(formData.currency)})</Label>
               <Input
                 id="flatFee"
                 type="number"
@@ -631,7 +676,7 @@ export default function MattersPage() {
           )}
           {formData.billingType === "RETAINER" && (
             <div className="space-y-1.5">
-              <Label htmlFor="retainerAmount" className="text-xs">Retainer Amount ($)</Label>
+              <Label htmlFor="retainerAmount" className="text-xs">Retainer Amount ({getCurrencySymbol(formData.currency)})</Label>
               <Input
                 id="retainerAmount"
                 type="number"

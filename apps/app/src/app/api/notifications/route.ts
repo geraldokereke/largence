@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import prisma from "@largence/lib/prisma";
+import {
+  getUserNotifications,
+  markAllNotificationsRead,
+  markNotificationsRead,
+} from "@/lib/notifications";
 
 export async function GET(request: NextRequest) {
   try {
@@ -11,22 +16,19 @@ export async function GET(request: NextRequest) {
     }
 
     const organizationId = orgId || "";
+    
+    const searchParams = request.nextUrl.searchParams;
+    const limit = parseInt(searchParams.get("limit") || "50");
+    const offset = parseInt(searchParams.get("offset") || "0");
+    const unreadOnly = searchParams.get("unreadOnly") === "true";
 
-    const notifications = await prisma.notification.findMany({
-      where: {
-        userId,
-        organizationId,
-      },
-      orderBy: { createdAt: "desc" },
-      take: 50,
+    const result = await getUserNotifications(userId, organizationId, {
+      limit,
+      offset,
+      unreadOnly,
     });
 
-    const unreadCount = notifications.filter((n) => !n.read).length;
-
-    return NextResponse.json({
-      notifications,
-      unreadCount,
-    });
+    return NextResponse.json(result);
   } catch (error) {
     console.error("Error fetching notifications:", error);
     return NextResponse.json(
@@ -45,8 +47,15 @@ export async function PATCH(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { notificationId, read } = body;
+    const { notificationId, notificationIds, read } = body;
 
+    // Handle batch update
+    if (notificationIds && Array.isArray(notificationIds)) {
+      await markNotificationsRead(notificationIds, userId);
+      return NextResponse.json({ success: true });
+    }
+
+    // Handle single update
     if (!notificationId) {
       return NextResponse.json(
         { error: "Notification ID required" },
@@ -57,7 +66,7 @@ export async function PATCH(request: NextRequest) {
     const notification = await prisma.notification.update({
       where: {
         id: notificationId,
-        userId, // Ensure user owns this notification
+        userId,
       },
       data: {
         read: read !== undefined ? read : true,
@@ -76,22 +85,16 @@ export async function PATCH(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId } = await auth();
+    const { userId, orgId } = await auth();
 
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Mark all as read
-    await prisma.notification.updateMany({
-      where: {
-        userId,
-        read: false,
-      },
-      data: {
-        read: true,
-      },
-    });
+    const organizationId = orgId || "";
+
+    // Mark all as read using service
+    await markAllNotificationsRead(userId, organizationId);
 
     return NextResponse.json({ success: true });
   } catch (error) {

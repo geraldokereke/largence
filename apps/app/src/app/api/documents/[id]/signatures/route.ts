@@ -1,6 +1,7 @@
-import { auth } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { sendTemplatedEmail } from "@/lib/email";
 
 export async function GET(
   request: Request,
@@ -93,6 +94,27 @@ export async function POST(
     // Generate the signing URL
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001";
     const signingUrl = `${baseUrl}/sign/${signature.accessToken}`;
+
+    // Send signature request email
+    try {
+      const user = await currentUser();
+      const senderName = user?.firstName 
+        ? `${user.firstName}${user.lastName ? ` ${user.lastName}` : ""}`
+        : "Someone";
+
+      await sendTemplatedEmail("signatureRequest", signerEmail, {
+        documentTitle: document.title,
+        senderName,
+        signingUrl,
+        expiresAt: tokenExpiresAt.toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        }),
+      });
+    } catch (emailError) {
+      console.error("Failed to send signature request email:", emailError);
+    }
 
     return NextResponse.json({
       ...signature,

@@ -26,6 +26,7 @@ import {
 } from "@largence/components/agentic-compliance-modal";
 import { EditorSidebar } from "@/components/editor-sidebar";
 import { RequestSignatureDialog } from "@/components/request-signature-dialog";
+import { DocuSignSignatureDialog } from "@/components/docusign-signature-dialog";
 import {
   Select,
   SelectContent,
@@ -65,7 +66,12 @@ import {
   Type,
   Sparkles,
   PanelRight,
+  Share2,
+  Cloud,
+  Send,
 } from "lucide-react";
+import { ShareDocumentDialog } from "@/components/share-document-dialog";
+import { ExportDocumentDialog } from "@/components/export-document-dialog";
 import { Separator } from "@largence/components/ui/separator";
 
 export default function DocumentEditorPage() {
@@ -79,6 +85,9 @@ export default function DocumentEditorPage() {
     useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [signatureDialogOpen, setSignatureDialogOpen] = useState(false);
+  const [docuSignDialogOpen, setDocuSignDialogOpen] = useState(false);
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [exportDialogOpen, setExportDialogOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [status, setStatus] = useState<"DRAFT" | "FINAL" | "ARCHIVED">("DRAFT");
   const [document, setDocument] = useState<any>(null);
@@ -287,11 +296,7 @@ export default function DocumentEditorPage() {
   }, [editor, title]);
 
   const handleSendToDocuSign = useCallback(() => {
-    toast("Coming Soon", {
-      description:
-        "DocuSign integration is coming soon! Stay tuned for e-signature capabilities.",
-      icon: "🚀",
-    });
+    setDocuSignDialogOpen(true);
   }, []);
 
   const handleRunComplianceCheck = useCallback(async () => {
@@ -603,13 +608,31 @@ export default function DocumentEditorPage() {
                   <FileDown className="h-4 w-4 mr-2" />
                   Export as PDF
                 </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setExportDialogOpen(true)}>
+                  <Cloud className="h-4 w-4 mr-2" />
+                  Export to Cloud
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => setSignatureDialogOpen(true)}>
                   <PenTool className="h-4 w-4 mr-2" />
                   Request Signature
                 </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleSendToDocuSign}>
+                  <Send className="h-4 w-4 mr-2" />
+                  Send via DocuSign
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8"
+              onClick={() => setShareDialogOpen(true)}
+            >
+              <Share2 className="h-4 w-4" />
+              <span className="hidden sm:inline sm:ml-1.5">Share</span>
+            </Button>
 
             <Button
               variant="outline"
@@ -1057,6 +1080,35 @@ export default function DocumentEditorPage() {
         documentTitle={title}
         open={signatureDialogOpen}
         onOpenChange={setSignatureDialogOpen}
+      />
+
+      {/* DocuSign Signature Dialog */}
+      <DocuSignSignatureDialog
+        documentId={params.id as string}
+        documentTitle={title}
+        open={docuSignDialogOpen}
+        onOpenChange={setDocuSignDialogOpen}
+      />
+
+      {/* Share Document Dialog */}
+      <ShareDocumentDialog
+        documentId={params.id as string}
+        documentTitle={title}
+        open={shareDialogOpen}
+        onOpenChange={setShareDialogOpen}
+        isOwner={true}
+        currentVisibility={document?.visibility || "PRIVATE"}
+        onVisibilityChange={(visibility) => {
+          setDocument((prev: any) => ({ ...prev, visibility }));
+        }}
+      />
+
+      {/* Export Document Dialog */}
+      <ExportDocumentDialog
+        documentId={params.id as string}
+        documentTitle={title}
+        open={exportDialogOpen}
+        onOpenChange={setExportDialogOpen}
       />
     </div>
   );

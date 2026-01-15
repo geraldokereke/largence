@@ -31,6 +31,8 @@ export async function GET() {
     authUrl.searchParams.set("response_type", "code");
     authUrl.searchParams.set("token_access_type", "offline"); // Get refresh token
     authUrl.searchParams.set("state", state);
+    // Request both read and write access for files
+    authUrl.searchParams.set("scope", "files.content.read files.content.write files.metadata.read");
 
     return NextResponse.redirect(authUrl.toString());
   } catch (error) {

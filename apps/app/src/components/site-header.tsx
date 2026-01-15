@@ -36,6 +36,7 @@ import {
   Clock,
   AlertCircle,
   X,
+  Sparkles,
 } from "lucide-react";
 import { Spinner } from "@largence/components/ui/spinner";
 import { NotificationDrawer } from "@largence/components/notification-drawer";
@@ -365,6 +366,7 @@ export function SiteHeader() {
             <button
               onClick={() => setCommandOpen(true)}
               className="w-full max-w-md h-9 px-3 sm:px-3 rounded-sm border bg-background hover:bg-accent transition-colors flex items-center gap-2 text-sm text-muted-foreground"
+              data-walkthrough="search"
             >
               <Search className="h-4 w-4 shrink-0" />
               <span className="hidden xs:inline truncate">
@@ -380,6 +382,7 @@ export function SiteHeader() {
               size="sm"
               className="h-9 rounded-sm gap-2 shrink-0 p cursor-pointer px-2 sm:px-3"
               onClick={() => setNewDocDialogOpen(true)}
+              data-walkthrough="create-document"
             >
               <span className="hidden md:inline">Create</span>
               <Plus className="h-4 w-4" />
@@ -536,6 +539,17 @@ export function SiteHeader() {
                   <HelpCircle className="mr-2 h-4 w-4" />
                   <span>Help & Support</span>
                 </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="cursor-pointer"
+                  onClick={() => {
+                    // Reset and restart the app walkthrough
+                    localStorage.removeItem("largence:app-walkthrough-completed");
+                    window.location.reload();
+                  }}
+                >
+                  <Sparkles className="mr-2 h-4 w-4" />
+                  <span>Replay Tour</span>
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
 
@@ -545,6 +559,7 @@ export function SiteHeader() {
                   variant="ghost"
                   className="h-9 w-9 rounded-full p-0 cursor-pointer"
                   disabled={!isLoaded}
+                  data-walkthrough="user-menu"
                 >
                   <Avatar className="h-8 w-8">
                     <AvatarImage

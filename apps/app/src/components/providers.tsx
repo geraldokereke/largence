@@ -6,6 +6,7 @@ import { ThemeProvider } from "./theme-provider";
 import { QueryProvider } from "./query-provider";
 import { RouteLoading } from "./route-loading";
 import { Toaster } from "./ui/sonner";
+import { WalkthroughProvider } from "./walkthrough-provider";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -17,14 +18,16 @@ export function Providers({ children }: { children: React.ReactNode }) {
         disableTransitionOnChange
       >
         <QueryProvider>
-          <RouteLoading />
-          {children}
-          <Toaster
-            position="top-right"
-            expand={false}
-            richColors
-            closeButton
-          />
+          <WalkthroughProvider>
+            <RouteLoading />
+            {children}
+            <Toaster
+              position="top-right"
+              expand={false}
+              richColors
+              closeButton
+            />
+          </WalkthroughProvider>
         </QueryProvider>
       </ThemeProvider>
     </ClerkProvider>

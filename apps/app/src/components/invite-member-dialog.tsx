@@ -106,6 +106,9 @@ export function InviteMemberDialog() {
             <p className="text-sm text-muted-foreground text-center">
               An invitation has been sent to {email}
             </p>
+            <p className="text-xs text-muted-foreground text-center mt-2">
+              If they don&apos;t receive it, check spam/junk folders or ask them to sign up at the same email address.
+            </p>
           </div>
         ) : (
           <form onSubmit={handleInvite}>

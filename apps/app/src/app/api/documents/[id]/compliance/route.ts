@@ -4,6 +4,7 @@ import { runComplianceChecks } from "@largence/lib/compliance-rules";
 import prisma from "@largence/lib/prisma";
 import { canPerformAction, recordUsage } from "@/lib/stripe";
 import { createAuditLog, getUserInitials } from "@/lib/audit";
+import { sendTemplatedEmail } from "@/lib/email";
 
 export async function POST(
   request: NextRequest,
@@ -90,7 +91,7 @@ export async function POST(
       data: {
         userId,
         organizationId: document.organizationId,
-        type: "COMPLIANCE_COMPLETED",
+        type: results.score >= 80 ? "COMPLIANCE_COMPLETED" : "COMPLIANCE_FAILED",
         title: "Compliance Check Complete",
         message: `Compliance check for "${document.title}" completed with a score of ${results.score}/100. ${results.issues.length} critical issues found.`,
         documentId,
@@ -98,6 +99,25 @@ export async function POST(
         actionUrl: `/compliance/${updatedCheck.id}`,
       },
     });
+
+    // Send email notification if score is below 80%
+    if (results.score < 80) {
+      try {
+        const user = await currentUser();
+        const userEmail = user?.emailAddresses?.[0]?.emailAddress;
+        
+        if (userEmail) {
+          await sendTemplatedEmail("complianceComplete", userEmail, {
+            documentTitle: document.title,
+            score: results.score,
+            issuesCount: results.issues.length,
+            documentUrl: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001"}/documents/${documentId}`,
+          });
+        }
+      } catch (emailError) {
+        console.error("Failed to send compliance email:", emailError);
+      }
+    }
 
     // Record usage after successful compliance check
     if (orgId) {

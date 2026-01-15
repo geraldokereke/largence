@@ -3,15 +3,8 @@
 import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Dialog,
   DialogContent,
@@ -28,14 +21,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Separator } from "@/components/ui/separator";
 import {
   ArrowLeft,
   Briefcase,
@@ -45,13 +37,15 @@ import {
   Building,
   Phone,
   Mail,
-  DollarSign,
+  Receipt,
   Edit,
   Trash2,
   Loader2,
   Plus,
-  Clock,
+  MoreHorizontal,
   ExternalLink,
+  Clock,
+  TrendingUp,
 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
@@ -228,8 +222,50 @@ export default function MatterDetailPage({
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-[50vh]">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      <div className="flex flex-1 flex-col p-3">
+        {/* Header Skeleton */}
+        <div className="flex items-center gap-3 mb-4">
+          <Skeleton className="h-8 w-8 rounded-sm" />
+          <div className="flex-1">
+            <Skeleton className="h-6 w-48 mb-1" />
+            <Skeleton className="h-3 w-24" />
+          </div>
+          <div className="flex gap-2">
+            <Skeleton className="h-8 w-24" />
+            <Skeleton className="h-8 w-8" />
+          </div>
+        </div>
+
+        {/* Stats Skeleton */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="rounded-sm border bg-card p-4">
+              <div className="flex items-start justify-between mb-2">
+                <Skeleton className="h-8 w-8 rounded-sm" />
+                <Skeleton className="h-4 w-4" />
+              </div>
+              <div className="space-y-1">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-6 w-16" />
+                <Skeleton className="h-3 w-20" />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Content Skeleton */}
+        <div className="grid gap-3 md:grid-cols-2">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="rounded-sm border bg-card p-4">
+              <Skeleton className="h-5 w-32 mb-3" />
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
@@ -238,291 +274,255 @@ export default function MatterDetailPage({
     return null;
   }
 
+  const stats = [
+    {
+      label: "Documents",
+      value: matter._count.documents,
+      icon: FileText,
+      change: "Total files",
+    },
+    {
+      label: "Status",
+      value: MATTER_STATUSES.find((s) => s.value === matter.status)?.label || matter.status,
+      icon: Clock,
+      change: `Since ${format(new Date(matter.openDate), "MMM d")}`,
+    },
+    {
+      label: "Billing Type",
+      value: BILLING_TYPE_LABELS[matter.billingType] || matter.billingType,
+      icon: Receipt,
+      change: matter.hourlyRate ? `$${matter.hourlyRate}/hr` : matter.flatFee ? `$${matter.flatFee.toLocaleString()}` : "N/A",
+    },
+    {
+      label: "Due Date",
+      value: matter.dueDate ? format(new Date(matter.dueDate), "MMM d") : "None",
+      icon: Calendar,
+      change: matter.dueDate ? format(new Date(matter.dueDate), "yyyy") : "No deadline",
+    },
+  ];
+
   return (
-    <div className="flex-1 space-y-6 p-6">
-      {/* Header */}
-      <div className="flex items-start justify-between">
-        <div className="space-y-1">
-          <div className="flex items-center gap-3">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => router.push("/matters")}
-            >
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <div>
-              <div className="flex items-center gap-3">
-                <h1 className="text-2xl font-bold tracking-tight">
-                  {matter.name}
-                </h1>
-                {getStatusBadge(matter.status)}
-              </div>
-              {matter.matterNumber && (
-                <p className="text-sm text-muted-foreground">
-                  {matter.matterNumber}
-                </p>
-              )}
-            </div>
+    <div className="flex flex-1 flex-col p-3">
+      {/* Compact Header */}
+      <div className="flex items-center gap-3 mb-4">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8"
+          onClick={() => router.push("/matters")}
+        >
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <h1 className="text-lg font-semibold truncate">{matter.name}</h1>
+            {getStatusBadge(matter.status)}
           </div>
+          {matter.matterNumber && (
+            <p className="text-xs text-muted-foreground">{matter.matterNumber}</p>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
-            onClick={() => setIsStatusDialogOpen(true)}
+            size="sm"
+            onClick={() => router.push(`/documents/new?matterId=${id}`)}
           >
-            <Edit className="h-4 w-4 mr-2" />
-            Change Status
+            <Plus className="h-3.5 w-3.5 mr-1.5" />
+            Document
           </Button>
-          <Button variant="outline" onClick={() => router.push(`/matters/${id}/edit`)}>
-            <Edit className="h-4 w-4 mr-2" />
-            Edit
-          </Button>
-          <Button variant="destructive" onClick={handleDeleteMatter}>
-            <Trash2 className="h-4 w-4 mr-2" />
-            Delete
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="icon" className="h-8 w-8">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => setIsStatusDialogOpen(true)}>
+                <Clock className="h-4 w-4 mr-2" />
+                Change Status
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => router.push(`/matters/${id}/edit`)}>
+                <Edit className="h-4 w-4 mr-2" />
+                Edit Matter
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={handleDeleteMatter}
+                className="text-destructive focus:text-destructive"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete Matter
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
       {matter.description && (
-        <p className="text-muted-foreground max-w-3xl">{matter.description}</p>
+        <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{matter.description}</p>
       )}
 
-      <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="documents">
-            Documents ({matter._count.documents})
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="overview" className="space-y-6">
-          <div className="grid gap-6 md:grid-cols-2">
-            {/* Client Information */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <User className="h-5 w-5" />
-                  Client Information
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {matter.clientName ? (
-                  <>
-                    <div className="flex items-center gap-3">
-                      <User className="h-4 w-4 text-muted-foreground" />
-                      <span>{matter.clientName}</span>
-                    </div>
-                    {matter.clientCompany && (
-                      <div className="flex items-center gap-3">
-                        <Building className="h-4 w-4 text-muted-foreground" />
-                        <span>{matter.clientCompany}</span>
-                      </div>
-                    )}
-                    {matter.clientEmail && (
-                      <div className="flex items-center gap-3">
-                        <Mail className="h-4 w-4 text-muted-foreground" />
-                        <a
-                          href={`mailto:${matter.clientEmail}`}
-                          className="text-primary hover:underline"
-                        >
-                          {matter.clientEmail}
-                        </a>
-                      </div>
-                    )}
-                    {matter.clientPhone && (
-                      <div className="flex items-center gap-3">
-                        <Phone className="h-4 w-4 text-muted-foreground" />
-                        <a
-                          href={`tel:${matter.clientPhone}`}
-                          className="text-primary hover:underline"
-                        >
-                          {matter.clientPhone}
-                        </a>
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <p className="text-sm text-muted-foreground">
-                    No client information added
-                  </p>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Matter Details */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <Briefcase className="h-5 w-5" />
-                  Matter Details
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Type</p>
-                    <p className="font-medium">
-                      {matter.matterType || "Not specified"}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Practice Area</p>
-                    <p className="font-medium">
-                      {matter.practiceArea || "Not specified"}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Opened</p>
-                    <p className="font-medium">
-                      {format(new Date(matter.openDate), "MMM d, yyyy")}
-                    </p>
-                  </div>
-                  {matter.dueDate && (
-                    <div>
-                      <p className="text-sm text-muted-foreground">Due Date</p>
-                      <p className="font-medium">
-                        {format(new Date(matter.dueDate), "MMM d, yyyy")}
-                      </p>
-                    </div>
-                  )}
-                  {matter.closeDate && (
-                    <div>
-                      <p className="text-sm text-muted-foreground">Closed</p>
-                      <p className="font-medium">
-                        {format(new Date(matter.closeDate), "MMM d, yyyy")}
-                      </p>
-                    </div>
-                  )}
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+        {stats.map((stat) => {
+          const Icon = stat.icon;
+          return (
+            <div key={stat.label} className="rounded-sm border bg-card p-4">
+              <div className="flex items-start justify-between mb-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-sm bg-primary/10">
+                  <Icon className="h-4 w-4 text-primary" />
                 </div>
-              </CardContent>
-            </Card>
+                <TrendingUp className="h-3.5 w-3.5 text-muted-foreground" />
+              </div>
+              <div className="space-y-0.5">
+                <p className="text-xs font-medium text-muted-foreground">{stat.label}</p>
+                <p className="text-lg font-semibold">{stat.value}</p>
+                <p className="text-xs text-muted-foreground">{stat.change}</p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
 
-            {/* Billing Information */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <DollarSign className="h-5 w-5" />
-                  Billing Information
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Billing Type</p>
-                    <p className="font-medium">
-                      {BILLING_TYPE_LABELS[matter.billingType] ||
-                        matter.billingType}
-                    </p>
-                  </div>
-                  {matter.hourlyRate && (
-                    <div>
-                      <p className="text-sm text-muted-foreground">
-                        Hourly Rate
-                      </p>
-                      <p className="font-medium">
-                        ${matter.hourlyRate.toFixed(2)}/hr
-                      </p>
-                    </div>
-                  )}
-                  {matter.flatFee && (
-                    <div>
-                      <p className="text-sm text-muted-foreground">Flat Fee</p>
-                      <p className="font-medium">
-                        ${matter.flatFee.toLocaleString()}
-                      </p>
-                    </div>
-                  )}
-                  {matter.retainerAmount && (
-                    <div>
-                      <p className="text-sm text-muted-foreground">
-                        Retainer Amount
-                      </p>
-                      <p className="font-medium">
-                        ${matter.retainerAmount.toLocaleString()}
-                      </p>
-                    </div>
-                  )}
+      {/* Content Grid */}
+      <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+        {/* Client Information */}
+        <div className="rounded-sm border bg-card p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <User className="h-4 w-4 text-muted-foreground" />
+            <h3 className="text-sm font-medium">Client</h3>
+          </div>
+          {matter.clientName ? (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-sm">
+                <span className="font-medium">{matter.clientName}</span>
+              </div>
+              {matter.clientCompany && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Building className="h-3.5 w-3.5" />
+                  <span>{matter.clientCompany}</span>
                 </div>
-              </CardContent>
-            </Card>
+              )}
+              {matter.clientEmail && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Mail className="h-3.5 w-3.5" />
+                  <a href={`mailto:${matter.clientEmail}`} className="hover:text-primary truncate">
+                    {matter.clientEmail}
+                  </a>
+                </div>
+              )}
+              {matter.clientPhone && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Phone className="h-3.5 w-3.5" />
+                  <a href={`tel:${matter.clientPhone}`} className="hover:text-primary">
+                    {matter.clientPhone}
+                  </a>
+                </div>
+              )}
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">No client info</p>
+          )}
+        </div>
 
-            {/* Notes */}
-            {matter.notes && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Notes</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm whitespace-pre-wrap">{matter.notes}</p>
-                </CardContent>
-              </Card>
+        {/* Matter Details */}
+        <div className="rounded-sm border bg-card p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Briefcase className="h-4 w-4 text-muted-foreground" />
+            <h3 className="text-sm font-medium">Details</h3>
+          </div>
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            <div>
+              <p className="text-xs text-muted-foreground">Type</p>
+              <p className="font-medium">{matter.matterType || "—"}</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Practice</p>
+              <p className="font-medium">{matter.practiceArea || "—"}</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Opened</p>
+              <p className="font-medium">{format(new Date(matter.openDate), "MMM d, yyyy")}</p>
+            </div>
+            {matter.closeDate && (
+              <div>
+                <p className="text-xs text-muted-foreground">Closed</p>
+                <p className="font-medium">{format(new Date(matter.closeDate), "MMM d, yyyy")}</p>
+              </div>
             )}
           </div>
-        </TabsContent>
+        </div>
 
-        <TabsContent value="documents" className="space-y-4">
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">
-              Documents associated with this matter
-            </p>
-            <Button onClick={() => router.push(`/documents/new?matterId=${id}`)}>
-              <Plus className="h-4 w-4 mr-2" />
+        {/* Notes */}
+        <div className="rounded-sm border bg-card p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <FileText className="h-4 w-4 text-muted-foreground" />
+            <h3 className="text-sm font-medium">Notes</h3>
+          </div>
+          {matter.notes ? (
+            <p className="text-sm text-muted-foreground line-clamp-4 whitespace-pre-wrap">{matter.notes}</p>
+          ) : (
+            <p className="text-sm text-muted-foreground">No notes added</p>
+          )}
+        </div>
+      </div>
+
+      {/* Documents Section */}
+      <div className="mt-4">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-medium">Documents ({matter._count.documents})</h3>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => router.push(`/documents/new?matterId=${id}`)}
+          >
+            <Plus className="h-3.5 w-3.5 mr-1.5" />
+            Add
+          </Button>
+        </div>
+
+        {matter.documents.length === 0 ? (
+          <div className="rounded-sm border bg-card p-8 text-center">
+            <FileText className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+            <p className="text-sm font-medium">No documents</p>
+            <p className="text-xs text-muted-foreground mb-3">Create your first document</p>
+            <Button size="sm" onClick={() => router.push(`/documents/new?matterId=${id}`)}>
+              <Plus className="h-3.5 w-3.5 mr-1.5" />
               New Document
             </Button>
           </div>
-
-          {matter.documents.length === 0 ? (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <FileText className="h-12 w-12 text-muted-foreground mb-4" />
-                <h3 className="text-lg font-medium mb-1">No documents yet</h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Create your first document for this matter
-                </p>
-                <Button
-                  onClick={() => router.push(`/documents/new?matterId=${id}`)}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Document
-                </Button>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="space-y-2">
-              {matter.documents.map((doc) => (
-                <Card
-                  key={doc.id}
-                  className="hover:bg-muted/50 cursor-pointer transition-colors"
-                  onClick={() => router.push(`/documents/${doc.id}`)}
-                >
-                  <CardContent className="flex items-center justify-between p-4">
-                    <div className="flex items-center gap-3">
-                      <FileText className="h-5 w-5 text-muted-foreground" />
-                      <div>
-                        <p className="font-medium">{doc.title}</p>
-                        <p className="text-xs text-muted-foreground">
-                          Updated {format(new Date(doc.updatedAt), "MMM d, yyyy")}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <Badge
-                        variant="secondary"
-                        className={`${getDocumentStatusColor(doc.status)} text-white`}
-                      >
-                        {doc.status}
-                      </Badge>
-                      <ExternalLink className="h-4 w-4 text-muted-foreground" />
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
-        </TabsContent>
-      </Tabs>
+        ) : (
+          <div className="space-y-2">
+            {matter.documents.map((doc) => (
+              <div
+                key={doc.id}
+                className="rounded-sm border bg-card p-3 hover:bg-muted/50 cursor-pointer transition-colors flex items-center justify-between"
+                onClick={() => router.push(`/documents/${doc.id}`)}
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium truncate">{doc.title}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {format(new Date(doc.updatedAt), "MMM d, yyyy")}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <Badge
+                    variant="secondary"
+                    className={`${getDocumentStatusColor(doc.status)} text-white text-xs`}
+                  >
+                    {doc.status}
+                  </Badge>
+                  <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Status Change Dialog */}
       <Dialog open={isStatusDialogOpen} onOpenChange={setIsStatusDialogOpen}>

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import prisma from "@largence/lib/prisma";
 import { createAuditLog } from "@/lib/audit";
+import { htmlToDocx } from "@/lib/document-converter";
 
 interface DropboxTokenResponse {
   access_token: string;
@@ -131,8 +132,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Get the document
-    const document = await prisma.document.findUnique({
-      where: { id: documentId, organizationId: orgId },
+    const document = await prisma.document.findFirst({
+      where: {
+        id: documentId,
+        OR: [
+          { organizationId: orgId },
+          { userId: userId },
+        ],
+      },
     });
 
     if (!document) {
@@ -142,10 +149,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Prepare file content (as markdown)
-    const fileContent = document.content || "";
-    const fileName = `${document.title.replace(/[/\\?%*:|"<>]/g, "-")}.md`;
+    // Generate proper DOCX file for cloud storage
+    const fileName = `${document.title.replace(/[/\\?%*:|"<>]/g, "-")}.docx`;
     const filePath = `${folderPath}/${fileName}`;
+    
+    let fileBuffer: Buffer;
+    try {
+      fileBuffer = await htmlToDocx(
+        document.content || "",
+        {
+          title: document.title,
+          createdAt: document.createdAt,
+          updatedAt: document.updatedAt,
+        }
+      );
+    } catch (error) {
+      console.error("Error generating DOCX:", error);
+      // Fallback to plain text if DOCX generation fails
+      fileBuffer = Buffer.from(document.content || "", "utf-8");
+    }
 
     // Upload to Dropbox using files/upload endpoint
     const uploadResponse = await fetch(
@@ -162,7 +184,7 @@ export async function POST(request: NextRequest) {
             mute: false,
           }),
         },
-        body: Buffer.from(fileContent, "utf-8"),
+        body: new Uint8Array(fileBuffer),
       }
     );
 

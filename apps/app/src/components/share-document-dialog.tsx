@@ -21,6 +21,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import {
   Copy,
@@ -36,9 +42,11 @@ import {
   Calendar,
   Lock,
   ExternalLink,
+  Users,
 } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { TeamCollaborators } from "./team-collaborators";
 
 interface DocumentShare {
   id: string;
@@ -59,6 +67,9 @@ interface ShareDocumentDialogProps {
   documentTitle: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  isOwner?: boolean;
+  currentVisibility?: string;
+  onVisibilityChange?: (visibility: string) => void;
 }
 
 const PERMISSIONS = [
@@ -73,7 +84,11 @@ export function ShareDocumentDialog({
   documentTitle,
   open,
   onOpenChange,
+  isOwner = true,
+  currentVisibility = "PRIVATE",
+  onVisibilityChange,
 }: ShareDocumentDialogProps) {
+  const [activeTab, setActiveTab] = useState("team");
   const [shares, setShares] = useState<DocumentShare[]>([]);
   const [loading, setLoading] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
@@ -194,130 +209,169 @@ export function ShareDocumentDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-xl">
+      <DialogContent className="max-w-xl max-h-[85vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle>Share Document</DialogTitle>
-          <DialogDescription>
-            Create share links for &quot;{documentTitle}&quot;
+          <DialogDescription className="flex items-center gap-1">
+            <span>Share</span>
+            <span className="font-medium truncate max-w-[280px] inline-block" title={documentTitle}>
+              &quot;{documentTitle}&quot;
+            </span>
+            <span>with team members or external users</span>
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6">
-          {/* Create New Share */}
-          <div className="space-y-4 p-4 rounded-lg border bg-muted/30">
-            <h4 className="text-sm font-medium">Create New Share Link</h4>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 overflow-hidden flex flex-col">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="team" className="gap-2">
+              <Users className="h-4 w-4" />
+              Team
+            </TabsTrigger>
+            <TabsTrigger value="external" className="gap-2">
+              <Link className="h-4 w-4" />
+              External Links
+            </TabsTrigger>
+          </TabsList>
 
-            <div className="grid gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Recipient Email (optional)</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="recipient@example.com"
-                  value={sharedWithEmail}
-                  onChange={(e) => setSharedWithEmail(e.target.value)}
-                />
-                <p className="text-xs text-muted-foreground">
-                  Leave empty for a general share link
+          {/* Team Collaboration Tab */}
+          <TabsContent value="team" className="flex-1 overflow-auto mt-4">
+            <TeamCollaborators
+              documentId={documentId}
+              isOwner={isOwner}
+              currentVisibility={currentVisibility}
+              onVisibilityChange={onVisibilityChange}
+            />
+          </TabsContent>
+
+          {/* External Sharing Tab */}
+          <TabsContent value="external" className="flex-1 overflow-auto mt-4 space-y-6">
+            {/* Create New Share */}
+            <div className="space-y-4 p-4 rounded-lg border bg-muted/30">
+              <div>
+                <h4 className="text-sm font-medium">Create New Share Link</h4>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Generate a link to share with anyone outside your team
                 </p>
               </div>
 
-              <div className="space-y-2">
-                <Label>Permission</Label>
-                <Select value={permission} onValueChange={setPermission}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {PERMISSIONS.map((perm) => (
-                      <SelectItem key={perm.value} value={perm.value}>
-                        <div className="flex items-center gap-2">
-                          <perm.icon className="h-4 w-4" />
-                          <span>{perm.label}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="message">Message (optional)</Label>
-                <Textarea
-                  id="message"
-                  placeholder="Add a message for the recipient..."
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  rows={2}
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <Label htmlFor="expiry" className="font-normal">
-                    Set expiration date
-                  </Label>
+              <div className="grid gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email">Recipient Email (optional)</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="recipient@example.com"
+                    value={sharedWithEmail}
+                    onChange={(e) => setSharedWithEmail(e.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Leave empty for a general share link
+                  </p>
                 </div>
-                <Switch
-                  id="expiry"
-                  checked={hasExpiry}
-                  onCheckedChange={setHasExpiry}
-                />
-              </div>
 
-              {hasExpiry && (
-                <Input
-                  type="datetime-local"
-                  value={expiresAt}
-                  onChange={(e) => setExpiresAt(e.target.value)}
-                  min={new Date().toISOString().slice(0, 16)}
-                />
-              )}
-
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Lock className="h-4 w-4 text-muted-foreground" />
-                  <Label htmlFor="password-toggle" className="font-normal">
-                    Password protect
-                  </Label>
+                <div className="space-y-2">
+                  <Label>Permission</Label>
+                  <Select value={permission} onValueChange={setPermission}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PERMISSIONS.map((perm) => (
+                        <SelectItem key={perm.value} value={perm.value}>
+                          <div className="flex items-center gap-2">
+                            <perm.icon className="h-4 w-4" />
+                            <span>{perm.label}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
-                <Switch
-                  id="password-toggle"
-                  checked={hasPassword}
-                  onCheckedChange={setHasPassword}
-                />
-              </div>
 
-              {hasPassword && (
-                <Input
-                  type="text"
-                  placeholder="Enter a password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              )}
+                <div className="space-y-2">
+                  <Label htmlFor="message">Message (optional)</Label>
+                  <Textarea
+                    id="message"
+                    placeholder="Add a message for the recipient..."
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    rows={2}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between p-3 rounded-md border bg-background">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <Label htmlFor="expiry" className="font-normal cursor-pointer">
+                      Set expiration date
+                    </Label>
+                  </div>
+                  <Switch
+                    id="expiry"
+                    checked={hasExpiry}
+                    onCheckedChange={setHasExpiry}
+                  />
+                </div>
+
+                {hasExpiry && (
+                  <Input
+                    type="datetime-local"
+                    value={expiresAt}
+                    onChange={(e) => setExpiresAt(e.target.value)}
+                    min={new Date().toISOString().slice(0, 16)}
+                    className="-mt-2"
+                  />
+                )}
+
+                <div className="flex items-center justify-between p-3 rounded-md border bg-background">
+                  <div className="flex items-center gap-2">
+                    <Lock className="h-4 w-4 text-muted-foreground" />
+                    <Label htmlFor="password-toggle" className="font-normal cursor-pointer">
+                      Password protect
+                    </Label>
+                  </div>
+                  <Switch
+                    id="password-toggle"
+                    checked={hasPassword}
+                    onCheckedChange={setHasPassword}
+                  />
+                </div>
+
+                {hasPassword && (
+                  <Input
+                    type="text"
+                    placeholder="Enter a password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="-mt-2"
+                  />
+                )}
+
+                <Button
+                  onClick={handleCreateShare}
+                  disabled={isCreating}
+                  className="w-full"
+                >
+                  {isCreating ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Link className="h-4 w-4 mr-2" />
+                  )}
+                  Create Share Link
+                </Button>
+              </div>
             </div>
-
-            <Button
-              onClick={handleCreateShare}
-              disabled={isCreating}
-              className="w-full"
-            >
-              Create Share Link
-              {isCreating ? (
-                <Loader2 className="h-4 w-4 ml-2 animate-spin" />
-              ) : (
-                <Link className="h-4 w-4 ml-2" />
-              )}
-            </Button>
-          </div>
 
           {/* Existing Shares */}
           <div className="space-y-3">
-            <h4 className="text-sm font-medium">
-              Active Share Links ({shares.length})
-            </h4>
+            <div>
+              <h4 className="text-sm font-medium">
+                Active Share Links ({shares.length})
+              </h4>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Manage your existing share links
+              </p>
+            </div>
 
             {loading ? (
               <div className="flex items-center justify-center py-6">
@@ -408,7 +462,8 @@ export function ShareDocumentDialog({
               </div>
             )}
           </div>
-        </div>
+          </TabsContent>
+        </Tabs>
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>

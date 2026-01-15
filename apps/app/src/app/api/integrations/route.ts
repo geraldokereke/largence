@@ -384,6 +384,8 @@ export async function POST(request: Request) {
           authUrl.searchParams.set("response_type", "code");
           authUrl.searchParams.set("token_access_type", "offline");
           authUrl.searchParams.set("state", state);
+          // Request both read and write access for files
+          authUrl.searchParams.set("scope", "files.content.read files.content.write files.metadata.read");
 
           return NextResponse.json({
             success: true,

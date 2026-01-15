@@ -27,6 +27,9 @@ model Document {
   aiModel        String?  
   generatedAt    DateTime?
   
+  // Team collaboration settings
+  visibility     DocumentVisibility @default(PRIVATE)
+  
   // Matter/Case association
   matterId       String?
   matter         Matter?  @relation(fields: [matterId], references: [id])
@@ -40,12 +43,14 @@ model Document {
   signatures       DocumentSignature[]
   shares           DocumentShare[]
   comments         DocumentComment[]
+  collaborators    DocumentCollaborator[]
   
   @@index([userId])
   @@index([organizationId])
   @@index([status])
   @@index([createdAt])
   @@index([matterId])
+  @@index([visibility])
 }
 
 // Document version history for time-travel feature
@@ -172,6 +177,12 @@ enum DocumentStatus {
   DRAFT
   FINAL
   ARCHIVED
+}
+
+enum DocumentVisibility {
+  PRIVATE     // Only owner can see
+  TEAM        // All team members in the organization can view
+  SHARED      // Only specific collaborators can view
 }
 
 enum ComplianceStatus {
@@ -559,6 +570,7 @@ model Matter {
   
   // Billing
   billingType      BillingType @default(HOURLY)
+  currency         String      @default("USD")
   hourlyRate       Float?
   flatFee          Float?
   retainerAmount   Float?
@@ -693,6 +705,42 @@ enum SharePermission {
   SIGN
 }
 
+// ==================== DOCUMENT COLLABORATORS ====================
+
+// Internal team member collaboration (within organization)
+model DocumentCollaborator {
+  id               String   @id @default(cuid())
+  
+  documentId       String
+  document         Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  
+  // Collaborator info
+  userId           String   // Clerk user ID
+  addedByUserId    String   // Who added this collaborator
+  
+  // Permissions
+  permission       CollaboratorPermission @default(VIEW)
+  
+  // Tracking
+  lastAccessedAt   DateTime?
+  accessCount      Int      @default(0)
+  
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  
+  @@unique([documentId, userId])
+  @@index([documentId])
+  @@index([userId])
+  @@index([addedByUserId])
+}
+
+enum CollaboratorPermission {
+  VIEW      // Can view the document
+  COMMENT   // Can view and add comments
+  EDIT      // Can make changes to the document
+  ADMIN     // Full access, can manage collaborators
+}
+
 // ==================== DOCUMENT COMMENTS ====================
 
 model DocumentComment {
@@ -771,6 +819,138 @@ model Clause {
   @@index([organizationId])
   @@index([category])
   @@index([usageCount])
+}
+
+// ==================== TEAM COMMUNICATION ====================
+
+model Channel {
+  id               String   @id @default(cuid())
+  
+  organizationId   String
+  
+  // Channel details
+  name             String
+  description      String?
+  type             ChannelType @default(PUBLIC)
+  
+  // Optional association
+  documentId       String?  // For document-specific channels
+  matterId         String?  // For matter-specific channels
+  
+  // Created by
+  createdByUserId  String
+  
+  // Settings
+  isArchived       Boolean  @default(false)
+  
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  
+  // Relations
+  messages         ChannelMessage[]
+  members          ChannelMember[]
+  
+  @@index([organizationId])
+  @@index([documentId])
+  @@index([matterId])
+  @@index([type])
+  @@index([createdAt])
+}
+
+model ChannelMember {
+  id               String   @id @default(cuid())
+  
+  channelId        String
+  channel          Channel  @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  
+  userId           String
+  
+  // Member settings
+  role             ChannelMemberRole @default(MEMBER)
+  
+  // Notification preferences
+  isMuted          Boolean  @default(false)
+  
+  // Tracking
+  lastReadAt       DateTime?
+  
+  joinedAt         DateTime @default(now())
+  
+  @@unique([channelId, userId])
+  @@index([channelId])
+  @@index([userId])
+}
+
+model ChannelMessage {
+  id               String   @id @default(cuid())
+  
+  channelId        String
+  channel          Channel  @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  
+  // Author
+  userId           String
+  userName         String
+  userAvatar       String?
+  
+  // Content
+  content          String   @db.Text
+  type             MessageType @default(TEXT)
+  
+  // Attachments
+  attachments      Json?    // Array of { type, url, name, size }
+  
+  // Reference to shared documents/matters
+  documentId       String?  // If sharing a document
+  matterId         String?  // If referencing a matter
+  
+  // Edit/Delete
+  isEdited         Boolean  @default(false)
+  editedAt         DateTime?
+  isDeleted        Boolean  @default(false)
+  deletedAt        DateTime?
+  
+  // Thread support
+  parentId         String?
+  parent           ChannelMessage? @relation("MessageReplies", fields: [parentId], references: [id])
+  replies          ChannelMessage[] @relation("MessageReplies")
+  replyCount       Int      @default(0)
+  
+  // Reactions
+  reactions        Json?    // Array of { emoji, userIds }
+  
+  // Mentions
+  mentionedUserIds String[]
+  
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  
+  @@index([channelId])
+  @@index([userId])
+  @@index([parentId])
+  @@index([createdAt])
+  @@index([documentId])
+  @@index([matterId])
+}
+
+enum ChannelType {
+  PUBLIC    // Anyone in org can see and join
+  PRIVATE   // Invite only
+  DIRECT    // 1:1 or small group DM
+  DOCUMENT  // Document-specific channel
+  MATTER    // Matter-specific channel
+}
+
+enum ChannelMemberRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+enum MessageType {
+  TEXT
+  DOCUMENT_SHARE
+  MATTER_UPDATE
+  SYSTEM          // System messages (user joined, etc.)
 }
 
 

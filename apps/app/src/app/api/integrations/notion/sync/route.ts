@@ -39,17 +39,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get the document
+    // Get the document - check both user ownership and organization
     const document = await prisma.document.findFirst({
       where: {
         id: documentId,
-        organizationId: orgId,
+        OR: [
+          { organizationId: orgId },
+          { userId: userId },
+        ],
       },
     });
 
     if (!document) {
       return NextResponse.json(
-        { error: "Document not found" },
+        { error: "Document not found or you don't have access" },
         { status: 404 }
       );
     }
@@ -65,26 +68,16 @@ export async function POST(request: NextRequest) {
     // Convert document content to Notion blocks
     const contentBlocks = convertToNotionBlocks(document.content || "");
 
-    // Determine parent (page or database)
-    let parent: Record<string, string>;
+    // Determine parent (page or database, or workspace for public integrations)
+    let parent: Record<string, string | boolean>;
     if (databaseId) {
       parent = { database_id: databaseId };
     } else if (parentPageId) {
       parent = { page_id: parentPageId };
     } else {
-      // Use the connected workspace as parent
-      const settings = integration.settings as Record<string, any> || {};
-      if (settings.workspaceId) {
-        // Can't create page directly in workspace, need a parent page
-        return NextResponse.json(
-          { error: "Please select a parent page or database" },
-          { status: 400 }
-        );
-      }
-      return NextResponse.json(
-        { error: "Please select a destination in Notion" },
-        { status: 400 }
-      );
+      // For public integrations, we can create a private page at workspace level
+      // by using workspace: true as the parent
+      parent = { workspace: true };
     }
 
     // Create page in Notion

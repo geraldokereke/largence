@@ -89,17 +89,23 @@ export default function Home() {
       {isLoading ? (
         <div className="space-y-3">
           {/* Stats skeleton */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="rounded-sm border bg-card p-3">
-                <Skeleton className="h-6 w-6 mb-2" />
-                <Skeleton className="h-7 w-12 mb-1" />
-                <Skeleton className="h-3 w-20" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="rounded-sm border bg-card p-4">
+                <div className="flex items-start justify-between mb-2">
+                  <Skeleton className="h-8 w-8 rounded-sm" />
+                  <Skeleton className="h-4 w-4" />
+                </div>
+                <div className="space-y-1">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-6 w-16" />
+                  <Skeleton className="h-3 w-20" />
+                </div>
               </div>
             ))}
           </div>
           {/* Cards skeleton */}
-          <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid gap-2 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <div key={i} className="rounded-sm border bg-card p-3">
                 <div className="flex items-start justify-between gap-2 mb-2">
@@ -141,7 +147,7 @@ export default function Home() {
             </Button>
           </div>
 
-          <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 auto-rows-fr">
+          <div className="grid gap-2 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 auto-rows-fr">
             {documents.slice(0, 8).map((doc) => (
               <div
                 key={doc.id}

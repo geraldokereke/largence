@@ -1,12 +1,14 @@
 "use client";
 
-import { useAuth } from "@clerk/nextjs";
+import { useAuth, useOrganization } from "@clerk/nextjs";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { EmptyState } from "@largence/components/empty-state";
 import { Button } from "@largence/components/ui/button";
 import { Input } from "@largence/components/ui/input";
 import { Skeleton } from "@largence/components/ui/skeleton";
+import { Tabs, TabsList, TabsTrigger } from "@largence/components/ui/tabs";
+import { Badge } from "@largence/components/ui/badge";
 import { NewDocumentDialog } from "@largence/components/new-document-dialog";
 import {
   FileText,
@@ -26,6 +28,10 @@ import {
   Eye,
   X,
   GripVertical,
+  Users,
+  Share2,
+  Cloud,
+  PenTool,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -48,9 +54,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@largence/components/ui/select";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
 import { useState, useEffect, useMemo, useCallback } from "react";
+import { ShareDocumentDialog } from "@/components/share-document-dialog";
+import { ExportDocumentDialog } from "@/components/export-document-dialog";
+import { ImportDialog } from "@/components/import-dialog";
+import { DocuSignSignatureDialog } from "@/components/docusign-signature-dialog";
 import {
   DndContext,
   closestCenter,
@@ -77,6 +87,9 @@ interface Document {
   status: "DRAFT" | "FINAL" | "ARCHIVED";
   documentType: string;
   jurisdiction: string;
+  visibility?: string;
+  userId?: string;
+  collaboratorPermission?: string;
   createdAt: string;
   updatedAt: string;
   order?: number;
@@ -84,16 +97,19 @@ interface Document {
 
 interface DocumentsResponse {
   documents: Document[];
+  filter?: string;
 }
 
 type ViewMode = "grid" | "list" | "compact";
+type DocumentFilter = "my" | "team" | "shared";
 
 const ITEMS_PER_PAGE = 12;
 const VIEW_MODE_KEY = "largence_documents_view_mode";
 const DOCUMENT_ORDER_KEY = "largence_documents_order";
+const DOCUMENT_FILTER_KEY = "largence_documents_filter";
 
-async function fetchDocuments(): Promise<DocumentsResponse> {
-  const response = await fetch("/api/documents");
+async function fetchDocuments(filter: DocumentFilter = "my"): Promise<DocumentsResponse> {
+  const response = await fetch(`/api/documents?filter=${filter}`);
   if (!response.ok) {
     throw new Error("Failed to fetch documents");
   }
@@ -116,16 +132,22 @@ function SortableDocumentCard({
   getStatusColor,
   onEdit,
   onExport,
+  onExportCloud,
   onDelete,
   onPreview,
+  onShare,
+  onDocuSign,
 }: {
   doc: Document;
   viewMode: ViewMode;
   getStatusColor: (status: string) => string;
   onEdit: (id: string) => void;
   onExport: (doc: Document, e: React.MouseEvent) => void;
+  onExportCloud: (doc: Document, e: React.MouseEvent) => void;
   onDelete: (doc: Document, e: React.MouseEvent) => void;
   onPreview: (doc: Document) => void;
+  onShare: (doc: Document, e: React.MouseEvent) => void;
+  onDocuSign: (doc: Document, e: React.MouseEvent) => void;
 }) {
   const {
     attributes,
@@ -205,12 +227,21 @@ function SortableDocumentCard({
                 <MoreVertical className="h-3.5 w-3.5" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-36">
+            <DropdownMenuContent align="end" className="w-44">
               <DropdownMenuItem onClick={() => onEdit(doc.id)} className="text-xs">
                 <Edit className="h-3.5 w-3.5 mr-2" />Edit
               </DropdownMenuItem>
+              <DropdownMenuItem onClick={(e) => onShare(doc, e)} className="text-xs">
+                <Share2 className="h-3.5 w-3.5 mr-2" />Share
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={(e) => onDocuSign(doc, e)} className="text-xs">
+                <PenTool className="h-3.5 w-3.5 mr-2" />Request Signature
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={(e) => onExport(doc, e)} className="text-xs">
                 <Download className="h-3.5 w-3.5 mr-2" />Download
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={(e) => onExportCloud(doc, e)} className="text-xs">
+                <Cloud className="h-3.5 w-3.5 mr-2" />Export to Cloud
               </DropdownMenuItem>
               <DropdownMenuItem onClick={(e) => onDelete(doc, e)} className="text-destructive text-xs">
                 <Trash2 className="h-3.5 w-3.5 mr-2" />Delete
@@ -286,12 +317,21 @@ function SortableDocumentCard({
                 <MoreVertical className="h-3.5 w-3.5" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-36">
+            <DropdownMenuContent align="end" className="w-44">
               <DropdownMenuItem onClick={() => onEdit(doc.id)} className="text-xs">
                 <Edit className="h-3.5 w-3.5 mr-2" />Edit
               </DropdownMenuItem>
+              <DropdownMenuItem onClick={(e) => onShare(doc, e)} className="text-xs">
+                <Share2 className="h-3.5 w-3.5 mr-2" />Share
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={(e) => onDocuSign(doc, e)} className="text-xs">
+                <PenTool className="h-3.5 w-3.5 mr-2" />Request Signature
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={(e) => onExport(doc, e)} className="text-xs">
                 <Download className="h-3.5 w-3.5 mr-2" />Download
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={(e) => onExportCloud(doc, e)} className="text-xs">
+                <Cloud className="h-3.5 w-3.5 mr-2" />Export to Cloud
               </DropdownMenuItem>
               <DropdownMenuItem onClick={(e) => onDelete(doc, e)} className="text-destructive text-xs">
                 <Trash2 className="h-3.5 w-3.5 mr-2" />Delete
@@ -325,12 +365,18 @@ function SortableDocumentCard({
 
 export default function DocumentsPage() {
   const { userId } = useAuth();
+  const { organization } = useOrganization();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const queryClient = useQueryClient();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [documentToDelete, setDocumentToDelete] = useState<Document | null>(null);
   const [newDocDialogOpen, setNewDocDialogOpen] = useState(false);
   const [previewDocument, setPreviewDocument] = useState<Document | null>(null);
+  const [shareDocument, setShareDocument] = useState<Document | null>(null);
+  const [exportCloudDocument, setExportCloudDocument] = useState<Document | null>(null);
+  const [docuSignDocument, setDocuSignDocument] = useState<Document | null>(null);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
   
   // New state for enhanced features
   const [searchQuery, setSearchQuery] = useState("");
@@ -338,6 +384,17 @@ export default function DocumentsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState<"updated" | "created" | "title">("updated");
   const [documentOrder, setDocumentOrder] = useState<string[]>([]);
+  
+  // Get filter from URL or localStorage
+  const urlFilter = searchParams.get("filter") as DocumentFilter | null;
+  const [documentFilter, setDocumentFilter] = useState<DocumentFilter>(urlFilter || "my");
+
+  // Sync filter with URL params
+  useEffect(() => {
+    if (urlFilter && ["my", "team", "shared"].includes(urlFilter)) {
+      setDocumentFilter(urlFilter);
+    }
+  }, [urlFilter]);
 
   // Load persisted view mode and document order
   useEffect(() => {
@@ -351,12 +408,29 @@ export default function DocumentsPage() {
         setDocumentOrder(JSON.parse(savedOrder));
       } catch {}
     }
-  }, []);
+    // Only use saved filter if no URL filter
+    if (!urlFilter) {
+      const savedFilter = localStorage.getItem(DOCUMENT_FILTER_KEY);
+      if (savedFilter && ["my", "team", "shared"].includes(savedFilter)) {
+        setDocumentFilter(savedFilter as DocumentFilter);
+      }
+    }
+  }, [urlFilter]);
 
   // Persist view mode
   useEffect(() => {
     localStorage.setItem(VIEW_MODE_KEY, viewMode);
   }, [viewMode]);
+
+  // Persist document filter and update URL
+  const handleFilterChange = (filter: DocumentFilter) => {
+    setDocumentFilter(filter);
+    localStorage.setItem(DOCUMENT_FILTER_KEY, filter);
+    // Update URL without full page reload
+    const url = new URL(window.location.href);
+    url.searchParams.set("filter", filter);
+    window.history.pushState({}, "", url.toString());
+  };
 
   // DnD sensors
   const sensors = useSensors(
@@ -370,8 +444,8 @@ export default function DocumentsPage() {
     error,
     refetch,
   } = useQuery({
-    queryKey: ["documents"],
-    queryFn: fetchDocuments,
+    queryKey: ["documents", documentFilter],
+    queryFn: () => fetchDocuments(documentFilter),
     enabled: !!userId,
   });
 
@@ -482,6 +556,21 @@ export default function DocumentsPage() {
     setDeleteDialogOpen(true);
   };
 
+  const handleShareClick = (doc: Document, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShareDocument(doc);
+  };
+
+  const handleExportCloudClick = (doc: Document, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setExportCloudDocument(doc);
+  };
+
+  const handleDocuSignClick = (doc: Document, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setDocuSignDocument(doc);
+  };
+
   const handleDeleteConfirm = () => {
     if (documentToDelete) {
       deleteMutation.mutate(documentToDelete.id);
@@ -518,7 +607,7 @@ export default function DocumentsPage() {
       case "compact":
         return "flex flex-col gap-2";
       default:
-        return "grid gap-2 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 auto-rows-fr";
+        return "grid gap-2 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 auto-rows-fr";
     }
   };
 
@@ -529,7 +618,7 @@ export default function DocumentsPage() {
           <Skeleton className="h-6 w-36 mb-1" />
           <Skeleton className="h-3.5 w-64" />
         </div>
-        <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid gap-2 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
             <div key={i} className="rounded-sm border bg-card p-3">
               <div className="flex items-start justify-between gap-2 mb-2">
@@ -563,6 +652,25 @@ export default function DocumentsPage() {
   }
 
   if (documents.length === 0) {
+    const emptyStateConfig = {
+      my: {
+        title: "No documents yet",
+        description: "Get started by generating your first AI-powered legal document",
+        showCreate: true,
+      },
+      team: {
+        title: "No team documents",
+        description: "Documents shared with the entire team will appear here. Share your documents with your team to collaborate.",
+        showCreate: false,
+      },
+      shared: {
+        title: "Nothing shared with you",
+        description: "When team members share documents with you specifically, they'll appear here.",
+        showCreate: false,
+      },
+    };
+    const config = emptyStateConfig[documentFilter];
+
     return (
       <div className="flex flex-1 flex-col gap-3 p-3">
         <div className="mb-1">
@@ -572,14 +680,34 @@ export default function DocumentsPage() {
           </p>
         </div>
 
+        {/* Document Filter Tabs */}
+        {organization && (
+          <Tabs value={documentFilter} onValueChange={(v) => handleFilterChange(v as DocumentFilter)} className="w-full">
+            <TabsList className="grid w-full max-w-md grid-cols-3 h-9">
+              <TabsTrigger value="my" className="text-xs gap-1.5">
+                <FileText className="h-3.5 w-3.5" />
+                My Documents
+              </TabsTrigger>
+              <TabsTrigger value="team" className="text-xs gap-1.5">
+                <Users className="h-3.5 w-3.5" />
+                Team
+              </TabsTrigger>
+              <TabsTrigger value="shared" className="text-xs gap-1.5">
+                <Share2 className="h-3.5 w-3.5" />
+                Shared with Me
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        )}
+
         <EmptyState
-          icon={FileText}
-          title="No documents yet"
-          description="Get started by generating your first AI-powered legal document"
-          primaryAction={{
+          icon={documentFilter === "team" ? Users : documentFilter === "shared" ? Share2 : FileText}
+          title={config.title}
+          description={config.description}
+          primaryAction={config.showCreate ? {
             label: "Generate Document",
             onClick: () => router.push("/create"),
-          }}
+          } : undefined}
           secondaryAction={null}
           showTemplates={false}
         />
@@ -602,12 +730,36 @@ export default function DocumentsPage() {
           <Button variant="outline" size="icon" onClick={() => refetch()} className="h-8 w-8 rounded-sm">
             <RefreshCw className="h-3.5 w-3.5" />
           </Button>
+          <Button variant="outline" onClick={() => setImportDialogOpen(true)} className="h-8 rounded-sm text-sm">
+            <Cloud className="h-3.5 w-3.5 mr-1" />
+            Import
+          </Button>
           <Button onClick={() => setNewDocDialogOpen(true)} className="h-8 rounded-sm text-sm flex-1 sm:flex-none">
             <Plus className="h-3.5 w-3.5 mr-1" />
             New Document
           </Button>
         </div>
       </div>
+
+      {/* Document Filter Tabs */}
+      {organization && (
+        <Tabs value={documentFilter} onValueChange={(v) => handleFilterChange(v as DocumentFilter)} className="w-full">
+          <TabsList className="grid w-full max-w-md grid-cols-3 h-9">
+            <TabsTrigger value="my" className="text-xs gap-1.5">
+              <FileText className="h-3.5 w-3.5" />
+              My Documents
+            </TabsTrigger>
+            <TabsTrigger value="team" className="text-xs gap-1.5">
+              <Users className="h-3.5 w-3.5" />
+              Team
+            </TabsTrigger>
+            <TabsTrigger value="shared" className="text-xs gap-1.5">
+              <Share2 className="h-3.5 w-3.5" />
+              Shared with Me
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+      )}
 
       {/* Search and View Controls */}
       <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center justify-between">
@@ -701,7 +853,10 @@ export default function DocumentsPage() {
                   onEdit={(id) => router.push(`/documents/${id}`)}
                   onDelete={handleDeleteClick}
                   onExport={handleExport}
+                  onExportCloud={handleExportCloudClick}
                   onPreview={setPreviewDocument}
+                  onShare={handleShareClick}
+                  onDocuSign={handleDocuSignClick}
                 />
               ))}
             </div>
@@ -859,6 +1014,50 @@ export default function DocumentsPage() {
 
       {/* New Document Dialog */}
       <NewDocumentDialog open={newDocDialogOpen} onOpenChange={setNewDocDialogOpen} />
+
+      {/* Share Document Dialog */}
+      {shareDocument && (
+        <ShareDocumentDialog
+          documentId={shareDocument.id}
+          documentTitle={shareDocument.title}
+          open={!!shareDocument}
+          onOpenChange={(open) => !open && setShareDocument(null)}
+          isOwner={shareDocument.userId === userId}
+          currentVisibility={shareDocument.visibility || "PRIVATE"}
+          onVisibilityChange={(visibility) => {
+            setShareDocument((prev) => prev ? { ...prev, visibility } : null);
+          }}
+        />
+      )}
+
+      {/* Export to Cloud Dialog */}
+      {exportCloudDocument && (
+        <ExportDocumentDialog
+          documentId={exportCloudDocument.id}
+          documentTitle={exportCloudDocument.title}
+          open={!!exportCloudDocument}
+          onOpenChange={(open) => !open && setExportCloudDocument(null)}
+        />
+      )}
+
+      {/* DocuSign Signature Dialog */}
+      {docuSignDocument && (
+        <DocuSignSignatureDialog
+          documentId={docuSignDocument.id}
+          documentTitle={docuSignDocument.title}
+          open={!!docuSignDocument}
+          onOpenChange={(open) => !open && setDocuSignDocument(null)}
+        />
+      )}
+
+      {/* Import from Cloud Dialog */}
+      <ImportDialog
+        open={importDialogOpen}
+        onOpenChange={setImportDialogOpen}
+        onImport={(doc) => {
+          router.push(`/documents/${doc.id}`);
+        }}
+      />
     </div>
   );
 }

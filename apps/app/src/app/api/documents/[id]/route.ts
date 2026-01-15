@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import prisma from "@largence/lib/prisma";
 import { createAuditLog, getUserInitials } from "@/lib/audit";
+import { sendTemplatedEmail } from "@/lib/email";
 
 export async function GET(
   request: Request,
@@ -15,10 +16,14 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Simplified query that works without migration
     const document = await prisma.document.findFirst({
       where: {
         id,
-        OR: [{ userId }, ...(orgId ? [{ organizationId: orgId }] : [])],
+        OR: [
+          { userId }, // Owner
+          ...(orgId ? [{ organizationId: orgId }] : []), // Same organization
+        ],
       },
     });
 
@@ -29,7 +34,11 @@ export async function GET(
       );
     }
 
-    return NextResponse.json({ document });
+    return NextResponse.json({ 
+      document,
+      isOwner: document.userId === userId,
+      userPermission: document.userId === userId ? "OWNER" : "VIEW",
+    });
   } catch (error: any) {
     console.error("Fetch document error:", error);
     return NextResponse.json(
@@ -54,11 +63,14 @@ export async function PATCH(
     const body = await request.json();
     const { title, content, status, skipVersion } = body;
 
-    // Verify ownership
+    // Verify ownership or organization access
     const existing = await prisma.document.findFirst({
       where: {
         id,
-        OR: [{ userId }, ...(orgId ? [{ organizationId: orgId }] : [])],
+        OR: [
+          { userId }, // Owner
+          ...(orgId ? [{ organizationId: orgId }] : []), // Same organization
+        ],
       },
     });
 
@@ -66,6 +78,14 @@ export async function PATCH(
       return NextResponse.json(
         { error: "Document not found" },
         { status: 404 },
+      );
+    }
+
+    // For now, only owner can edit
+    if (existing.userId !== userId) {
+      return NextResponse.json(
+        { error: "Only document owner can edit" },
+        { status: 403 },
       );
     }
 
@@ -161,6 +181,37 @@ export async function PATCH(
         userName,
         userAvatar,
       });
+
+      // Send email notification for status changes to collaborators/shared users
+      if (status !== undefined && status !== existing.status) {
+        try {
+          // Get users who have access to this document (shared with)
+          const shares = await prisma.documentShare.findMany({
+            where: { documentId: id },
+            select: { sharedWithEmail: true },
+          });
+
+          const statusLabelsForEmail: Record<string, string> = {
+            DRAFT: "Draft",
+            FINAL: "Finalized",
+            ARCHIVED: "Archived",
+          };
+
+          for (const share of shares) {
+            if (share.sharedWithEmail) {
+              await sendTemplatedEmail("documentStatusChange", share.sharedWithEmail, {
+                documentTitle: document.title,
+                oldStatus: statusLabelsForEmail[existing.status] || existing.status,
+                newStatus: statusLabelsForEmail[status] || status,
+                changedBy: userName,
+                documentUrl: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001"}/documents/${id}`,
+              });
+            }
+          }
+        } catch (emailError) {
+          console.error("Failed to send status change emails:", emailError);
+        }
+      }
     }
 
     return NextResponse.json({ document });

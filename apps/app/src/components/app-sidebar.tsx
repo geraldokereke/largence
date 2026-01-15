@@ -19,6 +19,7 @@ import {
   Briefcase,
   ScrollText,
   BarChart3,
+  MessageSquare,
 } from "lucide-react";
 
 import { NavMain } from "@largence/components/nav-main";
@@ -53,7 +54,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     },
   });
 
-  const [documentCount, setDocumentCount] = React.useState<number | null>(null);
+  const [documentCounts, setDocumentCounts] = React.useState<{
+    my: number;
+    team: number;
+    shared: number;
+    total: number;
+  } | null>(null);
   const [plan, setPlan] = React.useState<string | null>(null);
   const [newDocDialogOpen, setNewDocDialogOpen] = React.useState(false);
   const upgradeModal = useUpgradeModal();
@@ -65,11 +71,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
     const fetchCounts = async () => {
       try {
-        const response = await fetch("/api/documents");
+        const response = await fetch("/api/documents/counts");
         if (response.ok) {
           const data = await response.json();
-          const documents = data.documents || [];
-          setDocumentCount(documents.length);
+          setDocumentCounts(data);
         }
       } catch (error) {
         console.error("Failed to fetch document counts:", error);
@@ -109,12 +114,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         title: "Documents",
         url: "/documents",
         icon: FileText,
-        badge: documentCount !== null ? String(documentCount) : undefined,
+        badge: documentCounts?.total ? String(documentCounts.total) : undefined,
       },
       {
         title: "Matters",
         url: "/matters",
         icon: Briefcase,
+      },
+      {
+        title: "Messages",
+        url: "/messages",
+        icon: MessageSquare,
       },
       {
         title: "Clause Library",
@@ -214,6 +224,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     <Sidebar
       collapsible="icon"
       className="top-(--header-height) h-[calc(100svh-var(--header-height))]! border-r"
+      data-walkthrough="sidebar"
       {...props}
     >
       <SidebarContent className="gap-0 px-2 py-1">
@@ -249,6 +260,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenuButton
               asChild
               className="h-8 rounded-md hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors group-data-[collapsible=icon]:justify-center"
+              data-walkthrough="new-document-btn"
             >
               <button
                 onClick={handleNewDocument}

@@ -1,7 +1,8 @@
-import { auth } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { randomBytes } from "crypto";
+import { notifyDocumentShared } from "@/lib/notifications";
 
 export async function GET(
   request: Request,
@@ -88,6 +89,29 @@ export async function POST(
     // Generate the share URL
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001";
     const shareUrl = `${baseUrl}/share/${accessToken}`;
+
+    // Send notification to the recipient
+    if (sharedWithEmail) {
+      try {
+        const user = await currentUser();
+        const sharedByName = user?.firstName 
+          ? `${user.firstName}${user.lastName ? ` ${user.lastName}` : ""}`
+          : user?.emailAddresses?.[0]?.emailAddress || "Someone";
+
+        await notifyDocumentShared({
+          recipientEmail: sharedWithEmail,
+          documentId,
+          documentTitle: document.title,
+          sharedByName,
+          organizationId: orgId,
+          permission: permission || "VIEW",
+          shareUrl,
+        });
+      } catch (notifyError) {
+        // Don't fail the share if notification fails
+        console.error("Failed to send share notification:", notifyError);
+      }
+    }
 
     return NextResponse.json({
       ...share,

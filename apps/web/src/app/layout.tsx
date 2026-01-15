@@ -140,7 +140,7 @@ export const metadata: Metadata = {
     template: "%s | Largence",
   },
   description:
-    "Automate contract drafting, ensure regulatory compliance, and streamline governance for African enterprises with AI-powered legal intelligence.",
+    "Automate contract drafting, ensure regulatory compliance, and streamline governance for enterprises with AI-powered legal intelligence.",
   keywords: [
     "legal tech",
     "contract management",
@@ -168,7 +168,7 @@ export const metadata: Metadata = {
     siteName: "Largence",
     title: "Largence - Legal Intelligence for Enterprises",
     description:
-      "Automate contract drafting, ensure regulatory compliance, and streamline governance for African enterprises with AI-powered legal intelligence.",
+      "Automate contract drafting, ensure regulatory compliance, and streamline governance for enterprises with AI-powered legal intelligence.",
     images: [
       {
         url: "/og-image.png",
@@ -182,7 +182,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Largence - Legal Intelligence for Enterprises",
     description:
-      "Automate contract drafting, ensure regulatory compliance, and streamline governance for African enterprises.",
+      "Automate contract drafting, ensure regulatory compliance, and streamline governance for enterprises.",
     images: ["/og-image.png"],
     creator: "@largence",
   },

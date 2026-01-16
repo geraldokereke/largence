@@ -103,66 +103,39 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     fetchBilling();
   }, [userId]);
 
-  const data = {
-    navMain: [
-      {
-        title: "Home",
-        url: "/",
-        icon: Home,
-      },
-      {
-        title: "Documents",
-        url: "/documents",
-        icon: FileText,
-        badge: documentCounts?.total ? String(documentCounts.total) : undefined,
-      },
-      {
-        title: "Matters",
-        url: "/matters",
-        icon: Briefcase,
-      },
-      {
-        title: "Messages",
-        url: "/messages",
-        icon: MessageSquare,
-      },
-      {
-        title: "Clause Library",
-        url: "/clauses",
-        icon: ScrollText,
-      },
-      {
-        title: "Compliance Checks",
-        url: "/compliance",
-        icon: ShieldCheck,
-      },
-      {
-        title: "Templates Library",
-        url: "/templates",
-        icon: Folder,
-      },
-      {
-        title: "Analytics",
-        url: "/analytics",
-        icon: BarChart3,
-      },
-      {
-        title: "Teams & Roles",
-        url: "/teams",
-        icon: Users,
-      },
-      {
-        title: "Audit Trails",
-        url: "/audit",
-        icon: FileStack,
-      },
-      {
-        title: "Integrations",
-        url: "/integrations",
-        icon: Plug2Icon,
-      },
-    ],
-  };
+  const navSections = [
+    {
+      header: "Workspace",
+      items: [
+        { title: "Home", url: "/", icon: Home },
+        { title: "Documents", url: "/documents", icon: FileText, badge: documentCounts?.total ? String(documentCounts.total) : undefined },
+        { title: "Matters", url: "/matters", icon: Briefcase },
+        { title: "Messages", url: "/messages", icon: MessageSquare },
+      ],
+    },
+    {
+      header: "Libraries",
+      items: [
+        { title: "Clause Library", url: "/clauses", icon: ScrollText },
+        { title: "Templates Library", url: "/templates", icon: Folder },
+      ],
+    },
+    {
+      header: "Compliance & Analytics",
+      items: [
+        { title: "Compliance Checks", url: "/compliance", icon: ShieldCheck },
+        { title: "Analytics", url: "/analytics", icon: BarChart3 },
+      ],
+    },
+    {
+      header: "Tools",
+      items: [
+        { title: "Teams & Roles", url: "/teams", icon: Users },
+        { title: "Audit Trails", url: "/audit", icon: FileStack },
+        { title: "Integrations", url: "/integrations", icon: Plug2Icon },
+      ],
+    },
+  ];
 
   React.useEffect(() => {
     setIsClient(true);
@@ -228,7 +201,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       {...props}
     >
       <SidebarContent className="gap-0 px-2 py-1">
-        <NavMain items={data.navMain} currentPath={pathname} />
+        {navSections.map((section, idx) => (
+          <React.Fragment key={section.header}>
+            <div className="px-2 pt-3 pb-1 text-xs font-semibold text-muted-foreground uppercase tracking-wide group-data-[collapsible=icon]:hidden">
+              {section.header}
+            </div>
+            <NavMain items={section.items} currentPath={pathname} />
+            {idx < navSections.length - 1 && (
+              <hr className="my-2 border-sidebar-accent/30" />
+            )}
+          </React.Fragment>
+        ))}
       </SidebarContent>
        {(plan === "FREE" || plan === null) && (
           <div className="mb-3 mx-3 p-3 rounded-sm border bg-gradient-to-br from-primary/5 to-primary/10 group-data-[collapsible=icon]:hidden">

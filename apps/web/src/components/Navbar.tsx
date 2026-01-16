@@ -4,10 +4,10 @@ import * as React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Button } from "@largence/ui";
 import { Menu, X, User, LogOut, LayoutDashboard, HomeIcon } from "lucide-react";
 import { useUser, useClerk, SignedIn, SignedOut } from "@clerk/nextjs";
 import { ScheduleDemoDialog } from "./schedule-demo-dialog";
+import { Button } from "@largence/ui";
 
 export const Navbar: React.FC = () => {
   const pathname = usePathname();
@@ -52,8 +52,11 @@ export const Navbar: React.FC = () => {
 
   const menuItems = [
     { href: "#features", label: "Features" },
-    { href: "/templates", label: "Templates", isPage: true },
+    // { href: "/templates", label: "Templates", isPage: true },
+    { href: "#howitworks", label: "How it Works" },
     { href: "#pricing", label: "Pricing" },
+    { href: "#faq", label: "FAQ" },
+    { href: "#security", label: "Security" },
   ];
 
   // Handle link clicks - redirect to home page with hash if not on home
@@ -74,9 +77,9 @@ export const Navbar: React.FC = () => {
     <>
       <nav className="fixed top-0 left-0 right-0 z-50 py-2 px-4 touch-manipulation">
         <div
-          className={`max-w-6xl mx-auto px-4 sm:px-6 transition-all duration-500 ease-in-out rounded-xl ${
+          className={`max-w-6xl mx-auto px-4 sm:px-4 transition-all duration-500 ease-in-out rounded-xl ${
             scrolled
-              ? "rounded-xl bg-background/80 backdrop-blur-md border"
+              ? "rounded-xl bg-transparent backdrop-blur-md border"
               : ""
           }`}
         >
@@ -84,18 +87,27 @@ export const Navbar: React.FC = () => {
             {/* Logo */}
             <Link
               href="/"
-              className="flex items-center gap-2 group z-50 shrink-0"
+              className="flex items-center gap-2 group z-50 shrink-0 dark:hidden"
             >
               <Image
-                src="/logo.png"
+                src="/logo-black.png"
                 alt="Largence Logo"
-                width={28}
-                height={28}
-                className="shrink-0 sm:w-7 sm:h-7"
+                width={100}
+                height={50}
+                className="shrink-0 sm:h-6"
               />
-              <span className="text-base sm:text-lg font-semibold font-heading tracking-tight group-hover:text-primary transition-colors duration-200">
-                Largence
-              </span>
+            </Link>
+             <Link
+              href="/"
+              className="items-center gap-2 group z-50 shrink-0 hidden dark:flex"
+            >
+              <Image
+                src="/logo-white.png"
+                alt="Largence Logo"
+                width={100}
+                height={50}
+                className="shrink-0 sm:h-6"
+              />
             </Link>
 
             {/* Desktop Menu */}
@@ -133,24 +145,24 @@ export const Navbar: React.FC = () => {
                     size="sm"
                     className="font-medium rounded-sm transition-all duration-200 cursor-pointer text-sm"
                   >
-                    Sign In
+                    Login
                   </Button>
                 </Link>
                 <Button
                   onClick={() => setDemoDialogOpen(true)}
                   variant="outline"
                   size="sm"
-                  className="font-medium rounded-sm transition-all duration-200 border-border/50 cursor-pointer text-sm"
+                  className="font-medium rounded-sm border transition-all duration-200 border-border cursor-pointer text-sm"
                 >
-                  Book Demo
+                  Get a Demo
                 </Button>
                 <Link href="https://app.largence.com/auth/signup">
                   <Button
-                    variant="default"
+                    variant="secondary"
                     size="sm"
-                    className="font-medium rounded-sm transition-all duration-200 cursor-pointer text-sm"
+                    className="font-medium rounded-sm transition-all duration-200 cursor-pointer text-sm bg-white text-black"
                   >
-                    Get Started
+                    Sign up
                   </Button>
                 </Link>
               </SignedOut>

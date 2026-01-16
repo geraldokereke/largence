@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { Hero } from "@/components/Hero";
-import { FeaturesSection } from "@/components/landing/FeaturesSection";
+import FeaturesSection from "@/components/landing/FeaturesSection";
 import { PricingSection } from "@/components/landing/PricingSection";
 import { Footer } from "@/components/landing/Footer";
 

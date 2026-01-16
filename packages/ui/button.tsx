@@ -28,14 +28,14 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           variant === "destructive" &&
             "bg-destructive text-white hover:bg-destructive/90",
           variant === "outline" &&
-            "border border-border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground",
+            "border border-border shadow-xs hover:bg-accent hover:text-accent-foreground",
           variant === "secondary" &&
             "bg-secondary text-secondary-foreground hover:bg-secondary/80",
           variant === "ghost" && "hover:bg-accent hover:text-accent-foreground",
           variant === "link" &&
             "text-primary underline-offset-4 hover:underline",
           size === "default" && "h-9 px-4 py-2",
-          size === "sm" && "h-8 rounded-sm px-3",
+          size === "sm" && "h-8 rounded-sm px-4",
           size === "lg" && "h-11 rounded-sm px-8",
           size === "icon" && "size-9",
           className,

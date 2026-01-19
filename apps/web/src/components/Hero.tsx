@@ -110,6 +110,9 @@ export function Hero() {
         {/* Gradient overlays for blending - Dark mode (black) */}
         <div className="absolute inset-0 bg-linear-to-b from-black/80 via-black/40 to-black pointer-events-none z-10 hidden dark:block" />
         
+        {/* Bottom fade to black overlay */}
+        <div className="absolute bottom-0 left-0 right-0 h-64 bg-linear-to-t from-black via-black/50 to-transparent pointer-events-none z-20" />
+        
         <div className="w-full mx-auto z-10 py-12">
           {/* Badge */}
           <div className="max-w-6xl mx-auto z-10 w-full">
@@ -171,7 +174,7 @@ export function Hero() {
               transition={{ duration: 0.8, delay: 0.5 }}
               className="w-full"
             >
-              <div className="relative group rounded-xl border bg-card overflow-hidden shadow-2xl">
+              <div className="relative group rounded-xl overflow-hidden shadow-2xl">
                 <div className="relative aspect-video w-full bg-muted">
                   <div className="relative aspect-video w-full">
                 <Image

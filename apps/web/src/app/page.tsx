@@ -5,6 +5,7 @@ import { Hero } from "@/components/Hero";
 import {FeaturesSection} from "@/components/landing/FeaturesSection";
 import { PricingSection } from "@/components/landing/PricingSection";
 import { Footer } from "@/components/landing/Footer";
+import LegalPlatformCards from "@/components/landing/LegalPlatformsCards";
 
 // Import Navbar dynamically with no SSR since it uses useTheme
 const Navbar = dynamic(
@@ -19,6 +20,7 @@ export default function Home() {
     <div className="min-h-screen bg-background">
       <Navbar />
       <Hero />
+      <LegalPlatformCards/>
       <FeaturesSection />
       <PricingSection />
       <Footer />

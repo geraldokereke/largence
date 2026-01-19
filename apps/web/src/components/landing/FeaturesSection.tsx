@@ -10,52 +10,59 @@ const features = [
     id: "documents",
     icon: FileText,
     title: "Intelligent Document Automation",
-    description: "Streamline document creation with AI-powered templates and smart drafting capabilities. Seamlessly export to industry-standard formats.",
+    description:
+      "Create and manage documents faster with AI-powered templates and smart drafting. Export seamlessly to standard formats.",
     screenshot: "/hero.png",
   },
   {
     id: "compliance",
     icon: Shield,
     title: "Real-Time Compliance Monitoring",
-    description: "Proactive risk detection through automated compliance analysis. Stay ahead of regulatory requirements with instant alerts.",
+    description:
+      "Automatically detect risks and stay compliant with continuous monitoring and instant regulatory alerts.",
     screenshot: "/hero-dark.png",
   },
   {
     id: "collaboration",
     icon: Users,
     title: "Unified Team Workspace",
-    description: "Enterprise-grade collaboration with granular permissions and comprehensive audit trails. Empower your team to work efficiently.",
+    description:
+      "Collaborate securely with role-based access, shared workspaces, and full activity audit trails.",
     screenshot: "/hero.png",
   },
   {
     id: "cloud",
     icon: Cloud,
     title: "Enterprise Cloud Sync",
-    description: "Seamless integration with leading cloud platforms. Maintain workflow continuity across your entire tech ecosystem.",
+    description:
+      "Sync effortlessly with leading cloud services to keep workflows connected and always up to date.",
     screenshot: "/hero-dark.png",
   },
   {
     id: "messaging",
     icon: MessageSquare,
     title: "Contextual Communication",
-    description: "Matter-centric messaging that eliminates fragmented email threads. Keep conversations organized and accessible.",
+    description:
+      "Centralize discussions with matter-based messaging that replaces cluttered email threads.",
     screenshot: "/hero.png",
   },
   {
     id: "signatures",
     icon: FileSignature,
     title: "Digital Signature Workflow",
-    description: "Secure, legally-binding e-signatures with real-time tracking. Accelerate deal closures with integrated DocuSign support.",
+    description:
+      "Send, track, and complete legally binding e-signatures faster with built-in DocuSign integration.",
     screenshot: "/hero-dark.png",
   },
 ];
+
 
 export function FeaturesSection() {
   const [activeFeature, setActiveFeature] = useState(features[0]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const sectionRef = useRef(null);
   const isInView = useInView(sectionRef, { once: true, margin: "-100px" });
-
+  const fullheight = 'h-full';
   // Auto-rotate features every 4 seconds
   useEffect(() => {
     const interval = setInterval(() => {
@@ -64,13 +71,13 @@ export function FeaturesSection() {
         setActiveFeature(features[nextIndex]);
         return nextIndex;
       });
-    }, 8000);
+    }, 4000);
 
     return () => clearInterval(interval);
   }, []);
 
   return (
-    <section id="features" className="py-16 md:py-24 px-4 sm:px-6 h-screen" ref={sectionRef}>
+    <section id="features" className="py-16 md:py-0 px-4 sm:px-6 h-screen" ref={sectionRef}>
       {/* Content Layer */}
       <div className="relative max-w-6xl mx-auto h-full">
         {/* Background Image Layer - contained within max-w-6xl */}
@@ -90,18 +97,32 @@ export function FeaturesSection() {
               priority
             />
           </motion.div>
-          {/* Diagonal gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-br from-black via-black/70 to-transparent"></div>
-          <div className="absolute inset-0 bg-gradient-to-br from-black via-black/20 to-transparent"></div>
+          {/* Diagonal linear overlay */}
+          <div className="absolute inset-0 bg-linear-to-br from-background via-background/60 to-transparent"></div>
+          <div className="absolute inset-0 bg-linear-to-br from-background via-background/10 to-transparent"></div>
+          <div className="absolute inset-0 bg-linear-to-r from-background via-background/10 to-transparent"></div>
+          
+          {/* Edge blending overlays */}
+          {/* Top edge fade */}
+          <div className="absolute top-0 left-0 right-0 h-32 bg-linear-to-b from-background to-transparent"></div>
+          
+          {/* Bottom edge fade */}
+          <div className="absolute bottom-0 left-0 right-0 h-32 bg-linear-to-t from-background to-transparent"></div>
+          
+          {/* Left edge fade */}
+          <div className="absolute top-0 bottom-0 left-0 w-full bg-linear-to-r from-background via-transparent to-transparent"></div>
+          
+          {/* Right edge fade */}
+          <div className="absolute top-0 bottom-0 right-0 w-40 bg-linear-to-l from-background via-transparent to-transparent"></div>
         </div>
         
         {/* Text Content */}
         <div className="relative z-10">
-          <div className="text-start mb-12 max-w-xs">
-            <h1 className="text-4xl font-bold mb-4">
-              Built for Modern <br></br> Legal Teams
+          <div className="text-start mb-12">
+            <h1 className="text-4xl font-display font-medium mb-4">
+              Built to Support Today's <br/> Legal Teams
             </h1>
-             <p className="text-md text-gray-400">
+            <p className="text-lg text-white/70 font-display max-w-xs">
               Intelligent tools that help your team work smarter and faster.
             </p>
           </div>
@@ -129,7 +150,7 @@ export function FeaturesSection() {
                   <div className="flex gap-3 items-stretch">
                     <motion.div 
                       animate={{ 
-                        height: isActive ? '80px' : '25px'
+                        height: isActive ? '70px' : '20px'
                       }}
                       transition={{ duration: 0.5, ease: "easeInOut" }}
                       className={`w-[3.5px] rounded-[0.5px] transition-colors duration-500 ${
@@ -138,10 +159,9 @@ export function FeaturesSection() {
                     />
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-1">
-                        
                         <h2 
-                          className={`text-base transition-all duration-500 ${
-                            isActive ? 'text-white font-semibold' : 'text-white/40 font-medium'
+                          className={`text-base font-display font-medium transition-all duration-500 ${
+                            isActive ? 'text-white' : 'text-white/40'
                           }`}
                         >
                           {feature.title}
@@ -154,7 +174,7 @@ export function FeaturesSection() {
                           opacity: isActive ? 1 : 0
                         }}
                         transition={{ duration: 0.3 }}
-                        className={`text-sm text-white/50 overflow-hidden max-w-sm ${
+                        className={`text-sm text-white/60 font-display overflow-hidden max-w-sm ${
                           isActive ? 'mt-2' : ''
                         }`}
                       >

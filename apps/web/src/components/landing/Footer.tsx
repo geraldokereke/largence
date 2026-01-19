@@ -7,18 +7,30 @@ export function Footer() {
       <div className="max-w-6xl mx-auto px-6 sm:px-8 lg:px-12 py-6 md:py-8 rounded-xl border border-border/30">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 mb-8 md:mb-10">
           <div>
-            <div className="flex items-center gap-2 mb-4">
+             <Link
+              href="/"
+              className="flex items-center gap-2 group z-50 shrink-0 dark:hidden"
+            >
               <Image
-                src="/logo.png"
+                src="/logo-black.png"
                 alt="Largence Logo"
-                width={28}
-                height={28}
-                className="shrink-0"
+                width={100}
+                height={50}
+                className="shrink-0 sm:h-6"
               />
-              <span className="font-heading text-lg font-semibold">
-                Largence
-              </span>
-            </div>
+            </Link>
+             <Link
+              href="/"
+              className="items-center gap-2 group z-50 shrink-0 hidden dark:flex"
+            >
+              <Image
+                src="/logo-white.png"
+                alt="Largence Logo"
+                width={100}
+                height={50}
+                className="shrink-0 sm:h-6"
+              />
+            </Link>
             <p className="text-sm text-muted-foreground">
               Legal Intelligence for Enterprises
             </p>

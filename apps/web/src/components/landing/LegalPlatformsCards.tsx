@@ -106,7 +106,7 @@ const LegalPlatformCards = () => {
                 onMouseEnter={() => setHoveredCard(card.id)}
                 onMouseLeave={() => setHoveredCard(null)}
               >
-                <div className="relative h-125 rounded-3xl bg-zinc-900 border border-zinc-800 hover:border-primary/50 shadow-xl hover:shadow-2xl transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] overflow-hidden group">
+                <div className="relative h-125 rounded-3xl bg-card border border-border hover:border-primary/50 shadow-xl hover:shadow-2xl transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] overflow-hidden group">
                 
                   <div className="p-10 h-full flex flex-col relative z-10">
                     {/* Header Section */}
@@ -118,7 +118,7 @@ const LegalPlatformCards = () => {
                       </div>
                       
                       <div className="mb-4">
-                        <span className={`text-xs font-semibold ${isHovered ? "text-primary/50" : "text-gray-500"} uppercase tracking-widest transition-colors duration-300`}>
+                        <span className={`text-xs font-semibold ${isHovered ? "text-primary/50" : "text-white/40"} uppercase tracking-widest transition-colors duration-300`}>
                           {card.label}
                         </span>
                       </div>

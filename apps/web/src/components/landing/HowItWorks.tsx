@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { FileText, Sparkles, CheckCircle, Send } from "lucide-react";
+import ScrollFloat from "../ScrollFloat";
 
 export default function HowItWorks() {
   const targetRef = useRef<HTMLDivElement>(null);
@@ -13,7 +14,7 @@ export default function HowItWorks() {
     offset: ["start start", "end end"],
   });
 
-  const x = useTransform(scrollYProgress, [0, 1], ["5%", "-220%"]);
+  const x = useTransform(scrollYProgress, [0, 1], ["5%", "-140%"]);
   const headerOpacity = useTransform(scrollYProgress, [0, 0.9, 1], [1, 1, 0]);
 
   const howItWorksSteps = [
@@ -52,12 +53,11 @@ export default function HowItWorks() {
           style={{ opacity: headerOpacity }}
           className="absolute top-24 md:top-32 left-0 right-0 z-20 text-center px-6"
         >
-        
         <h2 className="text-4xl font-display font-medium mb-4">
-            Core Capabilities
+           The Workflow in Motion
         </h2>
         <p className="text-lg text-white/70 font-display max-w-xl mx-auto">
-            The essential building blocks powering intelligent legal workflows.
+           Every step designed to accelerate legal work with intelligence and clarity.
         </p>
         </motion.div>
 

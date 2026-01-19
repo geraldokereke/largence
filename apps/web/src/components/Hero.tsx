@@ -9,6 +9,26 @@ import { Button } from "@largence/ui";
 import AnimatedBadge from "./landing/Badge";
 import Image from "next/image";
 
+// Raindrop component
+const Raindrop = ({ delay, left, duration }: { delay: number; left: string; duration: number }) => {
+  return (
+    <motion.div
+      initial={{ y: -20, opacity: 0 }}
+      animate={{
+        y: "100vh",
+        opacity: [0, 1, 1, 0],
+      }}
+      transition={{
+        duration: duration,
+        delay: delay,
+        repeat: Infinity,
+        ease: "linear",
+      }}
+      className="absolute top-0 w-1 h-12 bg-linear-to-b from-transparent via-green-400/40 to-transparent rounded-full"
+      style={{ left }}
+    />
+  );
+};
 
 const tabs = [
   { 
@@ -89,6 +109,13 @@ const RandomColoredText = ({ text }: { text: string }) => {
 };
 
 export function Hero() {
+  // Generate random raindrops
+  const raindrops = Array.from({ length: 30 }, (_, i) => ({
+    id: i,
+    left: `${Math.random() * 100}%`,
+    delay: Math.random() * 5,
+    duration: 2 + Math.random() * 2,
+  }));
 
   return (
     <>
@@ -102,6 +129,18 @@ export function Hero() {
             className="object-cover"
             priority
           />
+        </div>
+
+        {/* Animated Raindrops */}
+        <div className="absolute inset-0 z-5 pointer-events-none overflow-hidden">
+          {raindrops.map((drop) => (
+            <Raindrop
+              key={drop.id}
+              delay={drop.delay}
+              left={drop.left}
+              duration={drop.duration}
+            />
+          ))}
         </div>
 
         {/* Gradient overlays for blending - Light mode (white) */}

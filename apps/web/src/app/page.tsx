@@ -6,6 +6,9 @@ import {FeaturesSection} from "@/components/landing/FeaturesSection";
 import { PricingSection } from "@/components/landing/PricingSection";
 import { Footer } from "@/components/landing/Footer";
 import LegalPlatformCards from "@/components/landing/LegalPlatformsCards";
+import BeyondFeatures from "@/components/landing/BeyondFeatures";
+import HowItWorks from "@/components/landing/HowItWorks";
+import FAQ from "@/components/landing/FAQ";
 
 // Import Navbar dynamically with no SSR since it uses useTheme
 const Navbar = dynamic(
@@ -22,7 +25,10 @@ export default function Home() {
       <Hero />
       <LegalPlatformCards/>
       <FeaturesSection />
+      <BeyondFeatures/>
+      <HowItWorks/>
       <PricingSection />
+      <FAQ/>
       <Footer />
     </div>
   );

@@ -122,7 +122,7 @@ export const Navbar: React.FC = () => {
                     href={item.href}
                     className={`text-sm font-medium transition-colors duration-200 relative group px-2.5 py-1.5 rounded-md ${
                       isActive
-                        ? "text-primary bg-primary/5"
+                        ? "text-primary"
                         : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                     }`}
                     onClick={(e) => handleLinkClick(e, item)}

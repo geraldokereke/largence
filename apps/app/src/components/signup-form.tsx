@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useSignUp } from "@clerk/nextjs";
+import { useSignUp, useSignIn } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { cn } from "@largence/lib/utils";
 import { Button } from "@largence/components/ui/button";
@@ -33,6 +33,7 @@ export function SignupForm({ className }: SignupFormProps) {
   >(null);
   const [password, setPassword] = useState("");
   const { signUp, setActive } = useSignUp();
+  const { signIn } = useSignIn();
   const router = useRouter();
 
   // Password validation
@@ -52,11 +53,11 @@ export function SignupForm({ className }: SignupFormProps) {
 
   const handleOAuthSignUp =
     (provider: "oauth_google" | "oauth_microsoft") => async () => {
-      if (!signUp) return;
+      if (!signIn) return;
 
       try {
         setOauthLoading(provider === "oauth_google" ? "google" : "microsoft");
-        await signUp.authenticateWithRedirect({
+        await signIn.authenticateWithRedirect({
           strategy: provider,
           redirectUrl: "/sso-callback",
           redirectUrlComplete: "/onboarding",
@@ -423,6 +424,9 @@ export function SignupForm({ className }: SignupFormProps) {
             )}
           </Button>
         </div>
+
+        {/* Clerk CAPTCHA widget container for bot protection */}
+        <div id="clerk-captcha" />
 
         <p className="text-center text-sm text-muted-foreground">
           Already have an account?{" "}

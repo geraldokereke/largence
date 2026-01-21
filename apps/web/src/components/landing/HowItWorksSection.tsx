@@ -150,13 +150,13 @@ export function HowItWorksSection() {
               
               <div className="relative aspect-video rounded-xl overflow-hidden border bg-muted">
                 <Image
-                  src="/hero.png"
+                  src="/hero-v2.png"
                   alt="Largence in action"
                   fill
                   className="object-cover dark:hidden"
                 />
                 <Image
-                  src="/hero-dark.png"
+                  src="/hero-dark-v2.png"
                   alt="Largence in action"
                   fill
                   className="object-cover hidden dark:block"

@@ -93,14 +93,14 @@ export function Hero() {
             <div className="relative group rounded-xl border bg-card overflow-hidden shadow-2xl">
               <div className="relative aspect-video w-full">
                 <Image
-                  src="/hero.png"
+                  src="/hero-v2.png"
                   alt="Largence Dashboard"
                   fill
                   className="object-cover object-top dark:hidden"
                   priority
                 />
                 <Image
-                  src="/hero-dark.png"
+                  src="/hero-dark-v2.png"
                   alt="Largence Dashboard"
                   fill
                   className="object-cover object-top hidden dark:block"

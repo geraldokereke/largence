@@ -27,7 +27,7 @@ export function DemoVideoModal({ open, onClose }: DemoVideoModalProps) {
           {/* Professional video player */}
           <video
             src="/demo.mp4"
-            poster="/hero.png"
+            poster="/hero-v2.png"
             controls
             autoPlay
             playsInline

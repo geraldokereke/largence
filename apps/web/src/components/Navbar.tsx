@@ -8,6 +8,7 @@ import { Menu, X, User, LogOut, LayoutDashboard, HomeIcon } from "lucide-react";
 import { useUser, useClerk, SignedIn, SignedOut } from "@clerk/nextjs";
 import { ScheduleDemoDialog } from "./schedule-demo-dialog";
 import { Button } from "@largence/ui";
+import { ModeToggle } from "./mode-toggle";
 
 export const Navbar: React.FC = () => {
   const pathname = usePathname();
@@ -78,8 +79,8 @@ export const Navbar: React.FC = () => {
       <nav className="fixed top-0 left-0 right-0 z-50 py-2 px-4 touch-manipulation">
         <div
           className={`max-w-6xl mx-auto px-4 sm:px-4 transition-all duration-500 ease-in-out rounded-xl ${scrolled
-              ? "rounded-xl bg-transparent backdrop-blur-md border"
-              : ""
+            ? "rounded-xl bg-transparent backdrop-blur-md border"
+            : ""
             }`}
         >
           <div className="flex items-center justify-between h-12 sm:h-14">
@@ -120,8 +121,8 @@ export const Navbar: React.FC = () => {
                     key={item.href}
                     href={item.href}
                     className={`text-sm font-medium transition-colors duration-200 relative group px-2.5 py-1.5 rounded-md ${isActive
-                        ? "text-primary"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                      ? "text-primary"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                       }`}
                     onClick={(e) => handleLinkClick(e, item)}
                   >
@@ -136,6 +137,7 @@ export const Navbar: React.FC = () => {
 
             {/* Desktop Actions */}
             <div className="hidden md:flex items-center gap-2 ml-auto">
+              <ModeToggle />
               <SignedOut>
                 <Link href="https://app.largence.com/login">
                   <Button
@@ -221,17 +223,20 @@ export const Navbar: React.FC = () => {
             </div>
 
             {/* Mobile Menu Button */}
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden relative z-50 p-1.5 text-foreground hover:text-primary transition-colors duration-200"
-              aria-label="Toggle menu"
-            >
-              {mobileMenuOpen ? (
-                <X className="w-5 h-5" />
-              ) : (
-                <Menu className="w-5 h-5" />
-              )}
-            </button>
+            <div className="md:hidden flex items-center gap-2">
+              <ModeToggle />
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="relative z-50 p-1.5 text-foreground hover:text-primary transition-colors duration-200"
+                aria-label="Toggle menu"
+              >
+                {mobileMenuOpen ? (
+                  <X className="w-5 h-5" />
+                ) : (
+                  <Menu className="w-5 h-5" />
+                )}
+              </button>
+            </div>
           </div>
         </div>
       </nav>
@@ -239,8 +244,8 @@ export const Navbar: React.FC = () => {
       {/* Mobile Menu Overlay */}
       <div
         className={`fixed inset-0 z-40 md:hidden transition-all duration-300 ${mobileMenuOpen
-            ? "opacity-100 pointer-events-auto"
-            : "opacity-0 pointer-events-none"
+          ? "opacity-100 pointer-events-auto"
+          : "opacity-0 pointer-events-none"
           }`}
       >
         {/* Backdrop */}
@@ -252,8 +257,8 @@ export const Navbar: React.FC = () => {
         {/* Menu Content */}
         <div
           className={`relative h-full flex flex-col pt-20 px-6 transform transition-all duration-300 ${mobileMenuOpen
-              ? "translate-y-0 opacity-100"
-              : "-translate-y-4 opacity-0"
+            ? "translate-y-0 opacity-100"
+            : "-translate-y-4 opacity-0"
             }`}
         >
           {/* Navigation Links */}
@@ -267,8 +272,8 @@ export const Navbar: React.FC = () => {
                   key={item.href}
                   href={item.href}
                   className={`text-base font-heading font-semibold transition-all duration-200 py-2 transform ${isActive
-                      ? "text-primary"
-                      : "text-foreground hover:text-primary"
+                    ? "text-primary"
+                    : "text-foreground hover:text-primary"
                     } ${mobileMenuOpen
                       ? "translate-x-0 opacity-100"
                       : "-translate-x-4 opacity-0"
@@ -287,8 +292,8 @@ export const Navbar: React.FC = () => {
           {/* Mobile Actions */}
           <div
             className={`flex flex-col gap-3 transform transition-all duration-300 ${mobileMenuOpen
-                ? "translate-x-0 opacity-100"
-                : "-translate-x-4 opacity-0"
+              ? "translate-x-0 opacity-100"
+              : "-translate-x-4 opacity-0"
               }`}
             style={{
               transitionDelay: mobileMenuOpen
@@ -342,8 +347,8 @@ export const Navbar: React.FC = () => {
           {/* Footer Info */}
           <div
             className={`mt-auto pb-8 text-center text-sm text-muted-foreground transform transition-all duration-300 ${mobileMenuOpen
-                ? "translate-y-0 opacity-100"
-                : "translate-y-4 opacity-0"
+              ? "translate-y-0 opacity-100"
+              : "translate-y-4 opacity-0"
               }`}
             style={{
               transitionDelay: mobileMenuOpen

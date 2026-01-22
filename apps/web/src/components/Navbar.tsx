@@ -62,10 +62,10 @@ export const Navbar: React.FC = () => {
   // Handle link clicks - redirect to home page with hash if not on home
   const handleLinkClick = (e: React.MouseEvent, item: typeof menuItems[0]) => {
     setMobileMenuOpen(false);
-    
+
     // If it's a page link, let normal navigation happen
     if ((item as any).isPage) return;
-    
+
     // If it's a hash link and we're not on the home page, navigate to home with hash
     if (item.href.startsWith("#") && pathname !== "/") {
       e.preventDefault();
@@ -77,11 +77,10 @@ export const Navbar: React.FC = () => {
     <>
       <nav className="fixed top-0 left-0 right-0 z-50 py-2 px-4 touch-manipulation">
         <div
-          className={`max-w-6xl mx-auto px-4 sm:px-4 transition-all duration-500 ease-in-out rounded-xl ${
-            scrolled
+          className={`max-w-6xl mx-auto px-4 sm:px-4 transition-all duration-500 ease-in-out rounded-xl ${scrolled
               ? "rounded-xl bg-transparent backdrop-blur-md border"
               : ""
-          }`}
+            }`}
         >
           <div className="flex items-center justify-between h-12 sm:h-14">
             {/* Logo */}
@@ -97,7 +96,7 @@ export const Navbar: React.FC = () => {
                 className="shrink-0 sm:h-6"
               />
             </Link>
-             <Link
+            <Link
               href="/"
               className="items-center gap-2 group z-50 shrink-0 hidden dark:flex"
             >
@@ -113,18 +112,17 @@ export const Navbar: React.FC = () => {
             {/* Desktop Menu */}
             <div className="hidden md:flex items-center gap-1 lg:gap-2 ml-8 lg:ml-10 mt-0.5">
               {menuItems.map((item) => {
-                const isActive = (item as any).isPage 
-                  ? pathname === item.href 
+                const isActive = (item as any).isPage
+                  ? pathname === item.href
                   : activeSection === item.href.substring(1);
                 return (
                   <Link
                     key={item.href}
                     href={item.href}
-                    className={`text-sm font-medium transition-colors duration-200 relative group px-2.5 py-1.5 rounded-md ${
-                      isActive
+                    className={`text-sm font-medium transition-colors duration-200 relative group px-2.5 py-1.5 rounded-md ${isActive
                         ? "text-primary"
                         : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                    }`}
+                      }`}
                     onClick={(e) => handleLinkClick(e, item)}
                   >
                     {item.label}
@@ -160,7 +158,7 @@ export const Navbar: React.FC = () => {
                   <Button
                     variant="secondary"
                     size="sm"
-                    className="font-medium rounded-sm transition-all duration-200 cursor-pointer text-sm bg-white text-black"
+                    className="font-medium rounded-sm transition-all duration-200 cursor-pointer text-sm bg-foreground text-background"
                   >
                     Sign up
                   </Button>
@@ -188,8 +186,8 @@ export const Navbar: React.FC = () => {
                   </button>
                   {profileMenuOpen && (
                     <>
-                      <div 
-                        className="fixed inset-0 z-40" 
+                      <div
+                        className="fixed inset-0 z-40"
                         onClick={() => setProfileMenuOpen(false)}
                       />
                       <div className="absolute right-0 top-full mt-2 w-48 py-1 bg-background border rounded-md shadow-lg z-50">
@@ -240,11 +238,10 @@ export const Navbar: React.FC = () => {
 
       {/* Mobile Menu Overlay */}
       <div
-        className={`fixed inset-0 z-40 md:hidden transition-all duration-300 ${
-          mobileMenuOpen
+        className={`fixed inset-0 z-40 md:hidden transition-all duration-300 ${mobileMenuOpen
             ? "opacity-100 pointer-events-auto"
             : "opacity-0 pointer-events-none"
-        }`}
+          }`}
       >
         {/* Backdrop */}
         <div
@@ -254,31 +251,28 @@ export const Navbar: React.FC = () => {
 
         {/* Menu Content */}
         <div
-          className={`relative h-full flex flex-col pt-20 px-6 transform transition-all duration-300 ${
-            mobileMenuOpen
+          className={`relative h-full flex flex-col pt-20 px-6 transform transition-all duration-300 ${mobileMenuOpen
               ? "translate-y-0 opacity-100"
               : "-translate-y-4 opacity-0"
-          }`}
+            }`}
         >
           {/* Navigation Links */}
           <div className="flex flex-col space-y-1 mb-8">
             {menuItems.map((item, index) => {
-              const isActive = (item as any).isPage 
-                ? pathname === item.href 
+              const isActive = (item as any).isPage
+                ? pathname === item.href
                 : activeSection === item.href.substring(1);
               return (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`text-base font-heading font-semibold transition-all duration-200 py-2 transform ${
-                    isActive
+                  className={`text-base font-heading font-semibold transition-all duration-200 py-2 transform ${isActive
                       ? "text-primary"
                       : "text-foreground hover:text-primary"
-                  } ${
-                    mobileMenuOpen
+                    } ${mobileMenuOpen
                       ? "translate-x-0 opacity-100"
                       : "-translate-x-4 opacity-0"
-                  }`}
+                    }`}
                   style={{
                     transitionDelay: mobileMenuOpen ? `${index * 50}ms` : "0ms",
                   }}
@@ -292,11 +286,10 @@ export const Navbar: React.FC = () => {
 
           {/* Mobile Actions */}
           <div
-            className={`flex flex-col gap-3 transform transition-all duration-300 ${
-              mobileMenuOpen
+            className={`flex flex-col gap-3 transform transition-all duration-300 ${mobileMenuOpen
                 ? "translate-x-0 opacity-100"
                 : "-translate-x-4 opacity-0"
-            }`}
+              }`}
             style={{
               transitionDelay: mobileMenuOpen
                 ? `${menuItems.length * 50}ms`
@@ -348,11 +341,10 @@ export const Navbar: React.FC = () => {
 
           {/* Footer Info */}
           <div
-            className={`mt-auto pb-8 text-center text-sm text-muted-foreground transform transition-all duration-300 ${
-              mobileMenuOpen
+            className={`mt-auto pb-8 text-center text-sm text-muted-foreground transform transition-all duration-300 ${mobileMenuOpen
                 ? "translate-y-0 opacity-100"
                 : "translate-y-4 opacity-0"
-            }`}
+              }`}
             style={{
               transitionDelay: mobileMenuOpen
                 ? `${(menuItems.length + 1) * 50}ms`

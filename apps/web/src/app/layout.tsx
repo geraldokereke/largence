@@ -239,7 +239,7 @@ export default function RootLayout({
         <body
           className={`${generalSans.variable} ${polySans.variable} ${satoshi.variable} ${geistMono.variable} font-sans antialiased`}
         >
-          <ThemeProvider defaultTheme="system" storageKey="largence-theme">
+          <ThemeProvider defaultTheme="light" storageKey="largence-landing-theme">
             {children}
           </ThemeProvider>
         </body>

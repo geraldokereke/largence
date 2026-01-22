@@ -101,28 +101,28 @@ export function FeaturesSection() {
           <div className="absolute inset-0 bg-linear-to-br from-background via-background/60 to-transparent"></div>
           <div className="absolute inset-0 bg-linear-to-br from-background via-background/10 to-transparent"></div>
           <div className="absolute inset-0 bg-linear-to-r from-background via-background/10 to-transparent"></div>
-          
+
           {/* Edge blending overlays */}
           {/* Top edge fade */}
           <div className="absolute top-0 left-0 right-0 h-32 bg-linear-to-b from-background to-transparent"></div>
-          
+
           {/* Bottom edge fade */}
           <div className="absolute bottom-0 left-0 right-0 h-32 bg-linear-to-t from-background to-transparent"></div>
-          
+
           {/* Left edge fade */}
           <div className="absolute top-0 bottom-0 left-0 w-full bg-linear-to-r from-background via-transparent to-transparent"></div>
-          
+
           {/* Right edge fade */}
           <div className="absolute top-0 bottom-0 right-0 w-40 bg-linear-to-l from-background via-transparent to-transparent"></div>
         </div>
-        
+
         {/* Text Content */}
         <div className="relative z-10">
           <div className="text-start mb-12">
             <h1 className="text-4xl font-display font-medium mb-4">
-              Built to Support Today's <br/> Legal Teams
+              Built to Support Today's <br /> Legal Teams
             </h1>
-            <p className="text-lg text-white/70 font-display max-w-xs">
+            <p className="text-lg text-muted-foreground font-display max-w-xs">
               Intelligent tools that help your team work smarter and faster.
             </p>
           </div>
@@ -131,14 +131,14 @@ export function FeaturesSection() {
             {features.map((feature, index) => {
               const Icon = feature.icon;
               const isActive = currentIndex === index;
-              
+
               return (
                 <motion.div
                   key={feature.id}
                   initial={{ opacity: 0, x: -20 }}
-                  animate={{ 
-                    opacity: isInView ? 1 : 0, 
-                    x: isInView ? 0 : -20 
+                  animate={{
+                    opacity: isInView ? 1 : 0,
+                    x: isInView ? 0 : -20
                   }}
                   transition={{ delay: index * 0.1, duration: 0.5 }}
                   onClick={() => {
@@ -148,35 +148,32 @@ export function FeaturesSection() {
                   className="cursor-pointer group"
                 >
                   <div className="flex gap-3 items-stretch">
-                    <motion.div 
-                      animate={{ 
+                    <motion.div
+                      animate={{
                         height: isActive ? '70px' : '20px'
                       }}
                       transition={{ duration: 0.5, ease: "easeInOut" }}
-                      className={`w-[3.5px] rounded-[0.5px] transition-colors duration-500 ${
-                        isActive ? 'bg-white' : 'bg-white/20'
-                      }`}
+                      className={`w-[3.5px] rounded-[0.5px] transition-colors duration-500 ${isActive ? 'bg-primary' : 'bg-muted'
+                        }`}
                     />
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-1">
-                        <h2 
-                          className={`text-base font-display font-medium transition-all duration-500 ${
-                            isActive ? 'text-white' : 'text-white/40'
-                          }`}
+                        <h2
+                          className={`text-base font-display font-medium transition-all duration-500 ${isActive ? 'text-foreground' : 'text-muted-foreground'
+                            }`}
                         >
                           {feature.title}
                         </h2>
                       </div>
                       <motion.p
                         initial={{ height: 0, opacity: 0 }}
-                        animate={{ 
+                        animate={{
                           height: isActive ? 'auto' : 0,
                           opacity: isActive ? 1 : 0
                         }}
                         transition={{ duration: 0.3 }}
-                        className={`text-sm text-white/60 font-display overflow-hidden max-w-sm ${
-                          isActive ? 'mt-2' : ''
-                        }`}
+                        className={`text-sm text-muted-foreground font-display overflow-hidden max-w-sm ${isActive ? 'mt-2' : ''
+                          }`}
                       >
                         {feature.description}
                       </motion.p>

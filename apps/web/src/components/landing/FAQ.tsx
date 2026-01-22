@@ -147,7 +147,7 @@ export default function FAQ() {
           transition={{ duration: 0.5 }}
           className="text-center mb-12"
         >
-          <h2 className="font-display text-2xl md:text-3xl font-bold mb-4 text-white">
+          <h2 className="font-display text-2xl md:text-3xl font-bold mb-4 text-foreground">
             Frequently Asked Questions
           </h2>
           <p className="text-muted-foreground text-lg md:text-xl max-w-2xl mx-auto">
@@ -256,8 +256,8 @@ export default function FAQ() {
                                   className={`transition-all duration-300 overflow-hidden ${isExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
                                     }`}
                                 >
-                                  <div className="h-px bg-white/20 mb-3"></div>
-                                  <p className="text-sm text-white/40 leading-relaxed">
+                                  <div className="h-px bg-border mb-3"></div>
+                                  <p className="text-sm text-muted-foreground leading-relaxed">
                                     {faq.answer}
                                   </p>
                                 </div>

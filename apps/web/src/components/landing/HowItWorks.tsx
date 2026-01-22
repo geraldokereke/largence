@@ -71,7 +71,7 @@ export default function HowItWorks() {
           style={{ opacity: headerOpacity }}
           className="absolute top-24 md:top-32 left-0 right-0 z-20 text-center px-6"
         >
-          <h2 className="font-display text-2xl md:text-3xl font-bold mb-4 text-white">
+          <h2 className="font-display text-2xl md:text-3xl font-bold mb-4 text-foreground">
             The Workflow in Motion
           </h2>
           <p className="text-base md:text-xl text-muted-foreground font-display max-w-xl mx-auto">
@@ -101,7 +101,7 @@ export default function HowItWorks() {
                       </div>
 
                       <div className="mb-4">
-                        <span className="text-xs font-semibold text-white/40 uppercase tracking-widest">
+                        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">
                           STEP {step.number}
                         </span>
                       </div>
@@ -124,13 +124,13 @@ export default function HowItWorks() {
 
                       {/* Progress */}
                       <div className="flex items-center gap-3">
-                        <div className="h-1.5 flex-1 bg-white/10 rounded-full overflow-hidden">
+                        <div className="h-1.5 flex-1 bg-muted rounded-full overflow-hidden">
                           <div
                             className="h-full bg-primary transition-all duration-300"
                             style={{ width: `${((index + 1) / howItWorksSteps.length) * 100}%` }}
                           />
                         </div>
-                        <span className="text-sm font-medium text-gray-400">
+                        <span className="text-sm font-medium text-muted-foreground">
                           {index + 1}/{howItWorksSteps.length}
                         </span>
                       </div>
@@ -140,7 +140,7 @@ export default function HowItWorks() {
                   {/* Subtle grid pattern */}
                   <div className="absolute inset-0 opacity-[0.02] pointer-events-none"
                     style={{
-                      backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
+                      backgroundImage: `linear-gradient(rgba(0,0,0,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.1) 1px, transparent 1px)`,
                       backgroundSize: '50px 50px'
                     }}
                   />

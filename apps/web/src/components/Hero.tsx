@@ -31,43 +31,43 @@ const Raindrop = ({ delay, left, duration }: { delay: number; left: string; dura
 };
 
 const tabs = [
-  { 
-    id: "documents", 
+  {
+    id: "documents",
     label: "Document Creation",
     icon: FaFileAlt,
     lightImage: "/hero.png",
     darkImage: "/hero-dark-2.png"
   },
-  { 
-    id: "compliance", 
+  {
+    id: "compliance",
     label: "Compliance Checks",
     icon: FaShieldAlt,
     lightImage: "/hero-contracts.png",
     darkImage: "/hero-contracts-dark.png"
   },
-  { 
-    id: "collaboration", 
+  {
+    id: "collaboration",
     label: "Team Collaboration",
-    icon: FaUsers, 
+    icon: FaUsers,
     lightImage: "/hero-compliance.png",
     darkImage: "/hero-compliance-dark.png"
   },
-  { 
-    id: "cloud", 
+  {
+    id: "cloud",
     label: "Cloud Integration",
     icon: FaCloud,
     lightImage: "/hero-analytics.png",
     darkImage: "/hero-analytics-dark.png"
   },
-  { 
-    id: "messaging", 
+  {
+    id: "messaging",
     label: "Team Messaging",
     icon: FaComments,
     lightImage: "/hero-analytics.png",
     darkImage: "/hero-analytics-dark.png"
   },
-  { 
-    id: "signature", 
+  {
+    id: "signature",
     label: "E-Signatures",
     icon: FaFileSignature,
     lightImage: "/hero-analytics.png",
@@ -85,7 +85,7 @@ const RandomColoredText = ({ text }: { text: string }) => {
       const random = Math.random();
 
       if (random < 0.5) {
-        return 'text-white';
+        return 'text-foreground';
       } else {
         return 'text-primary';
       }
@@ -145,17 +145,17 @@ export function Hero() {
 
         {/* Gradient overlays for blending - Light mode (white) */}
         <div className="absolute inset-0 bg-linear-to-b from-white/80 via-white/40 to-white pointer-events-none z-10 dark:hidden" />
-        
+
         {/* Gradient overlays for blending - Dark mode (black) */}
         <div className="absolute inset-0 bg-linear-to-b from-black/80 via-black/40 to-black pointer-events-none z-10 hidden dark:block" />
-        
-        {/* Bottom fade to black overlay */}
-        <div className="absolute bottom-0 left-0 right-0 h-64 bg-linear-to-t from-black via-black/50 to-transparent pointer-events-none z-20" />
-        
+
+        {/* Bottom fade to background overlay */}
+        <div className="absolute bottom-0 left-0 right-0 h-64 bg-linear-to-t from-background via-background/50 to-transparent pointer-events-none z-20" />
+
         <div className="w-full mx-auto z-10 py-12">
           {/* Badge */}
           <div className="max-w-6xl mx-auto z-10 w-full">
-          <AnimatedBadge text="Available in Beta"/>
+            <AnimatedBadge text="Available in Beta" />
             {/* Heading with Random Colored Text */}
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
@@ -169,13 +169,13 @@ export function Hero() {
             </motion.h1>
 
             {/* Description */}
-           <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-lg sm:text-lg text-gray-300 max-w-2xl mb-8"
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="text-lg sm:text-lg text-gray-300 max-w-2xl mb-8"
             >
-            Create, manage, and track legal documents with AI assistance. Built for teams that need compliance without complexity, ensuring every contract is secure and streamlined.
+              Create, manage, and track legal documents with AI assistance. Built for teams that need compliance without complexity, ensuring every contract is secure and streamlined.
             </motion.p>
 
             {/* Buttons */}
@@ -189,7 +189,7 @@ export function Hero() {
                 <Button
                   size="sm"
                   variant="secondary"
-                  className="w-full h-11 px-6 rounded-full bg-white text-black text-base transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-primary/25"
+                  className="w-full h-11 px-6 rounded-full bg-foreground text-background text-base transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-primary/25"
                 >
                   Get Started Free
                 </Button>
@@ -202,7 +202,7 @@ export function Hero() {
                 Watch Demo
               </Button>
             </motion.div>
-          </div>    
+          </div>
 
           {/* Hero Image with Tabs */}
           <div className="max-w-7xl mx-auto z-10 pb-12 w-full">
@@ -216,21 +216,21 @@ export function Hero() {
               <div className="relative group rounded-xl overflow-hidden shadow-2xl">
                 <div className="relative aspect-video w-full bg-muted">
                   <div className="relative aspect-video w-full">
-                <Image
-                  src="/hero.png"
-                  alt="Largence Dashboard"
-                  fill
-                  className="object-cover object-top dark:hidden"
-                  priority
-                />
-                <Image
-                  src="/hero-dark.png"
-                  alt="Largence Dashboard"
-                  fill
-                  className="object-cover object-top hidden dark:block"
-                  priority
-                />
-              </div>
+                    <Image
+                      src="/hero.png"
+                      alt="Largence Dashboard"
+                      fill
+                      className="object-cover object-top dark:hidden"
+                      priority
+                    />
+                    <Image
+                      src="/hero-dark.png"
+                      alt="Largence Dashboard"
+                      fill
+                      className="object-cover object-top hidden dark:block"
+                      priority
+                    />
+                  </div>
                 </div>
               </div>
             </motion.div>

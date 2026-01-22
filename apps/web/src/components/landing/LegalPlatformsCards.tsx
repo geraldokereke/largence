@@ -66,7 +66,7 @@ const LegalPlatformCards = () => {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-b from-black to-transparent pt-10 px-4">
+    <div className="min-h-screen bg-linear-to-b from-background to-transparent pt-10 px-4">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-10">
           <motion.div
@@ -74,10 +74,10 @@ const LegalPlatformCards = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <h2 className="font-display text-2xl md:text-3xl font-bold mb-4 text-white">
+            <h2 className="font-display text-2xl md:text-3xl font-bold mb-4 text-foreground">
               From Complexity to Clarity
             </h2>
-            <p className="text-gray-400 max-w-2xl mx-auto">
+            <p className="text-muted-foreground max-w-2xl mx-auto">
               A unified platform designed for modern legal teams
             </p>
           </motion.div>
@@ -114,12 +114,12 @@ const LegalPlatformCards = () => {
                     <div className="mb-auto">
                       <div className="flex items-center gap-4 mb-8">
                         <div className="flex items-center gap-3">
-                          <span className="text-4xl font-display font-bold text-white">{card.number}</span>
+                          <span className="text-4xl font-display font-bold text-foreground">{card.number}</span>
                         </div>
                       </div>
 
                       <div className="mb-4">
-                        <span className={`text-xs font-semibold ${isHovered ? "text-primary/50" : "text-white/40"} uppercase tracking-widest transition-colors duration-300`}>
+                        <span className={`text-xs font-semibold ${isHovered ? "text-primary/50" : "text-muted-foreground"} uppercase tracking-widest transition-colors duration-300`}>
                           {card.label}
                         </span>
                       </div>
@@ -138,10 +138,10 @@ const LegalPlatformCards = () => {
                       }}
                       className={`${isHovered ? 'pointer-events-none' : ''}`}
                     >
-                      <h3 className="text-3xl font-bold mb-4 leading-tight font-display text-white">
+                      <h3 className="text-3xl font-bold mb-4 leading-tight font-display text-foreground">
                         {card.title}
                       </h3>
-                      <p className="text-gray-400 text-lg leading-relaxed">
+                      <p className="text-muted-foreground text-lg leading-relaxed">
                         {card.oneLiner}
                       </p>
                     </motion.div>
@@ -156,11 +156,11 @@ const LegalPlatformCards = () => {
                           transition={{ duration: 0.3, delay: 0.15 }}
                           className="absolute inset-0 p-10 pt-44"
                         >
-                          <h3 className="text-2xl font-bold mb-4 font-display leading-tight text-white">
+                          <h3 className="text-2xl font-bold mb-4 font-display leading-tight text-foreground">
                             {card.expandedTitle}
                           </h3>
 
-                          <p className="text-gray-400 mb-8 leading-relaxed text-base">
+                          <p className="text-muted-foreground mb-8 leading-relaxed text-base">
                             {card.description}
                           </p>
 
@@ -175,7 +175,7 @@ const LegalPlatformCards = () => {
                                 className="flex items-center gap-3"
                               >
                                 <div className="w-1.5 h-1.5 rounded-full bg-primary/50" />
-                                <span className="text-gray-300 text-sm">{bullet}</span>
+                                <span className="text-muted-foreground text-sm">{bullet}</span>
                               </motion.div>
                             ))}
                           </div>
@@ -187,7 +187,7 @@ const LegalPlatformCards = () => {
                   {/* Subtle grid pattern */}
                   <div className="absolute inset-0 opacity-[0.02] pointer-events-none"
                     style={{
-                      backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
+                      backgroundImage: `linear-gradient(rgba(0,0,0,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.1) 1px, transparent 1px)`,
                       backgroundSize: '50px 50px'
                     }}
                   />

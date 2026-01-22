@@ -139,7 +139,7 @@ export default function FAQ() {
   };
 
   return (
-    <section id='faq' className="min-h-screen py-16 px-4 overflow-hidden" ref={sectionRef}>
+    <section id='faq' className="min-h-screen py-24 px-4 overflow-hidden" ref={sectionRef}>
       <div className="max-w-6xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

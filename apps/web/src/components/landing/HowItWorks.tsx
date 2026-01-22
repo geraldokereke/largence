@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { FileText, Sparkles, CheckCircle, Send } from "lucide-react";
 import ScrollFloat from "../ScrollFloat";
@@ -14,7 +14,25 @@ export default function HowItWorks() {
     offset: ["start start", "end end"],
   });
 
-  const x = useTransform(scrollYProgress, [0, 1], ["5%", "-140%"]);
+  const [targetX, setTargetX] = useState("-140%"); // Default to desktop to match server mismatch if any, or standard.
+
+  useEffect(() => {
+    const updateTarget = () => {
+      // Mobile breakpoint check (md is usually 768px in Tailwind)
+      if (window.innerWidth < 768) {
+        // Mobile needs significantly more scroll because content is much wider (~390vw vs 100vw viewport)
+        setTargetX("-280%");
+      } else {
+        setTargetX("-140%");
+      }
+    };
+
+    updateTarget();
+    window.addEventListener('resize', updateTarget);
+    return () => window.removeEventListener('resize', updateTarget);
+  }, []);
+
+  const x = useTransform(scrollYProgress, [0, 1], ["5%", targetX]);
   const headerOpacity = useTransform(scrollYProgress, [0, 0.9, 1], [1, 1, 0]);
 
   const howItWorksSteps = [
@@ -47,41 +65,41 @@ export default function HowItWorks() {
   return (
     <section id="howitworks" ref={targetRef} style={{ height: containerHeight }} className="relative bg-background">
       <div className="sticky top-0 h-screen flex flex-col justify-center overflow-hidden">
-        
+
         {/* Header */}
-        <motion.div 
+        <motion.div
           style={{ opacity: headerOpacity }}
           className="absolute top-24 md:top-32 left-0 right-0 z-20 text-center px-6"
         >
-        <h2 className="text-4xl font-display font-medium mb-4">
-           The Workflow in Motion
-        </h2>
-        <p className="text-lg text-white/70 font-display max-w-xl mx-auto">
-           Every step designed to accelerate legal work with intelligence and clarity.
-        </p>
+          <h2 className="font-display text-2xl md:text-3xl font-bold mb-4 text-white">
+            The Workflow in Motion
+          </h2>
+          <p className="text-base md:text-xl text-muted-foreground font-display max-w-xl mx-auto">
+            Every step designed to accelerate legal work with intelligence and clarity.
+          </p>
         </motion.div>
 
         {/* Horizontal Scroll Track */}
-        <motion.div 
+        <motion.div
           style={{ x }}
-          className="flex gap-6 md:gap-8 px-6 md:px-12 items-center z-10 mt-32"
+          className="flex gap-6 md:gap-8 px-6 md:px-12 items-center z-10 lg:mt-40 xl:mt-34 2xl:mt-32"
         >
           {howItWorksSteps.map((step, index) => {
             const Icon = step.icon;
             return (
-              <div 
+              <div
                 key={step.number}
-                className="h-[55vh] w-[80vw] md:w-[40vw] lg:w-[32vw] shrink-0"
+                className="h-[50vh] md:h-[55vh] w-[85vw] md:w-[45vw] lg:w-[32vw] shrink-0"
               >
                 <div className="relative h-full w-full bg-card border border-border rounded-3xl shadow-xl hover:shadow-2xl hover:border-primary/50 transition-all duration-700 overflow-hidden group">
-                  
+
                   <div className="p-10 h-full flex flex-col relative z-10">
                     {/* Header Section */}
                     <div className="mb-auto">
-                      <div className="flex items-center gap-4 mb-8">
-                        <span className="text-4xl font-display font-bold text-white">{step.number}</span>
+                      <div className="flex items-center gap-4 mb-6 md:mb-8">
+                        <span className="text-3xl md:text-5xl font-display font-bold text-foreground">{step.number}</span>
                       </div>
-                      
+
                       <div className="mb-4">
                         <span className="text-xs font-semibold text-white/40 uppercase tracking-widest">
                           STEP {step.number}
@@ -91,23 +109,23 @@ export default function HowItWorks() {
 
                     {/* Main Content */}
                     <div className="flex-1" />
-                    
+
                     <div>
                       <div className="w-14 h-14 rounded-lg bg-primary/10 flex items-center justify-center mb-6">
                         <Icon className="w-7 h-7 text-primary" />
                       </div>
-                      
-                      <h3 className="text-3xl font-bold mb-4 leading-tight font-display text-white">
+
+                      <h3 className="text-2xl md:text-3xl font-bold mb-3 md:mb-4 leading-tight font-display text-foreground">
                         {step.title}
                       </h3>
-                      <p className="text-gray-400 text-lg leading-relaxed mb-6">
+                      <p className="text-muted-foreground text-base md:text-lg leading-relaxed mb-6">
                         {step.description}
                       </p>
-                      
+
                       {/* Progress */}
                       <div className="flex items-center gap-3">
                         <div className="h-1.5 flex-1 bg-white/10 rounded-full overflow-hidden">
-                          <div 
+                          <div
                             className="h-full bg-primary transition-all duration-300"
                             style={{ width: `${((index + 1) / howItWorksSteps.length) * 100}%` }}
                           />
@@ -118,19 +136,19 @@ export default function HowItWorks() {
                       </div>
                     </div>
                   </div>
-                  
+
                   {/* Subtle grid pattern */}
                   <div className="absolute inset-0 opacity-[0.02] pointer-events-none"
-                       style={{
-                         backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
-                         backgroundSize: '50px 50px'
-                       }}
+                    style={{
+                      backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
+                      backgroundSize: '50px 50px'
+                    }}
                   />
                 </div>
               </div>
             );
           })}
-          
+
           {/* End Card */}
           <div className="h-[55vh] w-[50vw] md:w-[30vw] shrink-0 flex items-center justify-center">
             <div className="text-center">
@@ -150,7 +168,7 @@ export default function HowItWorks() {
             <span className="text-xs text-muted-foreground">Scroll to explore</span>
             <div className="flex gap-1">
               {howItWorksSteps.map((_, index) => (
-                <div 
+                <div
                   key={index}
                   className="w-1.5 h-1.5 rounded-full bg-muted transition-all duration-300"
                   style={{

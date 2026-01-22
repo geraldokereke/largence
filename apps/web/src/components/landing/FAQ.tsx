@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { ChevronDown } from 'lucide-react';
-import { motion, useInView } from 'framer-motion';
+import { motion, useInView, AnimatePresence } from 'framer-motion';
 
 interface FAQ {
   question: string;
@@ -126,7 +126,7 @@ export default function FAQ() {
   };
 
   const getSizeClasses = (size: 'small' | 'medium' | 'large'): string => {
-    switch(size) {
+    switch (size) {
       case 'small':
         return 'h-40';
       case 'medium':
@@ -147,16 +147,73 @@ export default function FAQ() {
           transition={{ duration: 0.5 }}
           className="text-center mb-12"
         >
-          <h2 className="font-display text-2xl md:text-3xl font-bold mb-4">
+          <h2 className="font-display text-2xl md:text-3xl font-bold mb-4 text-white">
             Frequently Asked Questions
           </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-muted-foreground text-lg md:text-xl max-w-2xl mx-auto">
             Find answers to common questions about our service
           </p>
         </motion.div>
 
-        <div className="relative">
-          <motion.div 
+        {/* Mobile View: Simple Stack */}
+        <div className="md:hidden flex flex-col gap-4">
+          {faqs.map((faq, index) => {
+            const isExpanded = expandedCards.has(`mobile-${index}`);
+            return (
+              <motion.div
+                key={`mobile-${index}`}
+                initial={{ opacity: 0, y: 20 }}
+                animate={isInView ? { opacity: 1, y: 0 } : {}}
+                transition={{ duration: 0.5, delay: index * 0.05 }}
+              >
+                <div className="bg-card rounded-xl shadow-sm border border-border/50 overflow-hidden">
+                  <button
+                    onClick={() => {
+                      const cardId = `mobile-${index}`;
+                      const newExpanded = new Set(expandedCards);
+                      if (newExpanded.has(cardId)) {
+                        newExpanded.delete(cardId);
+                      } else {
+                        newExpanded.add(cardId);
+                      }
+                      setExpandedCards(newExpanded);
+                    }}
+                    className="w-full p-5 text-left flex items-start justify-between gap-3 transition-colors bg-card/50 hover:bg-card"
+                  >
+                    <div className="flex-1">
+                      <h3 className="font-heading text-lg font-semibold mb-1 text-foreground">
+                        {faq.question}
+                      </h3>
+                      <AnimatePresence>
+                        {isExpanded && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.3 }}
+                            className="overflow-hidden"
+                          >
+                            <div className="pt-3 text-muted-foreground leading-relaxed">
+                              {faq.answer}
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                    <ChevronDown
+                      className={`w-5 h-5 text-primary shrink-0 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''
+                        }`}
+                    />
+                  </button>
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
+
+        {/* Desktop View: Scrolling Columns */}
+        <div className="relative hidden md:block">
+          <motion.div
             initial={{ opacity: 0 }}
             animate={isInView ? { opacity: 1 } : {}}
             transition={{ duration: 0.8, delay: 0.2 }}
@@ -165,10 +222,10 @@ export default function FAQ() {
             {columns.map((columnFaqs, colIndex) => {
               const direction = colIndex % 2 === 0 ? 'up' : 'down';
               const animationClass = direction === 'up' ? 'animate-scroll-up' : 'animate-scroll-down';
-              
+
               return (
-                <motion.div 
-                  key={colIndex} 
+                <motion.div
+                  key={colIndex}
                   className="relative overflow-hidden"
                   initial={{ opacity: 0, x: colIndex % 2 === 0 ? -20 : 20 }}
                   animate={isInView ? { opacity: 1, x: 0 } : {}}
@@ -180,7 +237,7 @@ export default function FAQ() {
                       const originalIndex = index % columnFaqs.length;
                       const cardId = `${colIndex}-${index}`;
                       const isExpanded = expandedCards.has(cardId);
-                      
+
                       return (
                         <div
                           key={index}
@@ -196,9 +253,8 @@ export default function FAQ() {
                                   {faq.question}
                                 </h3>
                                 <div
-                                  className={`transition-all duration-300 overflow-hidden ${
-                                    isExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-                                  }`}
+                                  className={`transition-all duration-300 overflow-hidden ${isExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                                    }`}
                                 >
                                   <div className="h-px bg-white/20 mb-3"></div>
                                   <p className="text-sm text-white/40 leading-relaxed">
@@ -206,10 +262,9 @@ export default function FAQ() {
                                   </p>
                                 </div>
                               </div>
-                              <ChevronDown 
-                                className={`w-5 h-5 text-primary shrink-0 transition-transform duration-300 ${
-                                  isExpanded ? 'rotate-180' : ''
-                                }`}
+                              <ChevronDown
+                                className={`w-5 h-5 text-primary shrink-0 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''
+                                  }`}
                               />
                             </button>
                           </div>
@@ -221,7 +276,7 @@ export default function FAQ() {
               );
             })}
           </motion.div>
-          
+
           {/* Overlay gradients for blending */}
           <div className="pointer-events-none absolute inset-0">
             {/* Top overlay */}

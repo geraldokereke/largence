@@ -54,9 +54,9 @@ const LegalPlatformCards = () => {
   ];
 
   const getCardWidth = (cardId: number) => {
-    if (hoveredCard === null) return "w-4/12";
-    if (hoveredCard === cardId) return "w-6/12";
-    return "w-3/12";
+    if (hoveredCard === null) return "w-full md:w-4/12";
+    if (hoveredCard === cardId) return "w-full md:w-6/12";
+    return "w-full md:w-3/12";
   };
 
   const getCardScale = (cardId: number) => {
@@ -83,7 +83,7 @@ const LegalPlatformCards = () => {
           </motion.div>
         </div>
 
-        <div className="flex gap-4 items-stretch">
+        <div className="flex flex-col md:flex-row gap-4 items-stretch">
           {cards.map((card, index) => {
             const Icon = card.icon;
             const isHovered = hoveredCard === card.id;
@@ -92,22 +92,23 @@ const LegalPlatformCards = () => {
               <motion.div
                 key={card.id}
                 initial={{ opacity: 0, y: 30 }}
-                animate={{ 
-                  opacity: 1, 
+                animate={{
+                  opacity: 1,
                   y: 0,
                   scale: getCardScale(card.id)
                 }}
-                transition={{ 
-                  duration: 0.5, 
+                transition={{
+                  duration: 0.5,
                   delay: index * 0.15,
                   scale: { duration: 0.4, ease: [0.34, 1.56, 0.64, 1] }
                 }}
                 className={`${getCardWidth(card.id)} transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)]`}
                 onMouseEnter={() => setHoveredCard(card.id)}
                 onMouseLeave={() => setHoveredCard(null)}
+                onClick={() => setHoveredCard(hoveredCard === card.id ? null : card.id)}
               >
-                <div className="relative h-125 rounded-3xl bg-card border border-border hover:border-primary/50 shadow-xl hover:shadow-2xl transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] overflow-hidden group">
-                
+                <div className="relative h-96 md:h-125 rounded-3xl bg-card border border-border hover:border-primary/50 shadow-xl hover:shadow-2xl transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] overflow-hidden group">
+
                   <div className="p-10 h-full flex flex-col relative z-10">
                     {/* Header Section */}
                     <div className="mb-auto">
@@ -116,7 +117,7 @@ const LegalPlatformCards = () => {
                           <span className="text-4xl font-display font-bold text-white">{card.number}</span>
                         </div>
                       </div>
-                      
+
                       <div className="mb-4">
                         <span className={`text-xs font-semibold ${isHovered ? "text-primary/50" : "text-white/40"} uppercase tracking-widest transition-colors duration-300`}>
                           {card.label}
@@ -131,7 +132,7 @@ const LegalPlatformCards = () => {
                         y: isHovered ? -20 : 0,
                         scale: isHovered ? 0.95 : 1
                       }}
-                      transition={{ 
+                      transition={{
                         duration: 0.4,
                         ease: [0.34, 1.56, 0.64, 1]
                       }}
@@ -158,7 +159,7 @@ const LegalPlatformCards = () => {
                           <h3 className="text-2xl font-bold mb-4 font-display leading-tight text-white">
                             {card.expandedTitle}
                           </h3>
-                          
+
                           <p className="text-gray-400 mb-8 leading-relaxed text-base">
                             {card.description}
                           </p>
@@ -182,13 +183,13 @@ const LegalPlatformCards = () => {
                       )}
                     </AnimatePresence>
                   </div>
-                  
+
                   {/* Subtle grid pattern */}
                   <div className="absolute inset-0 opacity-[0.02] pointer-events-none"
-                       style={{
-                         backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
-                         backgroundSize: '50px 50px'
-                       }}
+                    style={{
+                      backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
+                      backgroundSize: '50px 50px'
+                    }}
                   />
                 </div>
               </motion.div>

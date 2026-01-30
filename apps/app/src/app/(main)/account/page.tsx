@@ -51,6 +51,13 @@ import {
   X,
 } from "lucide-react";
 import { toast } from "sonner";
+import {
+  CurrencySwitcher,
+  useDetectedCurrency,
+  saveCurrencyPreference,
+  formatCurrencyPrice,
+  type Currency,
+} from "@largence/components/currency-switcher";
 
 type Tab = "profile" | "organization" | "language" | "billing";
 
@@ -72,6 +79,8 @@ interface BillingData {
     maxTeamMembers: number;
     maxContracts: number;
     maxStorage: number;
+    paymentProvider?: "STRIPE" | "PAYSTACK";
+    currency?: string;
     features: {
       hasAiDrafting: boolean;
       hasComplianceAuto: boolean;
@@ -89,6 +98,25 @@ interface BillingData {
     plan: string;
     status: string;
   };
+  currency?: string;
+  paymentProviders?: {
+    stripe: { currencies: string[] };
+    paystack: {
+      currencies: string[];
+      countries: Array<{ code: string; currency: string; name: string; symbol: string }>;
+    };
+  };
+  plans?: Record<string, {
+    name: string;
+    monthlyPrice: number;
+    annualPrice?: number;
+    monthlyPriceFormatted?: string;
+    annualPriceFormatted?: string;
+    maxTeamMembers: number;
+    maxDocuments: number;
+    maxStorage: number;
+    isPopular?: boolean;
+  }>;
 }
 
 interface Invoice {
@@ -186,37 +214,55 @@ export default function AccountPage() {
   const [activeTab, setActiveTab] = useState<Tab>("profile");
   const [isSaving, setIsSaving] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState("English (US)");
+  
+  // Currency state for billing
+  const detectedCurrency = useDetectedCurrency();
+  const [selectedCurrency, setSelectedCurrency] = useState<Currency>("USD");
+  const [billingPeriod, setBillingPeriod] = useState<"monthly" | "annual">("monthly");
+
+  // Set currency from detection or existing subscription
+  useEffect(() => {
+    if (detectedCurrency) {
+      setSelectedCurrency(detectedCurrency);
+    }
+  }, [detectedCurrency]);
 
   const isLoaded = userLoaded && orgLoaded;
   const orgMetadata = (organization?.publicMetadata as any) || {};
 
-  // Fetch billing data
+  // Fetch billing data with currency
   const {
     data: billingData,
     isLoading: billingLoading,
     refetch: refetchBilling,
   } = useQuery<BillingData>({
-    queryKey: ["billing"],
+    queryKey: ["billing", selectedCurrency],
     queryFn: async () => {
-      const res = await fetch("/api/billing");
+      const res = await fetch(`/api/billing?currency=${selectedCurrency}`);
       if (!res.ok) throw new Error("Failed to fetch billing");
       return res.json();
     },
     enabled: activeTab === "billing",
   });
 
-  // Checkout mutation
+  // Checkout mutation with currency support
   const checkoutMutation = useMutation({
     mutationFn: async (plan: string) => {
       const res = await fetch("/api/billing", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan }),
+        body: JSON.stringify({ 
+          plan,
+          billingPeriod,
+          currency: selectedCurrency,
+        }),
       });
       if (!res.ok) throw new Error("Failed to create checkout");
       return res.json();
     },
     onSuccess: (data) => {
+      // Save currency preference
+      saveCurrencyPreference(selectedCurrency);
       if (data.url) {
         window.location.href = data.url;
       }
@@ -662,14 +708,63 @@ export default function AccountPage() {
             {/* Billing Tab */}
             {activeTab === "billing" && (
               <div className="space-y-4">
-                <div>
-                  <h2 className="text-lg font-semibold mb-0.5 font-heading">
-                    Billing & Subscription
-                  </h2>
-                  <p className="text-sm text-muted-foreground">
-                    Manage your subscription plan and billing details
-                  </p>
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h2 className="text-lg font-semibold mb-0.5 font-heading">
+                      Billing & Subscription
+                    </h2>
+                    <p className="text-sm text-muted-foreground">
+                      Manage your subscription plan and billing details
+                    </p>
+                  </div>
+                  {/* Currency Switcher */}
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 bg-muted rounded-sm p-1">
+                      <button
+                        onClick={() => setBillingPeriod("monthly")}
+                        className={`px-3 py-1 text-sm rounded-sm transition-colors ${
+                          billingPeriod === "monthly"
+                            ? "bg-background shadow-sm font-medium"
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        Monthly
+                      </button>
+                      <button
+                        onClick={() => setBillingPeriod("annual")}
+                        className={`px-3 py-1 text-sm rounded-sm transition-colors ${
+                          billingPeriod === "annual"
+                            ? "bg-background shadow-sm font-medium"
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        Annual
+                        <span className="ml-1 text-xs text-emerald-600">Save 17%</span>
+                      </button>
+                    </div>
+                    <CurrencySwitcher
+                      value={selectedCurrency}
+                      onChange={(currency) => {
+                        setSelectedCurrency(currency);
+                        saveCurrencyPreference(currency);
+                      }}
+                      compact
+                    />
+                  </div>
                 </div>
+
+                {/* Payment Provider Info */}
+                {selectedCurrency !== "USD" && (
+                  <div className="flex items-center gap-2 p-3 bg-blue-500/5 border border-blue-500/20 rounded-sm">
+                    <div className="h-5 w-5 rounded-sm bg-[#00C3F7]/10 flex items-center justify-center">
+                      <span className="text-[10px] font-bold text-[#00C3F7]">P</span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Payments in <span className="font-medium text-foreground">{selectedCurrency}</span> are processed securely via{" "}
+                      <span className="font-medium text-[#00C3F7]">Paystack</span>
+                    </p>
+                  </div>
+                )}
 
                 <Separator />
 
@@ -1123,11 +1218,18 @@ export default function AccountPage() {
                             </div>
                             <div className="text-right">
                               <div className="text-2xl font-bold">
-                                $299
+                                {billingPeriod === "annual" 
+                                  ? billingData?.plans?.STARTER?.annualPriceFormatted || formatCurrencyPrice(billingData?.plans?.STARTER?.annualPrice || 29000, selectedCurrency)
+                                  : billingData?.plans?.STARTER?.monthlyPriceFormatted || formatCurrencyPrice(billingData?.plans?.STARTER?.monthlyPrice || 2900, selectedCurrency)}
                                 <span className="text-sm font-normal text-muted-foreground">
-                                  /mo
+                                  /{billingPeriod === "annual" ? "yr" : "mo"}
                                 </span>
                               </div>
+                              {billingPeriod === "annual" && (
+                                <p className="text-xs text-emerald-600">
+                                  Save {formatCurrencyPrice((billingData?.plans?.STARTER?.monthlyPrice || 2900) * 12 - (billingData?.plans?.STARTER?.annualPrice || 29000), selectedCurrency)}
+                                </p>
+                              )}
                             </div>
                           </div>
                           <div className="grid grid-cols-2 gap-2 mt-4 text-sm">
@@ -1192,11 +1294,18 @@ export default function AccountPage() {
                             </div>
                             <div className="text-right">
                               <div className="text-2xl font-bold">
-                                $799
+                                {billingPeriod === "annual"
+                                  ? billingData?.plans?.PROFESSIONAL?.annualPriceFormatted || formatCurrencyPrice(billingData?.plans?.PROFESSIONAL?.annualPrice || 79000, selectedCurrency)
+                                  : billingData?.plans?.PROFESSIONAL?.monthlyPriceFormatted || formatCurrencyPrice(billingData?.plans?.PROFESSIONAL?.monthlyPrice || 7900, selectedCurrency)}
                                 <span className="text-sm font-normal text-muted-foreground">
-                                  /mo
+                                  /{billingPeriod === "annual" ? "yr" : "mo"}
                                 </span>
                               </div>
+                              {billingPeriod === "annual" && (
+                                <p className="text-xs text-emerald-600">
+                                  Save {formatCurrencyPrice((billingData?.plans?.PROFESSIONAL?.monthlyPrice || 7900) * 12 - (billingData?.plans?.PROFESSIONAL?.annualPrice || 79000), selectedCurrency)}
+                                </p>
+                              )}
                             </div>
                           </div>
                           <div className="grid grid-cols-2 gap-2 mt-4 text-sm">

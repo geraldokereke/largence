@@ -333,10 +333,20 @@ model Subscription {
   id               String   @id @default(cuid())
   organizationId   String   @unique
   
-  // Stripe IDs
+  // Payment provider
+  paymentProvider      PaymentProvider @default(STRIPE)
+  currency             String?         // USD, NGN, GHS, KES, ZAR
+  
+  // Stripe IDs (for USD payments)
   stripeCustomerId     String   @unique
   stripeSubscriptionId String?  @unique
   stripePriceId        String?
+  
+  // Paystack IDs (for African local currency payments)
+  paystackCustomerCode     String?  @unique
+  paystackSubscriptionCode String?  @unique
+  paystackPlanCode         String?
+  paystackEmailToken       String?  // Required for subscription management
   
   // Plan details
   plan             PlanType @default(FREE)
@@ -373,7 +383,13 @@ model Subscription {
   
   @@index([organizationId])
   @@index([stripeCustomerId])
+  @@index([paystackCustomerCode])
   @@index([status])
+}
+
+enum PaymentProvider {
+  STRIPE
+  PAYSTACK
 }
 
 model UsageRecord {

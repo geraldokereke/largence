@@ -7,10 +7,19 @@ import {
   getUsageStats,
   PLANS,
 } from "@/lib/stripe";
+import {
+  getOrCreatePaystackCustomer,
+  createPaystackCheckout,
+  isPaystackCountry,
+  PAYSTACK_COUNTRIES,
+  PAYSTACK_PLANS,
+  getLocalPrices,
+  type PaystackCurrency,
+} from "@/lib/paystack";
 import { currentUser } from "@clerk/nextjs/server";
 
 // GET /api/billing - Get subscription and usage info
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const { userId, orgId } = await auth();
 
@@ -18,10 +27,19 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const { searchParams } = new URL(request.url);
+    const currency = searchParams.get("currency") || "USD";
+
     const [subscription, usageStats] = await Promise.all([
       getSubscription(orgId),
       getUsageStats(orgId),
     ]);
+
+    // Get prices in requested currency
+    const isLocalCurrency = currency !== "USD" && currency in PAYSTACK_PLANS;
+    const localPrices = isLocalCurrency
+      ? getLocalPrices(currency as PaystackCurrency)
+      : null;
 
     return NextResponse.json({
       subscription: subscription
@@ -35,6 +53,8 @@ export async function GET() {
             maxTeamMembers: subscription.maxTeamMembers,
             maxContracts: subscription.maxContracts,
             maxStorage: subscription.maxStorage,
+            paymentProvider: subscription.paymentProvider || "STRIPE",
+            currency: subscription.currency || "USD",
             features: {
               hasAiDrafting: subscription.hasAiDrafting,
               hasComplianceAuto: subscription.hasComplianceAuto,
@@ -46,6 +66,17 @@ export async function GET() {
           }
         : null,
       usage: usageStats,
+      currency,
+      paymentProviders: {
+        stripe: { currencies: ["USD"] },
+        paystack: {
+          currencies: Object.values(PAYSTACK_COUNTRIES).map((c) => c.currency),
+          countries: Object.entries(PAYSTACK_COUNTRIES).map(([code, config]) => ({
+            code,
+            ...config,
+          })),
+        },
+      },
       plans: {
         FREE: {
           name: PLANS.FREE.name,
@@ -56,16 +87,20 @@ export async function GET() {
         },
         STARTER: {
           name: PLANS.STARTER.name,
-          monthlyPrice: PLANS.STARTER.monthlyPrice,
-          annualPrice: PLANS.STARTER.annualPrice,
+          monthlyPrice: localPrices?.STARTER.monthly || PLANS.STARTER.monthlyPrice,
+          annualPrice: localPrices?.STARTER.annual || PLANS.STARTER.annualPrice,
+          monthlyPriceFormatted: localPrices?.STARTER.monthlyFormatted,
+          annualPriceFormatted: localPrices?.STARTER.annualFormatted,
           maxTeamMembers: PLANS.STARTER.maxTeamMembers,
           maxDocuments: PLANS.STARTER.maxDocuments,
           maxStorage: PLANS.STARTER.maxStorage,
         },
         PROFESSIONAL: {
           name: PLANS.PROFESSIONAL.name,
-          monthlyPrice: PLANS.PROFESSIONAL.monthlyPrice,
-          annualPrice: PLANS.PROFESSIONAL.annualPrice,
+          monthlyPrice: localPrices?.PROFESSIONAL.monthly || PLANS.PROFESSIONAL.monthlyPrice,
+          annualPrice: localPrices?.PROFESSIONAL.annual || PLANS.PROFESSIONAL.annualPrice,
+          monthlyPriceFormatted: localPrices?.PROFESSIONAL.monthlyFormatted,
+          annualPriceFormatted: localPrices?.PROFESSIONAL.annualFormatted,
           maxTeamMembers: PLANS.PROFESSIONAL.maxTeamMembers,
           maxDocuments: PLANS.PROFESSIONAL.maxDocuments,
           maxStorage: PLANS.PROFESSIONAL.maxStorage,
@@ -73,8 +108,10 @@ export async function GET() {
         },
         BUSINESS: {
           name: PLANS.BUSINESS.name,
-          monthlyPrice: PLANS.BUSINESS.monthlyPrice,
-          annualPrice: PLANS.BUSINESS.annualPrice,
+          monthlyPrice: localPrices?.BUSINESS.monthly || PLANS.BUSINESS.monthlyPrice,
+          annualPrice: localPrices?.BUSINESS.annual || PLANS.BUSINESS.annualPrice,
+          monthlyPriceFormatted: localPrices?.BUSINESS.monthlyFormatted,
+          annualPriceFormatted: localPrices?.BUSINESS.annualFormatted,
           maxTeamMembers: PLANS.BUSINESS.maxTeamMembers,
           maxDocuments: PLANS.BUSINESS.maxDocuments,
           maxStorage: PLANS.BUSINESS.maxStorage,
@@ -97,7 +134,7 @@ export async function GET() {
   }
 }
 
-// POST /api/billing - Create checkout session
+// POST /api/billing - Create checkout session (Stripe or Paystack)
 export async function POST(request: Request) {
   try {
     const { userId, orgId } = await auth();
@@ -107,7 +144,12 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { plan, billingPeriod = "monthly" } = body;
+    const {
+      plan,
+      billingPeriod = "monthly",
+      currency = "USD",
+      country,
+    } = body;
 
     if (!plan || !["STARTER", "PROFESSIONAL", "BUSINESS", "ENTERPRISE"].includes(plan)) {
       return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
@@ -117,30 +159,67 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid billing period" }, { status: 400 });
     }
 
-    // Get user info for customer creation
+    // Get user info
     const user = await currentUser();
     const email = user?.emailAddresses[0]?.emailAddress || "";
     const name = user?.fullName || "";
+    const firstName = user?.firstName || undefined;
+    const lastName = user?.lastName || undefined;
 
-    // Get or create Stripe customer
-    const customerId = await getOrCreateStripeCustomer(orgId, email, name);
-
-    // Create checkout session
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-    const session = await createCheckoutSession(
-      orgId,
-      customerId,
-      plan as "STARTER" | "PROFESSIONAL" | "BUSINESS" | "ENTERPRISE",
-      billingPeriod as "monthly" | "annual",
-      `${baseUrl}/account?tab=billing&success=true`,
-      `${baseUrl}/account?tab=billing&canceled=true`,
-    );
 
-    return NextResponse.json({ url: session.url });
-  } catch (error) {
+    // Determine which payment provider to use based on currency/country
+    const usePaystack =
+      currency !== "USD" &&
+      Object.values(PAYSTACK_COUNTRIES).some((c) => c.currency === currency);
+
+    if (usePaystack) {
+      // Use Paystack for African currencies
+      if (!["STARTER", "PROFESSIONAL", "BUSINESS"].includes(plan)) {
+        return NextResponse.json(
+          { error: "Enterprise plan requires contacting sales" },
+          { status: 400 }
+        );
+      }
+
+      await getOrCreatePaystackCustomer(orgId, email, firstName, lastName);
+
+      const { authorizationUrl, reference } = await createPaystackCheckout(
+        orgId,
+        email,
+        plan as "STARTER" | "PROFESSIONAL" | "BUSINESS",
+        billingPeriod as "monthly" | "annual",
+        currency as PaystackCurrency,
+        `${baseUrl}/api/billing/paystack/callback?orgId=${orgId}`
+      );
+
+      return NextResponse.json({
+        url: authorizationUrl,
+        reference,
+        provider: "paystack",
+      });
+    } else {
+      // Use Stripe for USD
+      const customerId = await getOrCreateStripeCustomer(orgId, email, name);
+
+      const session = await createCheckoutSession(
+        orgId,
+        customerId,
+        plan as "STARTER" | "PROFESSIONAL" | "BUSINESS" | "ENTERPRISE",
+        billingPeriod as "monthly" | "annual",
+        `${baseUrl}/account?tab=billing&success=true`,
+        `${baseUrl}/account?tab=billing&canceled=true`
+      );
+
+      return NextResponse.json({
+        url: session.url,
+        provider: "stripe",
+      });
+    }
+  } catch (error: any) {
     console.error("Error creating checkout session:", error);
     return NextResponse.json(
-      { error: "Failed to create checkout session" },
+      { error: error.message || "Failed to create checkout session" },
       { status: 500 },
     );
   }

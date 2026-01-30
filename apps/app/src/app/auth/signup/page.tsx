@@ -22,19 +22,27 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-svh flex flex-col lg:grid lg:grid-cols-2">
+    <div className="min-h-svh w-full flex flex-col lg:grid lg:grid-cols-2">
       {/* Left side - Signup Form */}
-      <div className="flex flex-col items-center justify-center p-4 sm:p-6 md:p-8 flex-1 overflow-y-auto">
-        <div className="w-full max-w-md py-6 sm:py-8 px-2 sm:px-0">
-          <div className="mb-6 sm:mb-8 flex justify-center lg:justify-start">
+      <div className="flex flex-col gap-4 p-4 sm:p-6 md:p-8 lg:p-10 flex-1 overflow-y-auto">
+        <div className="flex justify-center gap-2 md:justify-start lg:justify-start shrink-0">
+          <a href="#" className="flex items-center gap-2 font-medium">
             <Image
               src="/logo.png"
               alt="Largence Logo"
-              width={40}
-              height={40}
+              width={32}
+              height={32}
+              className="shrink-0"
             />
+            <span className="text-xl font-semibold tracking-tight font-heading">
+              Largence
+            </span>
+          </a>
+        </div>
+        <div className="flex flex-1 items-center justify-center py-4 sm:py-6 md:py-8">
+          <div className="w-full max-w-md px-0">
+            <SignupForm />
           </div>
-          <SignupForm />
         </div>
       </div>
 

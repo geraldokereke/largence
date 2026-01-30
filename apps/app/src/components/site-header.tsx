@@ -37,6 +37,9 @@ import {
   AlertCircle,
   X,
   Sparkles,
+  ScrollText,
+  BarChart3,
+  MessageSquare,
 } from "lucide-react";
 import { Spinner } from "@largence/components/ui/spinner";
 import { NotificationDrawer } from "@largence/components/notification-drawer";
@@ -202,12 +205,12 @@ export function SiteHeader() {
         <CommandList>
           <CommandEmpty>No results found.</CommandEmpty>
 
-          <CommandGroup heading="Navigation">
+          <CommandGroup heading="Workspace">
             <CommandItem
-              onSelect={() => runCommand(() => router.push("/dashboard"))}
+              onSelect={() => runCommand(() => router.push("/"))}
             >
               <Home className="mr-2 h-4 w-4" />
-              <span>Dashboard</span>
+              <span>Home</span>
               <CommandShortcut>⌘H</CommandShortcut>
             </CommandItem>
             <CommandItem
@@ -218,38 +221,64 @@ export function SiteHeader() {
               <CommandShortcut>⌘D</CommandShortcut>
             </CommandItem>
             <CommandItem
-              onSelect={() => runCommand(() => router.push("/drafts"))}
+              onSelect={() => runCommand(() => router.push("/messages"))}
             >
-              <Brain className="mr-2 h-4 w-4" />
-              <span>AI Drafts</span>
-              <CommandShortcut>⌘B</CommandShortcut>
+              <MessageSquare className="mr-2 h-4 w-4" />
+              <span>Messages</span>
             </CommandItem>
+          </CommandGroup>
+
+          <CommandSeparator />
+
+          <CommandGroup heading="Libraries">
             <CommandItem
-              onSelect={() => runCommand(() => router.push("/compliance"))}
+              onSelect={() => runCommand(() => router.push("/clauses"))}
             >
-              <ShieldCheck className="mr-2 h-4 w-4" />
-              <span>Compliance</span>
-              <CommandShortcut>⌘C</CommandShortcut>
+              <ScrollText className="mr-2 h-4 w-4" />
+              <span>Clause Library</span>
             </CommandItem>
             <CommandItem
               onSelect={() => runCommand(() => router.push("/templates"))}
             >
               <Folder className="mr-2 h-4 w-4" />
-              <span>Templates</span>
+              <span>Templates Library</span>
               <CommandShortcut>⌘T</CommandShortcut>
             </CommandItem>
+          </CommandGroup>
+
+          <CommandSeparator />
+
+          <CommandGroup heading="Compliance & Analytics">
+            <CommandItem
+              onSelect={() => runCommand(() => router.push("/compliance"))}
+            >
+              <ShieldCheck className="mr-2 h-4 w-4" />
+              <span>Compliance Checks</span>
+              <CommandShortcut>⌘C</CommandShortcut>
+            </CommandItem>
+            <CommandItem
+              onSelect={() => runCommand(() => router.push("/analytics"))}
+            >
+              <BarChart3 className="mr-2 h-4 w-4" />
+              <span>Analytics</span>
+            </CommandItem>
+          </CommandGroup>
+
+          <CommandSeparator />
+
+          <CommandGroup heading="Tools">
             <CommandItem
               onSelect={() => runCommand(() => router.push("/teams"))}
             >
               <UsersIcon className="mr-2 h-4 w-4" />
-              <span>Teams</span>
+              <span>Teams & Roles</span>
               <CommandShortcut>⌘M</CommandShortcut>
             </CommandItem>
             <CommandItem
               onSelect={() => runCommand(() => router.push("/audit"))}
             >
               <FileStack className="mr-2 h-4 w-4" />
-              <span>Audit Trail</span>
+              <span>Audit Trails</span>
               <CommandShortcut>⌘L</CommandShortcut>
             </CommandItem>
             <CommandItem

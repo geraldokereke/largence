@@ -181,8 +181,8 @@ export default function OnboardingPage() {
   };
 
   return (
-    <div className="grid min-h-svh lg:grid-cols-2">
-      <div className="flex flex-col gap-4 p-6 md:p-10 overflow-hidden">
+    <div className="min-h-svh w-full flex flex-col lg:grid lg:grid-cols-2">
+      <div className="flex flex-col gap-4 p-4 sm:p-6 md:p-8 lg:p-10 overflow-hidden">
         <div className="flex justify-center gap-2 md:justify-start shrink-0">
           <a href="#" className="flex items-center gap-2 font-medium">
             <Image

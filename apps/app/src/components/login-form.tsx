@@ -56,8 +56,8 @@ export function LoginForm({
 
   return (
     <div className={cn("w-full", className)}>
-      <div className="mb-6 sm:mb-8 text-center lg:text-left">
-        <h1 className="text-2xl sm:text-3xl font-semibold mb-2 font-display">{title}</h1>
+      <div className="mb-6 sm:mb-8 text-center md:text-left">
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold mb-2 font-display">{title}</h1>
         <p className="text-sm sm:text-base text-muted-foreground">{description}</p>
       </div>
 

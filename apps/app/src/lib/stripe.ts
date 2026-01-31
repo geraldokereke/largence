@@ -375,7 +375,14 @@ export async function updateSubscriptionFromStripe(
 
   const priceId = stripeSubscription.items.data[0]?.price.id;
   const plan = getPlanFromPriceId(priceId);
-  const planConfig = PLANS[plan];
+  // Map new plan types to old ones for PLANS lookup, or use defaults
+  const planKey = (
+    plan === "STUDENT" ? "STARTER" :
+    plan === "PRO" ? "PROFESSIONAL" :
+    plan === "MAX" ? "BUSINESS" :
+    plan
+  ) as keyof typeof PLANS;
+  const planConfig = PLANS[planKey] || PLANS.FREE;
 
   const status = mapStripeStatus(stripeSubscription.status);
 

@@ -1,9 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Button } from "@largence/ui";
-import { ArrowRight, Star, Quote } from "lucide-react";
-import Link from "next/link";
+import { HiOutlineStar, HiOutlineChatBubbleBottomCenterText } from "react-icons/hi2";
 
 const testimonials = [
   {
@@ -28,8 +26,8 @@ const testimonials = [
 
 export function TestimonialsSection() {
   return (
-    <section id="customers" className="relative py-24 px-4 sm:px-6 bg-muted/30">
-      <div className="max-w-6xl mx-auto px-6 sm:px-8 lg:px-12">
+    <section id="customers" className="relative py-20 md:py-28 px-4 sm:px-6 border-t border-border">
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Testimonials Grid */}
         <motion.div
           className="mb-16"
@@ -38,11 +36,11 @@ export function TestimonialsSection() {
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
         >
-          <div className="text-center mb-12">
-            <div className="inline-block px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-4 md:mb-6">
-              Trusted by Legal Teams
-            </div>
-            <h2 className="font-display text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold mb-4 md:mb-6">
+          <div className="max-w-3xl mb-12">
+            <p className="text-sm font-medium text-primary uppercase tracking-wider mb-4">
+              Testimonials
+            </p>
+            <h2 className="font-display text-3xl md:text-4xl font-bold mb-6">
               What Our Customers Say
             </h2>
           </div>
@@ -55,14 +53,14 @@ export function TestimonialsSection() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.3, delay: index * 0.1 }}
-                className="relative p-6 rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm"
+                className="relative p-6 rounded-xl border border-border bg-card"
               >
-                <Quote className="w-8 h-8 text-primary/20 mb-4" />
+                <HiOutlineChatBubbleBottomCenterText className="w-8 h-8 text-primary/30 mb-4" />
                 <p className="text-sm md:text-base text-foreground mb-6 leading-relaxed">
                   &ldquo;{testimonial.quote}&rdquo;
                 </p>
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
                     <span className="text-sm font-semibold text-primary">
                       {testimonial.author.split(' ').map(n => n[0]).join('')}
                     </span>
@@ -76,64 +74,12 @@ export function TestimonialsSection() {
                 </div>
                 <div className="flex gap-0.5 mt-4">
                   {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-4 h-4 fill-primary text-primary" />
+                    <HiOutlineStar key={i} className="w-4 h-4 fill-primary text-primary" />
                   ))}
                 </div>
               </motion.div>
             ))}
           </div>
-        </motion.div>
-
-        {/* CTA Section */}
-        <motion.div
-          className="py-16 md:py-20 rounded-xl border border-border/30 bg-background/50 backdrop-blur-sm text-center"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-        >
-          <motion.h2
-            className="font-display text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold mb-6"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-          >
-            Ready to Transform Your
-            <br />
-            Legal Operations?
-          </motion.h2>
-
-          <motion.p
-            className="text-sm md:text-base lg:text-lg text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-          >
-            Join the future of legal technology in Africa. Start with a 14-day
-            free trial, no credit card required.
-          </motion.p>
-
-          <motion.div
-            className="flex flex-col sm:flex-row gap-4 justify-center items-center"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-          >
-            <Link href="#pricing">
-              <Button size="sm" variant="default" className="group">
-                View Pricing
-                <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-              </Button>
-            </Link>
-            <Link href="https://app.largence.com">
-              <Button size="sm" variant="outline">
-                Start Free Trial
-              </Button>
-            </Link>
-          </motion.div>
         </motion.div>
       </div>
     </section>

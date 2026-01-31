@@ -3,7 +3,7 @@
 import { useRef } from "react";
 import Link from "next/link";
 import { Button } from "@largence/ui";
-import { Check, GraduationCap } from "lucide-react";
+import { HiOutlineCheck, HiOutlineAcademicCap } from "react-icons/hi2";
 import { motion, useInView } from "framer-motion";
 
 const plans = [
@@ -101,20 +101,32 @@ export function PricingSection() {
   const isInView = useInView(sectionRef, { once: true, margin: "-100px" });
 
   return (
-    <section id="pricing" className="py-16 md:py-24 px-4 sm:px-6" ref={sectionRef}>
-      <div className="max-w-7xl mx-auto">
+    <section id="pricing" className="relative py-20 md:py-28 px-4 sm:px-6 bg-muted/30" ref={sectionRef}>
+      {/* Subtle grid pattern */}
+      <div className="absolute inset-0 -z-10">
+        <div 
+          className="absolute inset-0 opacity-30"
+          style={{
+            backgroundImage: 'linear-gradient(to right, hsl(var(--border)) 1px, transparent 1px), linear-gradient(to bottom, hsl(var(--border)) 1px, transparent 1px)',
+            backgroundSize: '3rem 3rem'
+          }}
+        />
+      </div>
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.5 }}
-          className="text-center mb-12"
+          className="max-w-3xl mb-16"
         >
-          <h2 className="font-display text-2xl md:text-3xl font-bold mb-4">
+          <p className="text-sm font-medium text-primary uppercase tracking-wider mb-4">
+            Pricing
+          </p>
+          <h2 className="font-display text-3xl md:text-4xl font-bold mb-6">
             Simple, Transparent Pricing
           </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
-            Start free, upgrade as you grow. Usage beyond plan limits is charged at: 
-            $0.002/1K AI tokens • $0.50/document • $0.25/compliance check
+          <p className="text-lg text-muted-foreground">
+            Start free, upgrade as you grow. 
           </p>
         </motion.div>
 
@@ -125,22 +137,22 @@ export function PricingSection() {
               initial={{ opacity: 0, y: 20 }}
               animate={isInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.4, delay: 0.1 + index * 0.05 }}
-              className={`relative p-5 rounded-lg border flex flex-col transition-all duration-200 hover:shadow-lg ${
+              className={`relative p-5 rounded-lg border flex flex-col transition-all duration-200 hover:border-primary/50 h-full min-h-[420px] ${
                 plan.popular
                   ? "border-primary bg-primary/5 md:scale-105"
-                  : "border-border bg-card hover:border-primary/30"
+                  : "border-border bg-card"
               }`}
             >
               {plan.popular && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-primary text-primary-foreground text-xs font-medium rounded-full">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-primary text-primary-foreground text-xs font-medium rounded-sm">
                   Most Popular
                 </div>
               )}
 
               {"isStudent" in plan && plan.isStudent && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-blue-500 text-white text-xs font-medium rounded-full flex items-center gap-1">
-                  <GraduationCap className="w-3 h-3" />
-                  Students Only
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-blue-500 text-white text-xs font-medium rounded-sm flex items-center gap-1">
+                  <HiOutlineAcademicCap className="w-3 h-3" />
+                  For Students
                 </div>
               )}
 
@@ -165,7 +177,7 @@ export function PricingSection() {
                     key={featureIndex}
                     className="flex items-start gap-1.5 text-xs"
                   >
-                    <Check className="w-3 h-3 text-primary shrink-0 mt-0.5" />
+                    <HiOutlineCheck className="w-3 h-3 text-primary shrink-0 mt-0.5" />
                     <span className="line-clamp-1">{feature}</span>
                   </li>
                 ))}
@@ -178,12 +190,12 @@ export function PricingSection() {
 
               <Link
                 href={plan.name === "Enterprise" ? "#contact" : "https://app.largence.com/auth/signup"}
-                className="block mt-auto"
+                className="block mt-auto pt-4"
               >
                 <Button
                   variant={plan.popular ? "default" : "outline"}
-                  className="w-full text-sm"
-                  size="sm"
+                  className="w-full rounded-sm h-10"
+                  size="default"
                 >
                   {plan.cta}
                 </Button>

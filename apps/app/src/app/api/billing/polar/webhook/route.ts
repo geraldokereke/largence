@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { validateEvent } from "@polar-sh/sdk/webhooks";
 import prisma from "@/lib/prisma";
 import { PlanType, SubscriptionStatus } from "@prisma/client";
-import { PLANS, PLAN_TYPE_MAPPING } from "@/lib/polar";
+import { PLANS, PLAN_TYPE_MAPPING, getSubscriptionDataFromPlan } from "@/lib/polar";
 
 export async function POST(request: NextRequest) {
   try {
@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
 
       const plan = (data.metadata?.plan as string) || "FREE";
       const planKey = plan as keyof typeof PLANS;
-      const planConfig = PLANS[planKey] || PLANS.FREE;
+      const planData = getSubscriptionDataFromPlan(planKey);
 
       await prisma.subscription.upsert({
         where: { organizationId },
@@ -55,15 +55,7 @@ export async function POST(request: NextRequest) {
           currency: "USD",
           currentPeriodStart: new Date(),
           currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-          maxTeamMembers: planConfig.maxTeamMembers,
-          maxContracts: planConfig.maxDocuments,
-          maxStorage: Math.round(planConfig.maxStorage / 1000),
-          hasAiDrafting: planConfig.features.hasAiDrafting,
-          hasComplianceAuto: planConfig.features.hasComplianceAuto,
-          hasAnalytics: planConfig.features.hasAnalytics,
-          hasCustomTemplates: planConfig.features.hasCustomTemplates,
-          hasPrioritySupport: planConfig.features.hasPrioritySupport,
-          hasCustomIntegrations: planConfig.features.hasCustomIntegrations,
+          ...planData,
         },
         create: {
           organizationId,
@@ -76,15 +68,7 @@ export async function POST(request: NextRequest) {
           currency: "USD",
           currentPeriodStart: new Date(),
           currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-          maxTeamMembers: planConfig.maxTeamMembers,
-          maxContracts: planConfig.maxDocuments,
-          maxStorage: Math.round(planConfig.maxStorage / 1000),
-          hasAiDrafting: planConfig.features.hasAiDrafting,
-          hasComplianceAuto: planConfig.features.hasComplianceAuto,
-          hasAnalytics: planConfig.features.hasAnalytics,
-          hasCustomTemplates: planConfig.features.hasCustomTemplates,
-          hasPrioritySupport: planConfig.features.hasPrioritySupport,
-          hasCustomIntegrations: planConfig.features.hasCustomIntegrations,
+          ...planData,
         },
       });
 
@@ -108,7 +92,7 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      const planConfig = PLANS[plan];
+      const planData = getSubscriptionDataFromPlan(plan);
 
       if (event.type === "subscription.created" || event.type === "subscription.updated") {
         await prisma.subscription.update({
@@ -122,15 +106,7 @@ export async function POST(request: NextRequest) {
             currentPeriodStart: data.current_period_start ? new Date(data.current_period_start) : new Date(),
             currentPeriodEnd: data.current_period_end ? new Date(data.current_period_end) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
             cancelAtPeriodEnd: data.cancel_at_period_end || false,
-            maxTeamMembers: planConfig.maxTeamMembers,
-            maxContracts: planConfig.maxDocuments,
-            maxStorage: Math.round(planConfig.maxStorage / 1000),
-            hasAiDrafting: planConfig.features.hasAiDrafting,
-            hasComplianceAuto: planConfig.features.hasComplianceAuto,
-            hasAnalytics: planConfig.features.hasAnalytics,
-            hasCustomTemplates: planConfig.features.hasCustomTemplates,
-            hasPrioritySupport: planConfig.features.hasPrioritySupport,
-            hasCustomIntegrations: planConfig.features.hasCustomIntegrations,
+            ...planData,
           },
         });
       } else if (event.type === "subscription.active") {
@@ -150,7 +126,7 @@ export async function POST(request: NextRequest) {
           },
         });
       } else if (event.type === "subscription.revoked") {
-        const freePlan = PLANS.FREE;
+        const freePlanData = getSubscriptionDataFromPlan("FREE");
         await prisma.subscription.update({
           where: { organizationId },
           data: {
@@ -158,15 +134,7 @@ export async function POST(request: NextRequest) {
             status: SubscriptionStatus.CANCELED,
             canceledAt: new Date(),
             polarSubscriptionId: null,
-            maxTeamMembers: freePlan.maxTeamMembers,
-            maxContracts: freePlan.maxDocuments,
-            maxStorage: Math.round(freePlan.maxStorage / 1000),
-            hasAiDrafting: freePlan.features.hasAiDrafting,
-            hasComplianceAuto: freePlan.features.hasComplianceAuto,
-            hasAnalytics: freePlan.features.hasAnalytics,
-            hasCustomTemplates: freePlan.features.hasCustomTemplates,
-            hasPrioritySupport: freePlan.features.hasPrioritySupport,
-            hasCustomIntegrations: freePlan.features.hasCustomIntegrations,
+            ...freePlanData,
           },
         });
       } else if (event.type === "subscription.uncanceled") {

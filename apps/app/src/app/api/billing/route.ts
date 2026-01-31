@@ -11,7 +11,7 @@ import {
   calculateOverageCharges,
 } from "@/lib/polar";
 
-// GET /api/billing - Get subscription and usage info
+// GET /api/billing - Get subscription and usage info for the organization
 export async function GET(request: Request) {
   try {
     const { userId, orgId } = await auth();
@@ -39,6 +39,8 @@ export async function GET(request: Request) {
       : null;
 
     return NextResponse.json({
+      // Organization context - billing is at the team/org level
+      organizationId: orgId,
       subscription: subscription
         ? {
             id: subscription.id,
@@ -53,13 +55,33 @@ export async function GET(request: Request) {
             paymentProvider: subscription.paymentProvider || "POLAR",
             currency: "USD",
             isStudentVerified: subscription.isStudentVerified,
+            // Comprehensive feature flags
             features: {
+              // AI Features
               hasAiDrafting: subscription.hasAiDrafting,
+              hasAiEditing: subscription.hasAiEditing ?? false,
+              hasAgenticCompliance: subscription.hasAgenticCompliance ?? false,
+              // Compliance
               hasComplianceAuto: subscription.hasComplianceAuto,
+              // Organization
               hasAnalytics: subscription.hasAnalytics,
               hasCustomTemplates: subscription.hasCustomTemplates,
               hasPrioritySupport: subscription.hasPrioritySupport,
               hasCustomIntegrations: subscription.hasCustomIntegrations,
+              hasESignatures: subscription.hasESignatures ?? false,
+              hasAuditLogs: subscription.hasAuditLogs ?? false,
+              hasApiAccess: subscription.hasApiAccess ?? false,
+              hasClauseLibrary: subscription.hasClauseLibrary ?? false,
+              hasMatters: subscription.hasMatters ?? false,
+              hasTeamCollaboration: subscription.hasTeamCollaboration ?? false,
+            },
+            // Usage limits
+            limits: {
+              maxESignatures: subscription.maxESignatures ?? 0,
+              maxAiGenerations: subscription.maxAiGenerations ?? 10,
+              maxAiTokens: subscription.maxAiTokens ?? 50000,
+              maxComplianceChecks: subscription.maxComplianceChecks ?? 5,
+              maxTemplates: subscription.maxTemplates ?? 3,
             },
           }
         : null,

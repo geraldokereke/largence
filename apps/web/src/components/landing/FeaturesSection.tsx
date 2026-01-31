@@ -1,49 +1,58 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
-import { motion, useInView } from "framer-motion";
-import { FileText, Shield, Users, Cloud, MessageSquare, FileSignature, ChevronRight } from "lucide-react";
+import { motion, useInView, AnimatePresence } from "framer-motion";
+import { 
+  HiOutlineDocumentText, 
+  HiOutlineSparkles, 
+  HiOutlineShieldCheck, 
+  HiOutlineUserGroup, 
+  HiOutlineScale, 
+  HiOutlinePencilSquare,
+  HiChevronRight
+} from "react-icons/hi2";
 
+// Features data
 const features = [
   {
     id: "documents",
-    icon: FileText,
+    icon: HiOutlineDocumentText,
     title: "Document Creation",
     description: "Create legal documents from templates or use AI to help draft new ones. Export to DOCX when needed.",
     screenshot: "/hero-v2.png",
   },
   {
-    id: "compliance",
-    icon: Shield,
-    title: "Compliance Checks",
-    description: "Run automated compliance analysis on your documents. Get flagged for potential issues.",
+    id: "ai-assistant",
+    icon: HiOutlineSparkles,
+    title: "AI Assistant",
+    description: "Get intelligent suggestions, draft clauses, and improve your documents with AI-powered assistance.",
     screenshot: "/hero-dark-v2.png",
   },
   {
-    id: "collaboration",
-    icon: Users,
-    title: "Team Collaboration",
-    description: "Share documents with your team, set permissions, and track changes. Work together in one place.",
+    id: "compliance",
+    icon: HiOutlineShieldCheck,
+    title: "Compliance Checks",
+    description: "Run automated compliance analysis on your documents. Get flagged for potential issues.",
     screenshot: "/hero-v2.png",
   },
   {
-    id: "cloud",
-    icon: Cloud,
-    title: "Cloud Integration",
-    description: "Import from and sync to Dropbox, Google Drive, and Notion. Keep your files where you need them.",
+    id: "collaboration",
+    icon: HiOutlineUserGroup,
+    title: "Team Collaboration",
+    description: "Share documents with your team, set permissions, and track changes. Work together in one place.",
     screenshot: "/hero-dark-v2.png",
   },
   {
-    id: "messaging",
-    icon: MessageSquare,
-    title: "Team Messaging",
-    description: "Discuss documents and matters with your team in organized channels. No more email threads.",
+    id: "matters",
+    icon: HiOutlineScale,
+    title: "Matter Management",
+    description: "Organize your legal matters, track deadlines, and keep all related documents in one place.",
     screenshot: "/hero-v2.png",
   },
   {
     id: "signatures",
-    icon: FileSignature,
+    icon: HiOutlinePencilSquare,
     title: "E-Signatures",
     description: "Send documents for signature via DocuSign integration. Track signing status in real-time.",
     screenshot: "/hero-dark-v2.png",
@@ -52,23 +61,66 @@ const features = [
 
 export function FeaturesSection() {
   const [activeFeature, setActiveFeature] = useState(features[0]);
+  const [isMounted, setIsMounted] = useState(false);
   const sectionRef = useRef(null);
   const isInView = useInView(sectionRef, { once: true, margin: "-100px" });
 
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   return (
-    <section id="features" className="py-16 md:py-24 px-4 sm:px-6 bg-muted/30" ref={sectionRef}>
-      <div className="max-w-6xl mx-auto">
+    <section id="features" className="relative py-20 md:py-28 px-4 sm:px-6" ref={sectionRef}>
+      {/* Grid background */}
+      <div className="absolute inset-0 -z-10 overflow-hidden">
+        <div 
+          className="absolute inset-0 opacity-[0.08]"
+          style={{
+            backgroundImage: 'linear-gradient(to right, hsl(var(--foreground)) 1px, transparent 1px), linear-gradient(to bottom, hsl(var(--foreground)) 1px, transparent 1px)',
+            backgroundSize: '60px 60px'
+          }}
+        />
+        {/* Animated horizontal lines - only after mount */}
+        {isMounted && (
+          <>
+            <motion.div
+              className="absolute top-1/4 left-0 w-24 h-px bg-primary/40"
+              animate={{ x: ["0%", "300%", "0%"] }}
+              transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
+            />
+            <motion.div
+              className="absolute top-2/3 right-0 w-32 h-px bg-primary/30"
+              animate={{ x: ["0%", "-200%", "0%"] }}
+              transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+            />
+          </>
+        )}
+      </div>
+
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.5 }}
-          className="text-center mb-12"
+          className="max-w-3xl mb-16"
         >
-          <h2 className="font-display text-2xl md:text-4xl font-bold mb-4">
-            Everything You Need
+          <p className="text-sm font-medium text-primary uppercase tracking-wider mb-4">
+            Features
+          </p>
+          <h2 className="font-display text-3xl md:text-4xl font-bold mb-6">
+            <span className="relative inline-block">
+              Everything
+              <motion.span
+                className="absolute -bottom-1 left-0 h-1 bg-primary rounded-full"
+                initial={{ width: 0 }}
+                animate={isInView ? { width: "100%" } : { width: 0 }}
+                transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
+              />
+            </span>{" "}
+            You Need
           </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-lg text-muted-foreground">
             Practical tools for legal document management. No fluff, just what works.
           </p>
         </motion.div>
@@ -92,6 +144,7 @@ export function FeaturesSection() {
                   animate={isInView ? { opacity: 1, x: 0 } : {}}
                   transition={{ duration: 0.3, delay: 0.15 + index * 0.05 }}
                   onClick={() => setActiveFeature(feature)}
+                  whileHover={{ x: 4 }}
                   className={`w-full text-left p-4 rounded-lg border transition-all duration-200 ${
                     isActive
                       ? "bg-card border-primary shadow-md"
@@ -99,20 +152,29 @@ export function FeaturesSection() {
                   }`}
                 >
                   <div className="flex items-start gap-3">
-                    <div className={`w-10 h-10 rounded-md flex items-center justify-center shrink-0 transition-colors ${
-                      isActive ? "bg-primary text-primary-foreground" : "bg-muted"
-                    }`}>
+                    <motion.div 
+                      className={`w-10 h-10 rounded-md flex items-center justify-center shrink-0 transition-colors ${
+                        isActive ? "bg-primary text-primary-foreground" : "bg-muted"
+                      }`}
+                      animate={isActive ? { rotate: [0, -5, 5, 0] } : {}}
+                      transition={{ duration: 0.4 }}
+                    >
                       <Icon className="w-5 h-5" />
-                    </div>
+                    </motion.div>
                     <div className="flex-1 min-w-0">
                       <h3 className="font-semibold text-sm mb-1">{feature.title}</h3>
                       <p className="text-xs text-muted-foreground leading-relaxed">
                         {feature.description}
                       </p>
                     </div>
-                    <ChevronRight className={`w-5 h-5 shrink-0 transition-all ${
-                      isActive ? "text-primary" : "text-muted-foreground opacity-0"
-                    }`} />
+                    <motion.div
+                      animate={isActive ? { x: [0, 3, 0] } : {}}
+                      transition={{ duration: 0.4, repeat: isActive ? Infinity : 0, repeatDelay: 1 }}
+                    >
+                      <HiChevronRight className={`w-5 h-5 shrink-0 transition-all ${
+                        isActive ? "text-primary" : "text-muted-foreground opacity-0"
+                      }`} />
+                    </motion.div>
                   </div>
                 </motion.button>
               );
@@ -126,22 +188,39 @@ export function FeaturesSection() {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="sticky top-24"
           >
-            <div className="rounded-lg border bg-card overflow-hidden shadow-xl">
-              <div className="relative aspect-[16/10] w-full bg-muted">
-                <Image
-                  src={activeFeature.screenshot}
-                  alt={activeFeature.title}
-                  fill
-                  className="object-cover transition-opacity duration-300"
-                  key={activeFeature.id}
-                />
+            <div className="rounded-lg border bg-card overflow-hidden">
+              <div className="relative aspect-16/10 w-full bg-muted overflow-hidden">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={activeFeature.id}
+                    initial={{ opacity: 0, scale: 1.05 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.3 }}
+                    className="relative w-full h-full"
+                  >
+                    <Image
+                      src={activeFeature.screenshot}
+                      alt={activeFeature.title}
+                      fill
+                      className="object-cover"
+                    />
+                  </motion.div>
+                </AnimatePresence>
               </div>
               <div className="p-4 border-t">
                 <div className="flex items-center gap-2 mb-2">
-                  {(() => {
-                    const Icon = activeFeature.icon;
-                    return <Icon className="w-4 h-4 text-primary" />;
-                  })()}
+                  <motion.div
+                    key={activeFeature.id + "-icon"}
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", stiffness: 300 }}
+                  >
+                    {(() => {
+                      const Icon = activeFeature.icon;
+                      return <Icon className="w-4 h-4 text-primary" />;
+                    })()}
+                  </motion.div>
                   <h4 className="font-semibold text-sm">{activeFeature.title}</h4>
                 </div>
                 <p className="text-xs text-muted-foreground">

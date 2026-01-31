@@ -5,7 +5,14 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Button } from "@largence/ui";
-import { Menu, X, User, LogOut, LayoutDashboard, HomeIcon } from "lucide-react";
+import { 
+  HiOutlineBars3, 
+  HiOutlineXMark, 
+  HiOutlineUser, 
+  HiOutlineArrowRightOnRectangle, 
+  HiOutlineSquares2X2,
+  HiOutlineHome
+} from "react-icons/hi2";
 import { useUser, useClerk, SignedIn, SignedOut } from "@clerk/nextjs";
 import { ScheduleDemoDialog } from "./schedule-demo-dialog";
 
@@ -74,7 +81,7 @@ export const Navbar: React.FC = () => {
     <>
       <nav className="fixed top-0 left-0 right-0 z-50 py-2 px-4 touch-manipulation">
         <div
-          className={`max-w-6xl mx-auto px-4 sm:px-6 transition-all duration-500 ease-in-out rounded-xl ${
+          className={`w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 transition-all duration-500 ease-in-out rounded-xl ${
             scrolled
               ? "rounded-xl bg-background/80 backdrop-blur-md border"
               : ""
@@ -171,7 +178,7 @@ export const Navbar: React.FC = () => {
                         className="rounded-full"
                       />
                     ) : (
-                      <User className="h-4 w-4 text-primary" />
+                      <HiOutlineUser className="h-4 w-4 text-primary" />
                     )}
                   </button>
                   {profileMenuOpen && (
@@ -190,7 +197,7 @@ export const Navbar: React.FC = () => {
                           className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-muted transition-colors"
                           onClick={() => setProfileMenuOpen(false)}
                         >
-                          <HomeIcon className="h-4 w-4" />
+                          <HiOutlineHome className="h-4 w-4" />
                           Go to Dashboard
                         </Link>
                         <button
@@ -200,7 +207,7 @@ export const Navbar: React.FC = () => {
                           }}
                           className="flex items-center gap-2 w-full px-3 py-2 text-sm text-destructive hover:bg-muted transition-colors"
                         >
-                          <LogOut className="h-4 w-4" />
+                          <HiOutlineArrowRightOnRectangle className="h-4 w-4" />
                           Sign Out
                         </button>
                       </div>
@@ -217,9 +224,9 @@ export const Navbar: React.FC = () => {
               aria-label="Toggle menu"
             >
               {mobileMenuOpen ? (
-                <X className="w-5 h-5" />
+                <HiOutlineXMark className="w-5 h-5" />
               ) : (
-                <Menu className="w-5 h-5" />
+                <HiOutlineBars3 className="w-5 h-5" />
               )}
             </button>
           </div>
@@ -315,7 +322,7 @@ export const Navbar: React.FC = () => {
                 onClick={() => setMobileMenuOpen(false)}
               >
                 <Button variant="default" size="lg" className="w-full rounded-sm">
-                  <LayoutDashboard className="h-4 w-4 mr-2" />
+                  <HiOutlineSquares2X2 className="h-4 w-4 mr-2" />
                   Go to Dashboard
                 </Button>
               </Link>
@@ -328,7 +335,7 @@ export const Navbar: React.FC = () => {
                   signOut();
                 }}
               >
-                <LogOut className="h-4 w-4 mr-2" />
+                <HiOutlineArrowRightOnRectangle className="h-4 w-4 mr-2" />
                 Sign Out
               </Button>
             </SignedIn>

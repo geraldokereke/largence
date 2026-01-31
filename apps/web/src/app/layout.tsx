@@ -1,9 +1,15 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
-import { Geist_Mono } from "next/font/google";
+import { Inter, Geist_Mono } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { ThemeProvider } from "../components/theme-provider";
 import "./globals.css";
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
 
 const generalSans = localFont({
   src: [
@@ -59,60 +65,8 @@ const polySans = localFont({
       weight: "700",
       style: "normal",
     },
-    {
-      path: "../../../../packages/fonts/polysansitalictrial-slimitalic.otf",
-      weight: "300",
-      style: "italic",
-    },
-    {
-      path: "../../../../packages/fonts/polysansitalictrial-neutralitalic.otf",
-      weight: "400",
-      style: "italic",
-    },
-    {
-      path: "../../../../packages/fonts/polysansitalictrial-medianitalic.otf",
-      weight: "500",
-      style: "italic",
-    },
-    {
-      path: "../../../../packages/fonts/polysansitalictrial-bulkyitalic.otf",
-      weight: "700",
-      style: "italic",
-    },
   ],
   variable: "--font-poly-sans",
-  display: "swap",
-});
-
-const satoshi = localFont({
-  src: [
-    {
-      path: "../../../../packages/fonts/Satoshi-Light.woff2",
-      weight: "300",
-      style: "normal",
-    },
-    {
-      path: "../../../../packages/fonts/Satoshi-Regular.woff2",
-      weight: "400",
-      style: "normal",
-    },
-    {
-      path: "../../../../packages/fonts/Satoshi-Medium.woff2",
-      weight: "500",
-      style: "normal",
-    },
-    {
-      path: "../../../../packages/fonts/Satoshi-Bold.woff2",
-      weight: "700",
-      style: "normal",
-    },
-    {
-      path: "../../../../packages/fonts/Satoshi-Black.woff2",
-      weight: "900",
-      style: "normal",
-    },
-  ],
-  variable: "--font-satoshi",
   display: "swap",
 });
 
@@ -237,11 +191,9 @@ export default function RootLayout({
           <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
         </head>
         <body
-          className={`${generalSans.variable} ${polySans.variable} ${satoshi.variable} ${geistMono.variable} font-sans antialiased`}
+          className={`${inter.variable} ${generalSans.variable} ${polySans.variable} ${geistMono.variable} font-sans antialiased`}
         >
-          <ThemeProvider defaultTheme="system" storageKey="largence-theme">
             {children}
-          </ThemeProvider>
         </body>
       </html>
     </ClerkProvider>

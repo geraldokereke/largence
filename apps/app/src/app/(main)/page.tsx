@@ -3,7 +3,6 @@
 import { useAuth } from "@clerk/nextjs";
 import { useQuery } from "@tanstack/react-query";
 import { WelcomeCTA } from "@largence/components/welcome-cta";
-import { OnboardingChecklist } from "@largence/components/onboarding-checklist";
 import { QuickStats } from "@largence/components/quick-stats";
 import { QuickActions } from "@largence/components/quick-actions";
 import { EmptyState } from "@largence/components/empty-state";
@@ -12,6 +11,7 @@ import { Skeleton } from "@largence/components/ui/skeleton";
 import { FileText, AlertCircle, ArrowRight, RefreshCw, Clock, Edit3 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
+import { useEffect } from "react";
 
 interface Document {
   id: string;
@@ -31,8 +31,15 @@ async function fetchDocuments(): Promise<{ documents: Document[] }> {
 }
 
 export default function Home() {
-  const { userId } = useAuth();
+  const { userId, isLoaded } = useAuth();
   const router = useRouter();
+
+  // Redirect to login immediately if not authenticated
+  useEffect(() => {
+    if (isLoaded && !userId) {
+      router.replace("/login");
+    }
+  }, [isLoaded, userId, router]);
 
   const {
     data,
@@ -60,6 +67,15 @@ export default function Home() {
     }
   };
 
+  // Show loading while checking auth
+  if (!isLoaded || !userId) {
+    return (
+      <div className="flex flex-1 items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
   if (error) {
     return (
       <div className="flex flex-1 flex-col gap-3 p-3">
@@ -82,9 +98,6 @@ export default function Home() {
   return (
     <div className="flex flex-1 flex-col gap-3 p-3">
       <WelcomeCTA />
-      
-      {/* Onboarding Checklist - shows only once */}
-      <OnboardingChecklist />
 
       {isLoading ? (
         <div className="space-y-3">

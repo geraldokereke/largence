@@ -11,18 +11,27 @@ export const polar = new Polar({
 /**
  * LARGENCE PRICING STRUCTURE (Polar.sh)
  *
- * New pricing tiers:
+ * Pricing tiers based on ACTUAL app features:
  * - Starter: $0/month (Free tier)
+ * - Largence Student: $5/month (requires student verification)
  * - Largence Pro: $20/month
  * - Largence Max: $100/month
- * - Largence Student: $5/month (requires student verification)
  * - Largence Enterprise: Custom pricing
  *
- * Token Usage Charges:
- * - AI tokens beyond plan limit: $0.002 per 1K tokens
- * - Additional documents: $0.50 per document after limit
- * - Additional compliance checks: $0.25 per check after limit
- * - Additional storage: $2 per GB after limit
+ * ACTUAL FEATURES IN THE APP:
+ * - Document creation & AI generation
+ * - AI document editing
+ * - Compliance checking (basic & agentic AI-powered)
+ * - E-signatures (internal system)
+ * - Templates (create, browse community templates)
+ * - Analytics dashboard
+ * - Audit logs
+ * - Integrations (DocuSign, Dropbox)
+ * - Matter/Case management
+ * - Clause library
+ * - Team collaboration
+ * - Document versioning & export (PDF/DOCX)
+ * - Document sharing
  *
  * All prices in USD - Polar handles tax compliance globally
  */
@@ -35,55 +44,63 @@ export const TOKEN_USAGE_RATES = {
   STORAGE_GB_OVERAGE: 200, // $2 per GB
 };
 
-// Monthly prices in cents
+// Monthly prices in cents - Features aligned with actual app capabilities
 export const PLANS = {
   FREE: {
     name: "Starter",
     description: "Perfect for trying out Largence",
     monthlyPrice: 0,
     annualPrice: 0,
-    polarProductId: null, // Free tier doesn't need a product
+    polarProductId: null,
     polarPriceIdMonthly: null,
     polarPriceIdAnnual: null,
     maxTeamMembers: 1,
-    maxDocuments: 5, // Total documents (not per month)
+    maxDocuments: 5, // Total documents
     maxAiGenerations: 10, // Per month
     maxAiTokens: 50000, // 50K tokens per month
     maxComplianceChecks: 5, // Per month
     maxStorage: 100, // 100 MB
     maxTemplates: 3,
+    maxESignatures: 0, // No e-signatures on free
     features: {
-      hasAiDrafting: true,
-      hasComplianceBasic: true,
-      hasComplianceAuto: false,
-      hasAnalytics: false,
-      hasCustomTemplates: false,
+      // AI Features
+      hasAiDrafting: true, // Basic AI document generation
+      hasAiEditing: false, // AI-powered document editing
+      hasAgenticCompliance: false, // AI auto-fix compliance
+      // Compliance
+      hasComplianceBasic: true, // Basic compliance checks
+      hasComplianceAuto: false, // Automated monitoring
+      // Documents
+      hasDocumentVersioning: true, // Version history
+      hasDocumentExport: true, // PDF/DOCX export
+      hasDocumentSharing: true, // Basic sharing
+      hasAdvancedExport: false, // Branded exports
+      // Organization
+      hasTeamCollaboration: false, // Team features
+      hasCustomTemplates: false, // Create custom templates
+      hasESignatures: false, // E-signature requests
+      hasAuditLogs: false, // Audit trail
+      hasMatters: false, // Matter management
+      hasClauseLibrary: false, // Clause library
+      hasCustomIntegrations: false, // DocuSign, etc.
+      hasAnalytics: false, // Analytics dashboard
       hasPrioritySupport: false,
-      hasCustomIntegrations: false,
-      hasESignatures: false,
-      hasAuditLogs: false,
       hasApiAccess: false,
-      hasSso: false,
-      hasAdvancedExport: false,
-      hasClauseLibrary: false,
-      hasMatters: false,
-      hasBrandedDocs: false,
-      hasWhiteLabel: false,
     },
     highlights: [
       "5 documents total",
       "10 AI generations/month",
-      "50K AI tokens/month",
-      "5 compliance checks/month",
-      "Basic templates",
+      "Basic compliance checks",
+      "Document export (PDF/DOCX)",
+      "3 basic templates",
       "Email support",
     ],
   },
   STUDENT: {
     name: "Largence Student",
-    description: " ",
+    description: "Special pricing for verified students",
     monthlyPrice: 500, // $5/month
-    annualPrice: 5000, // $50/year (~$4.17/month, 17% off)
+    annualPrice: 5000, // $50/year
     polarProductId: process.env.POLAR_STUDENT_PRODUCT_ID,
     polarPriceIdMonthly: process.env.POLAR_STUDENT_MONTHLY_PRICE_ID,
     polarPriceIdAnnual: process.env.POLAR_STUDENT_ANNUAL_PRICE_ID,
@@ -94,33 +111,41 @@ export const PLANS = {
     maxComplianceChecks: 20, // Per month
     maxStorage: 2000, // 2 GB
     maxTemplates: 15,
-    requiresVerification: true, // Student verification required
+    maxESignatures: 5, // 5/month
+    requiresVerification: true,
     features: {
+      // AI Features
       hasAiDrafting: true,
+      hasAiEditing: true, // AI document editing
+      hasAgenticCompliance: false,
+      // Compliance
       hasComplianceBasic: true,
       hasComplianceAuto: false,
-      hasAnalytics: true,
+      // Documents
+      hasDocumentVersioning: true,
+      hasDocumentExport: true,
+      hasDocumentSharing: true,
+      hasAdvancedExport: true,
+      // Organization
+      hasTeamCollaboration: false,
       hasCustomTemplates: true,
-      hasPrioritySupport: false,
-      hasCustomIntegrations: false,
       hasESignatures: true, // 5/month
       hasAuditLogs: false,
-      hasApiAccess: false,
-      hasSso: false,
-      hasAdvancedExport: true,
-      hasClauseLibrary: true,
       hasMatters: false,
-      hasBrandedDocs: false,
-      hasWhiteLabel: false,
+      hasClauseLibrary: true,
+      hasCustomIntegrations: false,
+      hasAnalytics: true,
+      hasPrioritySupport: false,
+      hasApiAccess: false,
     },
     highlights: [
       "Student verified pricing",
       "30 documents/month",
       "50 AI generations/month",
-      "200K AI tokens/month",
-      "20 compliance checks/month",
+      "AI document editing",
       "5 e-signatures/month",
       "Custom templates",
+      "Clause library",
       "Analytics dashboard",
       "2 GB storage",
     ],
@@ -129,7 +154,7 @@ export const PLANS = {
     name: "Largence Pro",
     description: "For professionals and small legal practices",
     monthlyPrice: 2000, // $20/month
-    annualPrice: 20000, // $200/year (~$16.67/month, 17% off)
+    annualPrice: 20000, // $200/year
     polarProductId: process.env.POLAR_PRO_PRODUCT_ID,
     polarPriceIdMonthly: process.env.POLAR_PRO_MONTHLY_PRICE_ID,
     polarPriceIdAnnual: process.env.POLAR_PRO_ANNUAL_PRICE_ID,
@@ -140,44 +165,50 @@ export const PLANS = {
     maxComplianceChecks: 50, // Per month
     maxStorage: 10000, // 10 GB
     maxTemplates: 50,
+    maxESignatures: 20, // 20/month
     features: {
+      // AI Features
       hasAiDrafting: true,
+      hasAiEditing: true,
+      hasAgenticCompliance: true, // AI auto-fix
+      // Compliance
       hasComplianceBasic: true,
-      hasComplianceAuto: true,
-      hasAnalytics: true,
+      hasComplianceAuto: true, // Automated monitoring
+      // Documents
+      hasDocumentVersioning: true,
+      hasDocumentExport: true,
+      hasDocumentSharing: true,
+      hasAdvancedExport: true,
+      // Organization
+      hasTeamCollaboration: true, // Team features
       hasCustomTemplates: true,
-      hasPrioritySupport: false,
-      hasCustomIntegrations: true,
       hasESignatures: true, // 20/month
       hasAuditLogs: true,
-      hasApiAccess: false,
-      hasSso: false,
-      hasAdvancedExport: true,
+      hasMatters: true, // Matter management
       hasClauseLibrary: true,
-      hasMatters: true,
-      hasBrandedDocs: false,
-      hasWhiteLabel: false,
+      hasCustomIntegrations: true, // DocuSign
+      hasAnalytics: true,
+      hasPrioritySupport: false,
+      hasApiAccess: false,
     },
     highlights: [
-      "Up to 5 team members",
+      "5 team members",
       "100 documents/month",
-      "100 AI generations/month",
-      "500K AI tokens/month",
-      "50 compliance checks/month",
+      "AI-powered compliance fixes",
       "20 e-signatures/month",
-      "Automated compliance",
       "DocuSign integration",
       "Matter management",
-      "Audit trails",
+      "Full audit trail",
+      "Team collaboration",
       "10 GB storage",
     ],
-    popular: true, // Show as "Most Popular"
+    popular: true,
   },
   MAX: {
     name: "Largence Max",
     description: "For growing teams and legal departments",
     monthlyPrice: 10000, // $100/month
-    annualPrice: 100000, // $1,000/year (~$83.33/month, 17% off)
+    annualPrice: 100000, // $1,000/year
     polarProductId: process.env.POLAR_MAX_PRODUCT_ID,
     polarPriceIdMonthly: process.env.POLAR_MAX_MONTHLY_PRICE_ID,
     polarPriceIdAnnual: process.env.POLAR_MAX_ANNUAL_PRICE_ID,
@@ -188,35 +219,41 @@ export const PLANS = {
     maxComplianceChecks: -1, // Unlimited
     maxStorage: 100000, // 100 GB
     maxTemplates: -1, // Unlimited
+    maxESignatures: -1, // Unlimited
     features: {
+      // AI Features
       hasAiDrafting: true,
+      hasAiEditing: true,
+      hasAgenticCompliance: true,
+      // Compliance
       hasComplianceBasic: true,
       hasComplianceAuto: true,
-      hasAnalytics: true,
+      // Documents
+      hasDocumentVersioning: true,
+      hasDocumentExport: true,
+      hasDocumentSharing: true,
+      hasAdvancedExport: true,
+      // Organization
+      hasTeamCollaboration: true,
       hasCustomTemplates: true,
-      hasPrioritySupport: true,
-      hasCustomIntegrations: true,
       hasESignatures: true, // Unlimited
       hasAuditLogs: true,
-      hasApiAccess: true,
-      hasSso: false,
-      hasAdvancedExport: true,
-      hasClauseLibrary: true,
       hasMatters: true,
-      hasBrandedDocs: true,
-      hasWhiteLabel: false,
+      hasClauseLibrary: true,
+      hasCustomIntegrations: true,
+      hasAnalytics: true,
+      hasPrioritySupport: true,
+      hasApiAccess: true,
     },
     highlights: [
-      "Up to 25 team members",
+      "25 team members",
       "Unlimited documents",
       "500 AI generations/month",
-      "2M AI tokens/month",
-      "Unlimited compliance checks",
       "Unlimited e-signatures",
+      "Unlimited compliance checks",
       "API access",
       "Priority support",
-      "Branded documents",
-      "Advanced analytics",
+      "All integrations",
       "100 GB storage",
     ],
   },
@@ -224,10 +261,10 @@ export const PLANS = {
     name: "Largence Enterprise",
     description: "For large organizations with custom requirements",
     monthlyPrice: null, // Custom pricing
-    annualPrice: null, // Custom pricing
+    annualPrice: null,
     polarProductId: process.env.POLAR_ENTERPRISE_PRODUCT_ID,
-    polarPriceIdMonthly: null, // Custom quote
-    polarPriceIdAnnual: null, // Custom quote
+    polarPriceIdMonthly: null,
+    polarPriceIdAnnual: null,
     maxTeamMembers: -1, // Unlimited
     maxDocuments: -1, // Unlimited
     maxAiGenerations: -1, // Unlimited
@@ -235,35 +272,41 @@ export const PLANS = {
     maxComplianceChecks: -1, // Unlimited
     maxStorage: -1, // Unlimited
     maxTemplates: -1, // Unlimited
+    maxESignatures: -1, // Unlimited
     features: {
+      // AI Features
       hasAiDrafting: true,
+      hasAiEditing: true,
+      hasAgenticCompliance: true,
+      // Compliance
       hasComplianceBasic: true,
       hasComplianceAuto: true,
-      hasAnalytics: true,
+      // Documents
+      hasDocumentVersioning: true,
+      hasDocumentExport: true,
+      hasDocumentSharing: true,
+      hasAdvancedExport: true,
+      // Organization
+      hasTeamCollaboration: true,
       hasCustomTemplates: true,
-      hasPrioritySupport: true,
-      hasCustomIntegrations: true,
       hasESignatures: true,
       hasAuditLogs: true,
-      hasApiAccess: true,
-      hasSso: true,
-      hasAdvancedExport: true,
-      hasClauseLibrary: true,
       hasMatters: true,
-      hasBrandedDocs: true,
-      hasWhiteLabel: true,
+      hasClauseLibrary: true,
+      hasCustomIntegrations: true,
+      hasAnalytics: true,
+      hasPrioritySupport: true,
+      hasApiAccess: true,
     },
     highlights: [
+      "Unlimited team members",
       "Unlimited everything",
-      "Single Sign-On (SSO)",
-      "White-label option",
-      "Custom AI training",
-      "On-premise deployment option",
       "Dedicated account manager",
       "Custom SLA",
-      "24/7 phone support",
-      "Security audit & compliance cert",
+      "24/7 priority support",
       "Custom integrations",
+      "Advanced security options",
+      "Onboarding assistance",
     ],
   },
 } as const;
@@ -280,6 +323,43 @@ export const PLAN_TYPE_MAPPING: Record<string, PlanType> = {
   PROFESSIONAL: PlanType.PRO,
   BUSINESS: PlanType.MAX,
 };
+
+/**
+ * Helper to get subscription data object from plan config
+ * This ensures consistent subscription creation/updates across the app
+ */
+export function getSubscriptionDataFromPlan(planKey: keyof typeof PLANS) {
+  const plan = PLANS[planKey];
+  return {
+    // Limits
+    maxTeamMembers: plan.maxTeamMembers,
+    maxContracts: plan.maxDocuments,
+    maxStorage: Math.round(plan.maxStorage / 1000), // Convert MB to GB
+    maxESignatures: plan.maxESignatures,
+    maxAiGenerations: plan.maxAiGenerations,
+    maxAiTokens: plan.maxAiTokens,
+    maxComplianceChecks: plan.maxComplianceChecks,
+    maxTemplates: plan.maxTemplates,
+    // Feature flags
+    hasAiDrafting: plan.features.hasAiDrafting,
+    hasAiEditing: plan.features.hasAiEditing,
+    hasAgenticCompliance: plan.features.hasAgenticCompliance,
+    hasComplianceAuto: plan.features.hasComplianceAuto,
+    hasAnalytics: plan.features.hasAnalytics,
+    hasCustomTemplates: plan.features.hasCustomTemplates,
+    hasPrioritySupport: plan.features.hasPrioritySupport,
+    hasCustomIntegrations: plan.features.hasCustomIntegrations,
+    hasESignatures: plan.features.hasESignatures,
+    hasAuditLogs: plan.features.hasAuditLogs,
+    hasApiAccess: plan.features.hasApiAccess,
+    hasClauseLibrary: plan.features.hasClauseLibrary,
+    hasMatters: plan.features.hasMatters,
+    hasDocumentVersioning: plan.features.hasDocumentVersioning,
+    hasDocumentExport: plan.features.hasDocumentExport,
+    hasDocumentSharing: plan.features.hasDocumentSharing,
+    hasTeamCollaboration: plan.features.hasTeamCollaboration,
+  };
+}
 
 /**
  * Create a Polar checkout session
@@ -364,7 +444,7 @@ export async function getOrCreatePolarCustomer(
   }
 
   // Create or update subscription record with free plan
-  const freePlan = PLANS.FREE;
+  const freePlanData = getSubscriptionDataFromPlan("FREE");
   await prisma.subscription.upsert({
     where: { organizationId },
     update: { polarCustomerId: customerId },
@@ -375,15 +455,7 @@ export async function getOrCreatePolarCustomer(
       stripeCustomerId: `temp_polar_${organizationId}`,
       plan: PlanType.FREE,
       status: SubscriptionStatus.ACTIVE,
-      maxTeamMembers: freePlan.maxTeamMembers,
-      maxContracts: freePlan.maxDocuments,
-      maxStorage: Math.round(freePlan.maxStorage / 1000), // Convert MB to GB
-      hasAiDrafting: freePlan.features.hasAiDrafting,
-      hasComplianceAuto: freePlan.features.hasComplianceAuto,
-      hasAnalytics: freePlan.features.hasAnalytics,
-      hasCustomTemplates: freePlan.features.hasCustomTemplates,
-      hasPrioritySupport: freePlan.features.hasPrioritySupport,
-      hasCustomIntegrations: freePlan.features.hasCustomIntegrations,
+      ...freePlanData,
     },
   });
 
@@ -628,6 +700,7 @@ export async function updateSubscriptionFromPolar(
 
   const planConfig = PLANS[plan];
   const status = mapPolarStatus(polarSubscription.status);
+  const planData = getSubscriptionDataFromPlan(plan);
 
   await prisma.subscription.update({
     where: { organizationId },
@@ -639,15 +712,7 @@ export async function updateSubscriptionFromPolar(
       currentPeriodStart: new Date(polarSubscription.currentPeriodStart),
       currentPeriodEnd: new Date(polarSubscription.currentPeriodEnd),
       cancelAtPeriodEnd: polarSubscription.cancelAtPeriodEnd || false,
-      maxTeamMembers: planConfig.maxTeamMembers,
-      maxContracts: planConfig.maxDocuments,
-      maxStorage: Math.round(planConfig.maxStorage / 1000),
-      hasAiDrafting: planConfig.features.hasAiDrafting,
-      hasComplianceAuto: planConfig.features.hasComplianceAuto,
-      hasAnalytics: planConfig.features.hasAnalytics,
-      hasCustomTemplates: planConfig.features.hasCustomTemplates,
-      hasPrioritySupport: planConfig.features.hasPrioritySupport,
-      hasCustomIntegrations: planConfig.features.hasCustomIntegrations,
+      ...planData,
     },
   });
 }
@@ -666,7 +731,7 @@ export async function handleSubscriptionCanceled(
   if (!organizationId) return;
 
   // Downgrade to free plan
-  const freePlan = PLANS.FREE;
+  const freePlanData = getSubscriptionDataFromPlan("FREE");
 
   await prisma.subscription.update({
     where: { organizationId },
@@ -674,15 +739,7 @@ export async function handleSubscriptionCanceled(
       plan: PlanType.FREE,
       status: SubscriptionStatus.CANCELED,
       canceledAt: new Date(),
-      maxTeamMembers: freePlan.maxTeamMembers,
-      maxContracts: freePlan.maxDocuments,
-      maxStorage: Math.round(freePlan.maxStorage / 1000),
-      hasAiDrafting: freePlan.features.hasAiDrafting,
-      hasComplianceAuto: freePlan.features.hasComplianceAuto,
-      hasAnalytics: freePlan.features.hasAnalytics,
-      hasCustomTemplates: freePlan.features.hasCustomTemplates,
-      hasPrioritySupport: freePlan.features.hasPrioritySupport,
-      hasCustomIntegrations: freePlan.features.hasCustomIntegrations,
+      ...freePlanData,
     },
   });
 }

@@ -368,13 +368,31 @@ model Subscription {
   maxContracts     Int      @default(1)      // Per month, -1 for unlimited
   maxStorage       Int      @default(0)      // In GB
   
-  // Feature flags
+  // Feature flags - based on actual app capabilities
   hasAiDrafting        Boolean @default(true)
-  hasComplianceAuto    Boolean @default(false)
+  hasAiEditing         Boolean @default(false)  // AI-powered document editing
+  hasAgenticCompliance Boolean @default(false)  // AI auto-fix for compliance
+  hasComplianceAuto    Boolean @default(false)  // Automated compliance monitoring
   hasAnalytics         Boolean @default(false)
   hasCustomTemplates   Boolean @default(false)
   hasPrioritySupport   Boolean @default(false)
-  hasCustomIntegrations Boolean @default(false)
+  hasCustomIntegrations Boolean @default(false) // DocuSign, etc.
+  hasESignatures       Boolean @default(false)
+  hasAuditLogs         Boolean @default(false)
+  hasApiAccess         Boolean @default(false)
+  hasClauseLibrary     Boolean @default(false)
+  hasMatters           Boolean @default(false)  // Matter/Case management
+  hasDocumentVersioning Boolean @default(true) // Version history
+  hasDocumentExport    Boolean @default(true)  // PDF/DOCX export
+  hasDocumentSharing   Boolean @default(true)  // Share documents
+  hasTeamCollaboration Boolean @default(false) // Team document visibility
+  
+  // Usage limits (stored for quick checks)
+  maxESignatures       Int      @default(0)     // Per month, -1 for unlimited
+  maxAiGenerations     Int      @default(10)    // Per month, -1 for unlimited
+  maxAiTokens          Int      @default(50000) // Per month, -1 for unlimited
+  maxComplianceChecks  Int      @default(5)     // Per month, -1 for unlimited
+  maxTemplates         Int      @default(3)     // Total custom templates, -1 for unlimited
   
   // Billing cycle
   currentPeriodStart DateTime?

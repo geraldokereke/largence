@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 const DOCUSIGN_CLIENT_ID = process.env.DOCUSIGN_CLIENT_ID!;
 const DOCUSIGN_REDIRECT_URI = process.env.NEXT_PUBLIC_APP_URL 
   ? `${process.env.NEXT_PUBLIC_APP_URL}/api/integrations/oauth/docusign/callback`
-  : "http://localhost:3000/api/integrations/oauth/docusign/callback";
+  : "https://app.largence.com/api/integrations/oauth/docusign/callback";
 
 // Use demo environment for development, production for live
 const DOCUSIGN_AUTH_BASE = process.env.DOCUSIGN_ENVIRONMENT === "production"

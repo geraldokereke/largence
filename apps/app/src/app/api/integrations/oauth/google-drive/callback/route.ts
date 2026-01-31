@@ -8,7 +8,7 @@ const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID!;
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET!;
 const GOOGLE_REDIRECT_URI = process.env.NEXT_PUBLIC_APP_URL 
   ? `${process.env.NEXT_PUBLIC_APP_URL}/api/integrations/oauth/google-drive/callback`
-  : "http://localhost:3000/api/integrations/oauth/google-drive/callback";
+  : "https://app.largence.com/api/integrations/oauth/google-drive/callback";
 
 export async function GET(request: NextRequest) {
   try {

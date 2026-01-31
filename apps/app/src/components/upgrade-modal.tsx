@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Check, Zap, Building2, Rocket, X } from "lucide-react";
+import { Check, Zap, Building2, Rocket, X, GraduationCap, Crown } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -23,62 +23,83 @@ interface UpgradeModalProps {
 
 const PLANS = [
   {
-    id: "STARTER",
-    name: "Starter",
-    price: "$299",
+    id: "STUDENT",
+    name: "Student",
+    price: "$5",
     period: "/month",
-    description:
-      "Perfect for small teams getting started with contract management",
-    icon: Rocket,
+    description: "Special pricing for verified students",
+    icon: GraduationCap,
     features: [
-      "Up to 100 documents/month",
-      "100 compliance checks/month",
-      "5 team members",
-      "5GB storage",
-      "AI-powered drafting",
-      "Email support",
+      "30 documents/month",
+      "50 AI generations/month",
+      "200K AI tokens/month",
+      "20 compliance checks/month",
+      "5 e-signatures/month",
+      "2GB storage",
+      "Student verification required",
     ],
     popular: false,
-    cta: "Start Free Trial",
+    cta: "Apply as Student",
+    requiresVerification: true,
   },
   {
-    id: "PROFESSIONAL",
-    name: "Professional",
-    price: "$799",
+    id: "PRO",
+    name: "Largence Pro",
+    price: "$20",
     period: "/month",
-    description:
-      "For growing teams that need advanced features and unlimited usage",
+    description: "For professionals and small legal practices",
     icon: Zap,
     features: [
-      "Unlimited documents",
-      "Unlimited compliance checks",
-      "20 team members",
-      "50GB storage",
-      "AI-powered drafting",
+      "100 documents/month",
+      "100 AI generations/month",
+      "500K AI tokens/month",
+      "50 compliance checks/month",
+      "20 e-signatures/month",
+      "5 team members",
+      "10GB storage",
       "Automated compliance",
-      "Advanced analytics",
-      "Custom templates",
-      "Priority support",
+      "DocuSign integration",
     ],
     popular: true,
-    cta: "Start Free Trial",
+    cta: "Upgrade to Pro",
+  },
+  {
+    id: "MAX",
+    name: "Largence Max",
+    price: "$100",
+    period: "/month",
+    description: "For growing teams and legal departments",
+    icon: Crown,
+    features: [
+      "Unlimited documents",
+      "500 AI generations/month",
+      "2M AI tokens/month",
+      "Unlimited compliance",
+      "Unlimited e-signatures",
+      "25 team members",
+      "100GB storage",
+      "API access",
+      "Priority support",
+    ],
+    popular: false,
+    cta: "Upgrade to Max",
   },
   {
     id: "ENTERPRISE",
     name: "Enterprise",
     price: "Custom",
     period: "",
-    description: "For organizations with complex needs and custom requirements",
+    description: "For large organizations with custom requirements",
     icon: Building2,
     features: [
-      "Everything in Professional",
+      "Everything in Max",
       "Unlimited team members",
       "Unlimited storage",
+      "SSO (Single Sign-On)",
+      "White-label option",
       "Custom integrations",
       "Dedicated success manager",
       "SLA guarantees",
-      "On-premise option",
-      "Custom training",
     ],
     popular: false,
     cta: "Contact Sales",
@@ -114,6 +135,19 @@ export function UpgradeModal({
 
       const data = await response.json();
 
+      // Handle student verification requirement
+      if (data.requiresVerification) {
+        router.push(data.verificationUrl);
+        onClose();
+        return;
+      }
+
+      // Handle enterprise contact
+      if (data.requiresContact) {
+        window.location.href = data.contactUrl;
+        return;
+      }
+
       if (data.url) {
         window.location.href = data.url;
       } else {
@@ -134,7 +168,7 @@ export function UpgradeModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
         <DialogHeader className="text-center pb-4">
           <DialogTitle className="text-2xl font-bold">
             Upgrade to Continue
@@ -143,9 +177,12 @@ export function UpgradeModal({
             {reason || featureMessage[feature]} Choose a plan to unlock
             unlimited access.
           </DialogDescription>
+          <p className="text-xs text-muted-foreground mt-2">
+            💡 Usage beyond plan limits is billed at: $0.002/1K AI tokens • $0.50/document • $0.25/compliance check
+          </p>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
           {PLANS.map((plan) => (
             <div
               key={plan.id}

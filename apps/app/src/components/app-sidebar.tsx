@@ -24,6 +24,7 @@ import {
 
 import { NavMain } from "@largence/components/nav-main";
 import { NewDocumentDialog } from "@largence/components/new-document-dialog";
+import { CreateWorkspaceDialog } from "@largence/components/create-workspace-dialog";
 import {
   Sidebar,
   SidebarContent,
@@ -37,6 +38,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@largence/components/ui/dropdown-menu";
 import { Button } from "@largence/components/ui/button";
@@ -62,6 +64,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   } | null>(null);
   const [plan, setPlan] = React.useState<string | null>(null);
   const [newDocDialogOpen, setNewDocDialogOpen] = React.useState(false);
+  const [createWorkspaceOpen, setCreateWorkspaceOpen] = React.useState(false);
   const upgradeModal = useUpgradeModal();
 
   const [isClient, setIsClient] = React.useState(false);
@@ -326,9 +329,26 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
                 {userMemberships?.data && userMemberships.data.length === 0 && (
                   <div className="px-2 py-3 text-sm text-muted-foreground text-center">
-                    No organizations found
+                    No workspaces found
                   </div>
                 )}
+
+                <DropdownMenuSeparator />
+                
+                <DropdownMenuItem
+                  onClick={() => setCreateWorkspaceOpen(true)}
+                  className="gap-2 p-2 rounded-md cursor-pointer"
+                >
+                  <div className="flex size-6 items-center justify-center rounded-md border border-dashed bg-muted/50">
+                    <Plus className="h-4 w-4" />
+                  </div>
+                  <div className="flex flex-col gap-0.5">
+                    <span className="font-medium text-sm">Create New Workspace</span>
+                    <span className="text-xs text-muted-foreground">
+                      Add a new team or project
+                    </span>
+                  </div>
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </SidebarMenuItem>
@@ -343,6 +363,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         currentPlan={upgradeModal.currentPlan}
       />
       <NewDocumentDialog open={newDocDialogOpen} onOpenChange={setNewDocDialogOpen} />
+      <CreateWorkspaceDialog open={createWorkspaceOpen} onOpenChange={setCreateWorkspaceOpen} />
     </Sidebar>
   );
 }

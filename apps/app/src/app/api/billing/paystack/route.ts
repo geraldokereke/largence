@@ -65,7 +65,14 @@ export async function POST(request: Request) {
     await getOrCreatePaystackCustomer(orgId, email, firstName, lastName);
 
     // Create checkout URL
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL;
+    if (!baseUrl) {
+      console.error("NEXT_PUBLIC_APP_URL is not set");
+      return NextResponse.json(
+        { error: "Server configuration error" },
+        { status: 500 }
+      );
+    }
     const callbackUrl = `${baseUrl}/api/billing/paystack/callback?orgId=${orgId}`;
 
     const { authorizationUrl, reference } = await createPaystackCheckout(

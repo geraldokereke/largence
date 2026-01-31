@@ -341,32 +341,36 @@ export function TeamCollaborators({
                   <CommandList>
                     <CommandEmpty>No team members found.</CommandEmpty>
                     <CommandGroup>
-                      {availableMembers.map((member) => (
-                        <CommandItem
-                          key={member.userId}
-                          value={member.userId}
-                          onSelect={() => {
-                            setSelectedMember(member.userId);
-                            setMemberSelectOpen(false);
-                          }}
-                        >
-                          <Avatar className="h-6 w-6 mr-2">
-                            <AvatarImage src={member.publicUserData.imageUrl} />
-                            <AvatarFallback className="text-xs">
-                              {getMemberInitials(member)}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="flex-1 truncate">
-                            <div className="text-sm">{getMemberName(member)}</div>
-                            <div className="text-xs text-muted-foreground truncate">
-                              {member.publicUserData.identifier}
+                      {availableMembers.map((member) => {
+                        // Create a searchable value that includes name and email
+                        const searchValue = `${getMemberName(member)} ${member.publicUserData.identifier}`.toLowerCase();
+                        return (
+                          <CommandItem
+                            key={member.userId}
+                            value={searchValue}
+                            onSelect={() => {
+                              setSelectedMember(member.userId);
+                              setMemberSelectOpen(false);
+                            }}
+                          >
+                            <Avatar className="h-6 w-6 mr-2">
+                              <AvatarImage src={member.publicUserData.imageUrl} />
+                              <AvatarFallback className="text-xs">
+                                {getMemberInitials(member)}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1 truncate">
+                              <div className="text-sm">{getMemberName(member)}</div>
+                              <div className="text-xs text-muted-foreground truncate">
+                                {member.publicUserData.identifier}
+                              </div>
                             </div>
-                          </div>
-                          {selectedMember === member.userId && (
-                            <Check className="h-4 w-4" />
-                          )}
-                        </CommandItem>
-                      ))}
+                            {selectedMember === member.userId && (
+                              <Check className="h-4 w-4" />
+                            )}
+                          </CommandItem>
+                        );
+                      })}
                     </CommandGroup>
                   </CommandList>
                 </Command>

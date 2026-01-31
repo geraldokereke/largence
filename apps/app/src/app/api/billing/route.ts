@@ -1,22 +1,15 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
+import { currentUser } from "@clerk/nextjs/server";
 import {
-  getOrCreateStripeCustomer,
-  createCheckoutSession,
+  PLANS,
   getSubscription,
   getUsageStats,
-  PLANS,
-} from "@/lib/stripe";
-import {
-  getOrCreatePaystackCustomer,
-  createPaystackCheckout,
-  isPaystackCountry,
-  PAYSTACK_COUNTRIES,
-  PAYSTACK_PLANS,
-  getLocalPrices,
-  type PaystackCurrency,
-} from "@/lib/paystack";
-import { currentUser } from "@clerk/nextjs/server";
+  getOrCreatePolarCustomer,
+  formatPrice,
+  TOKEN_USAGE_RATES,
+  calculateOverageCharges,
+} from "@/lib/polar";
 
 // GET /api/billing - Get subscription and usage info
 export async function GET(request: Request) {
@@ -27,18 +20,22 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { searchParams } = new URL(request.url);
-    const currency = searchParams.get("currency") || "USD";
-
     const [subscription, usageStats] = await Promise.all([
       getSubscription(orgId),
       getUsageStats(orgId),
     ]);
 
-    // Get prices in requested currency
-    const isLocalCurrency = currency !== "USD" && currency in PAYSTACK_PLANS;
-    const localPrices = isLocalCurrency
-      ? getLocalPrices(currency as PaystackCurrency)
+    // Calculate potential overage charges
+    const overageCharges = subscription
+      ? calculateOverageCharges(
+          {
+            documentsGenerated: usageStats.documentsGenerated,
+            complianceChecks: usageStats.complianceChecks,
+            aiTokensUsed: usageStats.aiTokensUsed,
+            storageUsedMB: (subscription.maxStorage || 0) * 1000,
+          },
+          (subscription.plan as keyof typeof PLANS) || "FREE"
+        )
       : null;
 
     return NextResponse.json({
@@ -53,8 +50,9 @@ export async function GET(request: Request) {
             maxTeamMembers: subscription.maxTeamMembers,
             maxContracts: subscription.maxContracts,
             maxStorage: subscription.maxStorage,
-            paymentProvider: subscription.paymentProvider || "STRIPE",
-            currency: subscription.currency || "USD",
+            paymentProvider: subscription.paymentProvider || "POLAR",
+            currency: "USD",
+            isStudentVerified: subscription.isStudentVerified,
             features: {
               hasAiDrafting: subscription.hasAiDrafting,
               hasComplianceAuto: subscription.hasComplianceAuto,
@@ -65,63 +63,74 @@ export async function GET(request: Request) {
             },
           }
         : null,
-      usage: usageStats,
-      currency,
-      paymentProviders: {
-        stripe: { currencies: ["USD"] },
-        paystack: {
-          currencies: Object.values(PAYSTACK_COUNTRIES).map((c) => c.currency),
-          countries: Object.entries(PAYSTACK_COUNTRIES).map(([code, config]) => ({
-            code,
-            ...config,
-          })),
-        },
+      usage: {
+        ...usageStats,
+        overageCharges,
       },
+      tokenUsageRates: TOKEN_USAGE_RATES,
       plans: {
         FREE: {
           name: PLANS.FREE.name,
+          description: PLANS.FREE.description,
           monthlyPrice: PLANS.FREE.monthlyPrice,
+          monthlyPriceFormatted: formatPrice(PLANS.FREE.monthlyPrice),
           maxTeamMembers: PLANS.FREE.maxTeamMembers,
           maxDocuments: PLANS.FREE.maxDocuments,
+          maxAiTokens: PLANS.FREE.maxAiTokens,
           maxStorage: PLANS.FREE.maxStorage,
+          highlights: PLANS.FREE.highlights,
         },
-        STARTER: {
-          name: PLANS.STARTER.name,
-          monthlyPrice: localPrices?.STARTER.monthly || PLANS.STARTER.monthlyPrice,
-          annualPrice: localPrices?.STARTER.annual || PLANS.STARTER.annualPrice,
-          monthlyPriceFormatted: localPrices?.STARTER.monthlyFormatted,
-          annualPriceFormatted: localPrices?.STARTER.annualFormatted,
-          maxTeamMembers: PLANS.STARTER.maxTeamMembers,
-          maxDocuments: PLANS.STARTER.maxDocuments,
-          maxStorage: PLANS.STARTER.maxStorage,
+        STUDENT: {
+          name: PLANS.STUDENT.name,
+          description: PLANS.STUDENT.description,
+          monthlyPrice: PLANS.STUDENT.monthlyPrice,
+          annualPrice: PLANS.STUDENT.annualPrice,
+          monthlyPriceFormatted: formatPrice(PLANS.STUDENT.monthlyPrice),
+          annualPriceFormatted: formatPrice(PLANS.STUDENT.annualPrice),
+          maxTeamMembers: PLANS.STUDENT.maxTeamMembers,
+          maxDocuments: PLANS.STUDENT.maxDocuments,
+          maxAiTokens: PLANS.STUDENT.maxAiTokens,
+          maxStorage: PLANS.STUDENT.maxStorage,
+          highlights: PLANS.STUDENT.highlights,
+          requiresVerification: true,
         },
-        PROFESSIONAL: {
-          name: PLANS.PROFESSIONAL.name,
-          monthlyPrice: localPrices?.PROFESSIONAL.monthly || PLANS.PROFESSIONAL.monthlyPrice,
-          annualPrice: localPrices?.PROFESSIONAL.annual || PLANS.PROFESSIONAL.annualPrice,
-          monthlyPriceFormatted: localPrices?.PROFESSIONAL.monthlyFormatted,
-          annualPriceFormatted: localPrices?.PROFESSIONAL.annualFormatted,
-          maxTeamMembers: PLANS.PROFESSIONAL.maxTeamMembers,
-          maxDocuments: PLANS.PROFESSIONAL.maxDocuments,
-          maxStorage: PLANS.PROFESSIONAL.maxStorage,
-          isPopular: PLANS.PROFESSIONAL.popular,
+        PRO: {
+          name: PLANS.PRO.name,
+          description: PLANS.PRO.description,
+          monthlyPrice: PLANS.PRO.monthlyPrice,
+          annualPrice: PLANS.PRO.annualPrice,
+          monthlyPriceFormatted: formatPrice(PLANS.PRO.monthlyPrice),
+          annualPriceFormatted: formatPrice(PLANS.PRO.annualPrice),
+          maxTeamMembers: PLANS.PRO.maxTeamMembers,
+          maxDocuments: PLANS.PRO.maxDocuments,
+          maxAiTokens: PLANS.PRO.maxAiTokens,
+          maxStorage: PLANS.PRO.maxStorage,
+          highlights: PLANS.PRO.highlights,
+          isPopular: true,
         },
-        BUSINESS: {
-          name: PLANS.BUSINESS.name,
-          monthlyPrice: localPrices?.BUSINESS.monthly || PLANS.BUSINESS.monthlyPrice,
-          annualPrice: localPrices?.BUSINESS.annual || PLANS.BUSINESS.annualPrice,
-          monthlyPriceFormatted: localPrices?.BUSINESS.monthlyFormatted,
-          annualPriceFormatted: localPrices?.BUSINESS.annualFormatted,
-          maxTeamMembers: PLANS.BUSINESS.maxTeamMembers,
-          maxDocuments: PLANS.BUSINESS.maxDocuments,
-          maxStorage: PLANS.BUSINESS.maxStorage,
+        MAX: {
+          name: PLANS.MAX.name,
+          description: PLANS.MAX.description,
+          monthlyPrice: PLANS.MAX.monthlyPrice,
+          annualPrice: PLANS.MAX.annualPrice,
+          monthlyPriceFormatted: formatPrice(PLANS.MAX.monthlyPrice),
+          annualPriceFormatted: formatPrice(PLANS.MAX.annualPrice),
+          maxTeamMembers: PLANS.MAX.maxTeamMembers,
+          maxDocuments: PLANS.MAX.maxDocuments,
+          maxAiTokens: PLANS.MAX.maxAiTokens,
+          maxStorage: PLANS.MAX.maxStorage,
+          highlights: PLANS.MAX.highlights,
         },
         ENTERPRISE: {
           name: PLANS.ENTERPRISE.name,
-          monthlyPrice: PLANS.ENTERPRISE.monthlyPrice,
-          maxTeamMembers: PLANS.ENTERPRISE.maxTeamMembers,
-          maxDocuments: PLANS.ENTERPRISE.maxDocuments,
-          maxStorage: PLANS.ENTERPRISE.maxStorage,
+          description: PLANS.ENTERPRISE.description,
+          monthlyPrice: null,
+          monthlyPriceFormatted: "Custom",
+          maxTeamMembers: -1,
+          maxDocuments: -1,
+          maxAiTokens: -1,
+          maxStorage: -1,
+          highlights: PLANS.ENTERPRISE.highlights,
         },
       },
     });
@@ -129,12 +138,12 @@ export async function GET(request: Request) {
     console.error("Error fetching billing info:", error);
     return NextResponse.json(
       { error: "Failed to fetch billing info" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
 
-// POST /api/billing - Create checkout session (Stripe or Paystack)
+// POST /api/billing - Create Polar checkout session
 export async function POST(request: Request) {
   try {
     const { userId, orgId } = await auth();
@@ -144,83 +153,88 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const {
-      plan,
-      billingPeriod = "monthly",
-      currency = "USD",
-      country,
-    } = body;
+    const { plan, billingPeriod = "monthly" } = body;
 
-    if (!plan || !["STARTER", "PROFESSIONAL", "BUSINESS", "ENTERPRISE"].includes(plan)) {
-      return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
+    // Validate plan
+    const validPlans = ["STUDENT", "PRO", "MAX", "ENTERPRISE"];
+    if (!plan || !validPlans.includes(plan)) {
+      return NextResponse.json(
+        { error: "Invalid plan. Choose from: STUDENT, PRO, MAX, or ENTERPRISE" },
+        { status: 400 }
+      );
     }
 
     if (!["monthly", "annual"].includes(billingPeriod)) {
       return NextResponse.json({ error: "Invalid billing period" }, { status: 400 });
     }
 
+    // Enterprise requires contacting sales
+    if (plan === "ENTERPRISE") {
+      return NextResponse.json({
+        requiresContact: true,
+        message: "Enterprise plan requires a custom quote. Please contact sales.",
+        contactUrl: "mailto:sales@largence.com?subject=Enterprise%20Plan%20Inquiry",
+      });
+    }
+
+    // Student plan requires verification
+    if (plan === "STUDENT") {
+      const subscription = await getSubscription(orgId);
+      if (!subscription?.isStudentVerified) {
+        return NextResponse.json({
+          requiresVerification: true,
+          message: "Student plan requires verification of your student status.",
+          verificationUrl: "/account?tab=billing&verify=student",
+        });
+      }
+    }
+
     // Get user info
     const user = await currentUser();
     const email = user?.emailAddresses[0]?.emailAddress || "";
-    const name = user?.fullName || "";
-    const firstName = user?.firstName || undefined;
-    const lastName = user?.lastName || undefined;
 
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-
-    // Determine which payment provider to use based on currency/country
-    const usePaystack =
-      currency !== "USD" &&
-      Object.values(PAYSTACK_COUNTRIES).some((c) => c.currency === currency);
-
-    if (usePaystack) {
-      // Use Paystack for African currencies
-      if (!["STARTER", "PROFESSIONAL", "BUSINESS"].includes(plan)) {
-        return NextResponse.json(
-          { error: "Enterprise plan requires contacting sales" },
-          { status: 400 }
-        );
-      }
-
-      await getOrCreatePaystackCustomer(orgId, email, firstName, lastName);
-
-      const { authorizationUrl, reference } = await createPaystackCheckout(
-        orgId,
-        email,
-        plan as "STARTER" | "PROFESSIONAL" | "BUSINESS",
-        billingPeriod as "monthly" | "annual",
-        currency as PaystackCurrency,
-        `${baseUrl}/api/billing/paystack/callback?orgId=${orgId}`
-      );
-
-      return NextResponse.json({
-        url: authorizationUrl,
-        reference,
-        provider: "paystack",
-      });
-    } else {
-      // Use Stripe for USD
-      const customerId = await getOrCreateStripeCustomer(orgId, email, name);
-
-      const session = await createCheckoutSession(
-        orgId,
-        customerId,
-        plan as "STARTER" | "PROFESSIONAL" | "BUSINESS" | "ENTERPRISE",
-        billingPeriod as "monthly" | "annual",
-        `${baseUrl}/account?tab=billing&success=true`,
-        `${baseUrl}/account?tab=billing&canceled=true`
-      );
-
-      return NextResponse.json({
-        url: session.url,
-        provider: "stripe",
-      });
+    if (!email) {
+      return NextResponse.json({ error: "User email not found" }, { status: 400 });
     }
+
+    // Ensure customer exists
+    await getOrCreatePolarCustomer(orgId, email, user?.fullName || undefined);
+
+    // Get the Polar product ID for the plan
+    const planConfig = PLANS[plan as keyof typeof PLANS];
+    const productId = planConfig.polarProductId;
+
+    if (!productId) {
+      return NextResponse.json(
+        { error: `No product configured for plan: ${plan}` },
+        { status: 500 }
+      );
+    }
+
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://app.largence.com";
+
+    // Redirect to Polar checkout route with product ID
+    const checkoutUrl = new URL(`${baseUrl}/api/billing/polar/checkout`);
+    checkoutUrl.searchParams.set("products", productId);
+    checkoutUrl.searchParams.set("customerEmail", email);
+    checkoutUrl.searchParams.set(
+      "metadata",
+      JSON.stringify({
+        organizationId: orgId,
+        plan,
+        billingPeriod,
+      })
+    );
+
+    return NextResponse.json({
+      url: checkoutUrl.toString(),
+      provider: "polar",
+    });
   } catch (error: any) {
     console.error("Error creating checkout session:", error);
     return NextResponse.json(
       { error: error.message || "Failed to create checkout session" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

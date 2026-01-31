@@ -7,7 +7,7 @@ const DROPBOX_CLIENT_ID = process.env.DROPBOX_CLIENT_ID!;
 const DROPBOX_CLIENT_SECRET = process.env.DROPBOX_CLIENT_SECRET!;
 const DROPBOX_REDIRECT_URI = process.env.NEXT_PUBLIC_APP_URL 
   ? `${process.env.NEXT_PUBLIC_APP_URL}/api/integrations/oauth/dropbox/callback`
-  : "http://localhost:3000/api/integrations/oauth/dropbox/callback";
+  : "https://app.largence.com/api/integrations/oauth/dropbox/callback";
 
 export async function GET(request: NextRequest) {
   try {

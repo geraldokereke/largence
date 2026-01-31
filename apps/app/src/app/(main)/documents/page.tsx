@@ -5,10 +5,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { EmptyState } from "@largence/components/empty-state";
 import { Button } from "@largence/components/ui/button";
-import { Input } from "@largence/components/ui/input";
 import { Skeleton } from "@largence/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@largence/components/ui/tabs";
-import { Badge } from "@largence/components/ui/badge";
 import { NewDocumentDialog } from "@largence/components/new-document-dialog";
 import {
   FileText,

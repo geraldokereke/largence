@@ -64,7 +64,7 @@ export async function GET(request: Request) {
     });
 
     // Redirect to success page
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://app.largence.com";
     return NextResponse.redirect(
       new URL("/account?tab=billing&success=true", baseUrl)
     );

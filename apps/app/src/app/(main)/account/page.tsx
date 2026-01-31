@@ -49,6 +49,7 @@ import {
   Download,
   Calendar,
   X,
+  GraduationCap,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -143,59 +144,85 @@ interface PaymentMethod {
 
 const planDetails = {
   FREE: {
-    name: "Free",
+    name: "Starter",
     price: 0,
-    description: "Try Largence with limited features",
+    description: "Perfect for trying out Largence",
     icon: Zap,
     color: "text-muted-foreground",
     bgColor: "bg-muted/50",
+    features: [
+      "5 documents total",
+      "10 AI generations/month",
+      "50K AI tokens/month",
+      "5 compliance checks/month",
+      "Basic templates",
+    ],
   },
-  STARTER: {
-    name: "Starter",
-    price: 299,
-    description: "Perfect for small legal teams getting started",
+  STUDENT: {
+    name: "Largence Student",
+    price: 5,
+    description: "Special pricing for verified students",
     icon: Zap,
     color: "text-blue-600",
     bgColor: "bg-blue-500/10",
     features: [
-      "Up to 5 team members",
-      "100 contracts/month",
-      "AI contract drafting",
-      "Basic templates library",
-      "Email support",
-      "5 GB storage",
+      "30 documents/month",
+      "50 AI generations/month",
+      "200K AI tokens/month",
+      "20 compliance checks/month",
+      "5 e-signatures/month",
+      "2GB storage",
     ],
+    requiresVerification: true,
   },
-  PROFESSIONAL: {
-    name: "Professional",
-    price: 799,
-    description: "For growing legal departments",
+  PRO: {
+    name: "Largence Pro",
+    price: 20,
+    description: "For professionals and small legal practices",
     icon: Crown,
     color: "text-purple-600",
     bgColor: "bg-purple-500/10",
     popular: true,
     features: [
-      "Up to 20 team members",
-      "Unlimited contracts",
-      "Advanced AI features",
-      "Custom templates",
-      "Priority support",
-      "50 GB storage",
-      "Compliance automation",
-      "Analytics & reporting",
+      "100 documents/month",
+      "100 AI generations/month",
+      "500K AI tokens/month",
+      "50 compliance checks/month",
+      "20 e-signatures/month",
+      "5 team members",
+      "10GB storage",
+      "Automated compliance",
     ],
   },
-  ENTERPRISE: {
-    name: "Enterprise",
-    price: null,
-    description: "Tailored for large organizations",
-    icon: Building,
+  MAX: {
+    name: "Largence Max",
+    price: 100,
+    description: "For growing teams and legal departments",
+    icon: Crown,
     color: "text-amber-600",
     bgColor: "bg-amber-500/10",
     features: [
-      "Unlimited team members",
-      "Unlimited contracts",
-      "Custom AI training",
+      "Unlimited documents",
+      "500 AI generations/month",
+      "2M AI tokens/month",
+      "Unlimited compliance",
+      "25 team members",
+      "100GB storage",
+      "API access",
+      "Priority support",
+    ],
+  },
+  ENTERPRISE: {
+    name: "Largence Enterprise",
+    price: null,
+    description: "For large organizations",
+    icon: Building,
+    color: "text-green-600",
+    bgColor: "bg-green-500/10",
+    features: [
+      "Unlimited everything",
+      "SSO (Single Sign-On)",
+      "White-label option",
       "Dedicated account manager",
       "24/7 premium support",
       "Unlimited storage",
@@ -1191,9 +1218,10 @@ export default function AccountPage() {
                       </h3>
                       <div className="grid gap-4">
                         {/* Starter Plan */}
+                        {/* Starter (FREE) Plan */}
                         <div
                           className={`border rounded-sm p-5 transition-all ${
-                            billingData?.subscription?.plan === "STARTER"
+                            billingData?.subscription?.plan === "FREE"
                               ? "border-primary bg-primary/5"
                               : "hover:border-primary/50"
                           }`}
@@ -1201,10 +1229,10 @@ export default function AccountPage() {
                           <div className="flex items-start justify-between">
                             <div className="flex items-center gap-3">
                               <div
-                                className={`p-2 rounded-sm ${planDetails.STARTER.bgColor}`}
+                                className={`p-2 rounded-sm ${planDetails.FREE.bgColor}`}
                               >
                                 <Zap
-                                  className={`h-5 w-5 ${planDetails.STARTER.color}`}
+                                  className={`h-5 w-5 ${planDetails.FREE.color}`}
                                 />
                               </div>
                               <div>
@@ -1212,28 +1240,21 @@ export default function AccountPage() {
                                   Starter
                                 </h4>
                                 <p className="text-sm text-muted-foreground">
-                                  Perfect for small legal teams
+                                  Perfect to get started
                                 </p>
                               </div>
                             </div>
                             <div className="text-right">
                               <div className="text-2xl font-bold">
-                                {billingPeriod === "annual" 
-                                  ? billingData?.plans?.STARTER?.annualPriceFormatted || formatCurrencyPrice(billingData?.plans?.STARTER?.annualPrice || 29000, selectedCurrency)
-                                  : billingData?.plans?.STARTER?.monthlyPriceFormatted || formatCurrencyPrice(billingData?.plans?.STARTER?.monthlyPrice || 2900, selectedCurrency)}
+                                $0
                                 <span className="text-sm font-normal text-muted-foreground">
-                                  /{billingPeriod === "annual" ? "yr" : "mo"}
+                                  /mo
                                 </span>
                               </div>
-                              {billingPeriod === "annual" && (
-                                <p className="text-xs text-emerald-600">
-                                  Save {formatCurrencyPrice((billingData?.plans?.STARTER?.monthlyPrice || 2900) * 12 - (billingData?.plans?.STARTER?.annualPrice || 29000), selectedCurrency)}
-                                </p>
-                              )}
                             </div>
                           </div>
                           <div className="grid grid-cols-2 gap-2 mt-4 text-sm">
-                            {planDetails.STARTER.features.map((feature, i) => (
+                            {planDetails.FREE.features.map((feature, i) => (
                               <div key={i} className="flex items-center gap-2">
                                 <Check className="h-4 w-4 text-emerald-600" />
                                 <span>{feature}</span>
@@ -1243,30 +1264,30 @@ export default function AccountPage() {
                           <Button
                             className="w-full mt-4 rounded-sm"
                             variant={
-                              billingData?.subscription?.plan === "STARTER"
+                              billingData?.subscription?.plan === "FREE"
                                 ? "outline"
                                 : "default"
                             }
                             disabled={
-                              billingData?.subscription?.plan === "STARTER" ||
+                              billingData?.subscription?.plan === "FREE" ||
                               checkoutMutation.isPending
                             }
-                            onClick={() => checkoutMutation.mutate("STARTER")}
+                            onClick={() => checkoutMutation.mutate("FREE")}
                           >
                             {checkoutMutation.isPending &&
-                            checkoutMutation.variables === "STARTER" ? (
+                            checkoutMutation.variables === "FREE" ? (
                               <Loader2 className="h-4 w-4 animate-spin mr-2" />
                             ) : null}
-                            {billingData?.subscription?.plan === "STARTER"
+                            {billingData?.subscription?.plan === "FREE"
                               ? "Current Plan"
-                              : "Start Free Trial"}
+                              : "Get Started"}
                           </Button>
                         </div>
 
-                        {/* Professional Plan */}
+                        {/* Pro Plan */}
                         <div
                           className={`border rounded-sm p-5 relative transition-all ${
-                            billingData?.subscription?.plan === "PROFESSIONAL"
+                            billingData?.subscription?.plan === "PRO"
                               ? "border-primary bg-primary/5"
                               : "hover:border-primary/50"
                           }`}
@@ -1277,39 +1298,32 @@ export default function AccountPage() {
                           <div className="flex items-start justify-between">
                             <div className="flex items-center gap-3">
                               <div
-                                className={`p-2 rounded-sm ${planDetails.PROFESSIONAL.bgColor}`}
+                                className={`p-2 rounded-sm ${planDetails.PRO.bgColor}`}
                               >
                                 <Crown
-                                  className={`h-5 w-5 ${planDetails.PROFESSIONAL.color}`}
+                                  className={`h-5 w-5 ${planDetails.PRO.color}`}
                                 />
                               </div>
                               <div>
                                 <h4 className="font-semibold font-heading">
-                                  Professional
+                                  Largence Pro
                                 </h4>
                                 <p className="text-sm text-muted-foreground">
-                                  For growing legal departments
+                                  For professionals and small teams
                                 </p>
                               </div>
                             </div>
                             <div className="text-right">
                               <div className="text-2xl font-bold">
-                                {billingPeriod === "annual"
-                                  ? billingData?.plans?.PROFESSIONAL?.annualPriceFormatted || formatCurrencyPrice(billingData?.plans?.PROFESSIONAL?.annualPrice || 79000, selectedCurrency)
-                                  : billingData?.plans?.PROFESSIONAL?.monthlyPriceFormatted || formatCurrencyPrice(billingData?.plans?.PROFESSIONAL?.monthlyPrice || 7900, selectedCurrency)}
+                                $20
                                 <span className="text-sm font-normal text-muted-foreground">
-                                  /{billingPeriod === "annual" ? "yr" : "mo"}
+                                  /mo
                                 </span>
                               </div>
-                              {billingPeriod === "annual" && (
-                                <p className="text-xs text-emerald-600">
-                                  Save {formatCurrencyPrice((billingData?.plans?.PROFESSIONAL?.monthlyPrice || 7900) * 12 - (billingData?.plans?.PROFESSIONAL?.annualPrice || 79000), selectedCurrency)}
-                                </p>
-                              )}
                             </div>
                           </div>
                           <div className="grid grid-cols-2 gap-2 mt-4 text-sm">
-                            {planDetails.PROFESSIONAL.features.map(
+                            {planDetails.PRO.features.map(
                               (feature, i) => (
                                 <div
                                   key={i}
@@ -1324,25 +1338,160 @@ export default function AccountPage() {
                           <Button
                             className="w-full mt-4 rounded-sm"
                             variant={
-                              billingData?.subscription?.plan === "PROFESSIONAL"
+                              billingData?.subscription?.plan === "PRO"
                                 ? "outline"
                                 : "default"
                             }
                             disabled={
                               billingData?.subscription?.plan ===
-                                "PROFESSIONAL" || checkoutMutation.isPending
+                                "PRO" || checkoutMutation.isPending
                             }
                             onClick={() =>
-                              checkoutMutation.mutate("PROFESSIONAL")
+                              checkoutMutation.mutate("PRO")
                             }
                           >
                             {checkoutMutation.isPending &&
-                            checkoutMutation.variables === "PROFESSIONAL" ? (
+                            checkoutMutation.variables === "PRO" ? (
                               <Loader2 className="h-4 w-4 animate-spin mr-2" />
                             ) : null}
-                            {billingData?.subscription?.plan === "PROFESSIONAL"
+                            {billingData?.subscription?.plan === "PRO"
                               ? "Current Plan"
-                              : "Start Free Trial"}
+                              : "Upgrade to Pro"}
+                          </Button>
+                        </div>
+
+                        {/* Max Plan */}
+                        <div
+                          className={`border rounded-sm p-5 transition-all ${
+                            billingData?.subscription?.plan === "MAX"
+                              ? "border-primary bg-primary/5"
+                              : "hover:border-primary/50"
+                          }`}
+                        >
+                          <div className="flex items-start justify-between">
+                            <div className="flex items-center gap-3">
+                              <div
+                                className={`p-2 rounded-sm ${planDetails.MAX.bgColor}`}
+                              >
+                                <Zap
+                                  className={`h-5 w-5 ${planDetails.MAX.color}`}
+                                />
+                              </div>
+                              <div>
+                                <h4 className="font-semibold font-heading">
+                                  Largence Max
+                                </h4>
+                                <p className="text-sm text-muted-foreground">
+                                  For power users and agencies
+                                </p>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-2xl font-bold">
+                                $100
+                                <span className="text-sm font-normal text-muted-foreground">
+                                  /mo
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2 mt-4 text-sm">
+                            {planDetails.MAX.features.map((feature, i) => (
+                              <div key={i} className="flex items-center gap-2">
+                                <Check className="h-4 w-4 text-emerald-600" />
+                                <span>{feature}</span>
+                              </div>
+                            ))}
+                          </div>
+                          <Button
+                            className="w-full mt-4 rounded-sm"
+                            variant={
+                              billingData?.subscription?.plan === "MAX"
+                                ? "outline"
+                                : "default"
+                            }
+                            disabled={
+                              billingData?.subscription?.plan === "MAX" ||
+                              checkoutMutation.isPending
+                            }
+                            onClick={() => checkoutMutation.mutate("MAX")}
+                          >
+                            {checkoutMutation.isPending &&
+                            checkoutMutation.variables === "MAX" ? (
+                              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                            ) : null}
+                            {billingData?.subscription?.plan === "MAX"
+                              ? "Current Plan"
+                              : "Upgrade to Max"}
+                          </Button>
+                        </div>
+
+                        {/* Student Plan */}
+                        <div
+                          className={`border rounded-sm p-5 transition-all ${
+                            billingData?.subscription?.plan === "STUDENT"
+                              ? "border-primary bg-primary/5"
+                              : "hover:border-primary/50"
+                          }`}
+                        >
+                          <div className="absolute -top-3 right-4 px-2 py-0.5 bg-blue-500 text-white text-xs font-medium rounded-sm">
+                            Student Discount
+                          </div>
+                          <div className="flex items-start justify-between">
+                            <div className="flex items-center gap-3">
+                              <div
+                                className={`p-2 rounded-sm ${planDetails.STUDENT.bgColor}`}
+                              >
+                                <GraduationCap
+                                  className={`h-5 w-5 ${planDetails.STUDENT.color}`}
+                                />
+                              </div>
+                              <div>
+                                <h4 className="font-semibold font-heading">
+                                  Largence Student
+                                </h4>
+                                <p className="text-sm text-muted-foreground">
+                                  For verified students
+                                </p>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-2xl font-bold">
+                                $5
+                                <span className="text-sm font-normal text-muted-foreground">
+                                  /mo
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2 mt-4 text-sm">
+                            {planDetails.STUDENT.features.map((feature, i) => (
+                              <div key={i} className="flex items-center gap-2">
+                                <Check className="h-4 w-4 text-emerald-600" />
+                                <span>{feature}</span>
+                              </div>
+                            ))}
+                          </div>
+                          <Button
+                            className="w-full mt-4 rounded-sm"
+                            variant={
+                              billingData?.subscription?.plan === "STUDENT"
+                                ? "outline"
+                                : "default"
+                            }
+                            disabled={
+                              billingData?.subscription?.plan === "STUDENT" ||
+                              checkoutMutation.isPending
+                            }
+                            onClick={() => checkoutMutation.mutate("STUDENT")}
+                          >
+                            {checkoutMutation.isPending &&
+                            checkoutMutation.variables === "STUDENT" ? (
+                              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                            ) : null}
+                            {billingData?.subscription?.plan === "STUDENT"
+                              ? "Current Plan"
+                              : "Verify Student Status"}
                           </Button>
                         </div>
 

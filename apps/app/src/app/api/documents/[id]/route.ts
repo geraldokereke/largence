@@ -204,7 +204,7 @@ export async function PATCH(
                 oldStatus: statusLabelsForEmail[existing.status] || existing.status,
                 newStatus: statusLabelsForEmail[status] || status,
                 changedBy: userName,
-                documentUrl: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001"}/documents/${id}`,
+                documentUrl: `${process.env.NEXT_PUBLIC_APP_URL || "https://app.largence.com"}/documents/${id}`,
               });
             }
           }

@@ -87,7 +87,7 @@ export async function POST(
     });
 
     // Generate the share URL
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001";
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://app.largence.com";
     const shareUrl = `${baseUrl}/share/${accessToken}`;
 
     // Send notification to the recipient

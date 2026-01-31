@@ -92,7 +92,7 @@ export async function POST(
     });
 
     // Generate the signing URL
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001";
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://app.largence.com";
     const signingUrl = `${baseUrl}/sign/${signature.accessToken}`;
 
     // Send signature request email

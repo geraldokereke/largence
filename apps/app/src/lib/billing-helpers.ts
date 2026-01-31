@@ -123,7 +123,7 @@ export function isValidPlanChange(
   currentPlan: string,
   newPlan: string
 ): { valid: boolean; reason?: string } {
-  const planOrder = ["FREE", "STARTER", "PROFESSIONAL", "ENTERPRISE"];
+  const planOrder = ["FREE", "STUDENT", "PRO", "MAX", "ENTERPRISE"];
   const currentIndex = planOrder.indexOf(currentPlan);
   const newIndex = planOrder.indexOf(newPlan);
 
@@ -145,15 +145,17 @@ export function getRecommendedPlan(usage: {
   documentsGenerated: number;
   complianceChecks: number;
   teamMembers: number;
-}): "STARTER" | "PROFESSIONAL" | "ENTERPRISE" {
+}): "FREE" | "PRO" | "MAX" | "ENTERPRISE" {
   const totalActions = usage.documentsGenerated + usage.complianceChecks;
 
-  if (totalActions > 100 || usage.teamMembers > 20) {
+  if (totalActions > 500 || usage.teamMembers > 25) {
     return "ENTERPRISE";
-  } else if (totalActions > 50 || usage.teamMembers > 5) {
-    return "PROFESSIONAL";
+  } else if (totalActions > 100 || usage.teamMembers > 5) {
+    return "MAX";
+  } else if (totalActions > 50 || usage.teamMembers > 1) {
+    return "PRO";
   } else {
-    return "STARTER";
+    return "FREE";
   }
 }
 

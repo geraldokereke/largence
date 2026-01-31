@@ -8,7 +8,7 @@ const NOTION_CLIENT_ID = process.env.NOTION_CLIENT_ID!;
 const NOTION_CLIENT_SECRET = process.env.NOTION_CLIENT_SECRET!;
 const NOTION_REDIRECT_URI = process.env.NEXT_PUBLIC_APP_URL 
   ? `${process.env.NEXT_PUBLIC_APP_URL}/api/integrations/oauth/notion/callback`
-  : "http://localhost:3000/api/integrations/oauth/notion/callback";
+  : "https://app.largence.com/api/integrations/oauth/notion/callback";
 
 export async function GET(request: NextRequest) {
   try {

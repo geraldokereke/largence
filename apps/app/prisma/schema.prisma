@@ -334,19 +334,30 @@ model Subscription {
   organizationId   String   @unique
   
   // Payment provider
-  paymentProvider      PaymentProvider @default(STRIPE)
-  currency             String?         // USD, NGN, GHS, KES, ZAR
+  paymentProvider      PaymentProvider @default(POLAR)
+  currency             String?         // USD (Polar handles all currencies)
   
-  // Stripe IDs (for USD payments)
-  stripeCustomerId     String   @unique
+  // Polar IDs (primary payment provider)
+  polarCustomerId      String?  @unique
+  polarSubscriptionId  String?  @unique
+  polarProductId       String?
+  polarCheckoutId      String?  // Last checkout session
+  
+  // Stripe IDs (legacy - for migration)
+  stripeCustomerId     String?  @unique
   stripeSubscriptionId String?  @unique
   stripePriceId        String?
   
-  // Paystack IDs (for African local currency payments)
+  // Paystack IDs (legacy - for migration)
   paystackCustomerCode     String?  @unique
   paystackSubscriptionCode String?  @unique
   paystackPlanCode         String?
   paystackEmailToken       String?  // Required for subscription management
+  
+  // Student verification (for Student plan)
+  isStudentVerified    Boolean  @default(false)
+  studentEmail         String?
+  studentVerifiedAt    DateTime?
   
   // Plan details
   plan             PlanType @default(FREE)
@@ -388,6 +399,7 @@ model Subscription {
 }
 
 enum PaymentProvider {
+  POLAR
   STRIPE
   PAYSTACK
 }
@@ -398,6 +410,7 @@ model UsageRecord {
   subscription   Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
   
   type           UsageType
+  amount         Int?      // For AI_TOKEN_USAGE: number of tokens used
   resourceType   String?
   resourceId     String?
   
@@ -428,11 +441,15 @@ model WebhookEvent {
 }
 
 enum PlanType {
-  FREE
-  STARTER
-  PROFESSIONAL
-  BUSINESS
-  ENTERPRISE
+  FREE        // Starter - $0
+  STUDENT     // Largence Student - $5
+  PRO         // Largence Pro - $20
+  MAX         // Largence Max - $100
+  ENTERPRISE  // Custom pricing
+  // Legacy plan types (for migration)
+  STARTER     // Maps to FREE
+  PROFESSIONAL // Maps to PRO
+  BUSINESS    // Maps to MAX
 }
 
 enum SubscriptionStatus {
@@ -451,6 +468,7 @@ enum UsageType {
   COMPLIANCE_CHECK
   STORAGE_USED
   TEAM_MEMBER_ADDED
+  AI_TOKEN_USAGE
 }
 
 // ==================== TEMPLATE MODELS ====================

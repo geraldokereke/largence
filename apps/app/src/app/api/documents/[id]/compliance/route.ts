@@ -111,7 +111,7 @@ export async function POST(
             documentTitle: document.title,
             score: results.score,
             issuesCount: results.issues.length,
-            documentUrl: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001"}/documents/${documentId}`,
+            documentUrl: `${process.env.NEXT_PUBLIC_APP_URL || "https://app.largence.com"}/documents/${documentId}`,
           });
         }
       } catch (emailError) {

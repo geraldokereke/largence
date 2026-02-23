@@ -151,7 +151,7 @@ export function SignupForm({ className }: SignupFormProps) {
       }
     } catch (err: any) {
       console.error("Verification error:", err);
-      setError(err?.errors?.[0]?.message || "Invalid verification code");
+      setError(err?.errors?.[0]?.message || "The OTP entered is invalid. Please check your email and try again.");
     } finally {
       setIsLoading(false);
     }

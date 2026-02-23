@@ -3,11 +3,13 @@
 import { useState } from "react";
 import { useSignIn } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
+import { loginSchema } from "@largence/lib/validations/login.schema";
 
 export function useLoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const { signIn, setActive } = useSignIn();
   const router = useRouter();
 
@@ -24,8 +26,31 @@ export function useLoginForm() {
 
       try {
         const formData = new FormData(event.currentTarget);
-        const email = formData.get("email") as string;
-        const password = formData.get("password") as string;
+
+        const raw = {
+          email: String(formData.get("email") ?? ""),
+          password: String(formData.get("password") ?? ""),
+        };
+
+        // Clear previous errors
+        setFieldErrors({});
+        setError(null);
+
+        const result = loginSchema.safeParse(raw);
+
+        if (!result.success) {
+          const errors: Record<string, string> = {};
+          result.error.issues.forEach((issue) => {
+            if (issue.path.length > 0) {
+              errors[issue.path[0] as string] = issue.message;
+            }
+          });
+          setFieldErrors(errors);
+          setIsLoading(false);
+          return;
+        }
+
+        const { email, password } = result.data;
 
         if (onSubmit) {
           await onSubmit(email, password);
@@ -56,6 +81,7 @@ export function useLoginForm() {
     showPassword,
     isLoading,
     error,
+    fieldErrors,
     togglePasswordVisibility,
     handleSubmit,
   };

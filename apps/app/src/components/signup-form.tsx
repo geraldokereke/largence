@@ -8,7 +8,7 @@ import { Button } from "@largence/components/ui/button";
 import { Input } from "@largence/components/ui/input";
 import { Label } from "@largence/components/ui/label";
 import { Spinner } from "@largence/components/ui/spinner";
-import { Eye, EyeOff, Check } from "lucide-react";
+import { Eye, EyeOff, Check, AlertCircle } from "lucide-react";
 import { FaGoogle, FaMicrosoft } from "react-icons/fa";
 import Link from "next/link";
 import {
@@ -17,6 +17,7 @@ import {
   InputOTPSeparator,
   InputOTPSlot,
 } from "@largence/components/ui/input-otp";
+import { signupSchema } from "@largence/lib/validations/user.schema";
 
 interface SignupFormProps {
   className?: string;
@@ -26,12 +27,14 @@ export function SignupForm({ className }: SignupFormProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [pendingVerification, setPendingVerification] = useState(false);
   const [code, setCode] = useState("");
   const [oauthLoading, setOauthLoading] = useState<
     "google" | "microsoft" | null
   >(null);
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const { signUp, setActive } = useSignUp();
   const { signIn } = useSignIn();
   const router = useRouter();
@@ -40,12 +43,12 @@ export function SignupForm({ className }: SignupFormProps) {
   const validatePassword = (pass: string) => {
     const hasMinLength = pass.length >= 8;
     const hasNumber = /\d/.test(pass);
-    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(pass);
+    const hasUppercase = /[A-Z]/.test(pass);
     return {
       hasMinLength,
       hasNumber,
-      hasSpecialChar,
-      isValid: hasMinLength && hasNumber && hasSpecialChar,
+      hasUppercase,
+      isValid: hasMinLength && hasNumber && hasUppercase,
     };
   };
 
@@ -69,55 +72,62 @@ export function SignupForm({ className }: SignupFormProps) {
     };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setIsLoading(true);
+  event.preventDefault();
+  setIsLoading(true);
+  setError(null);
+
+  try {
+    const formData = new FormData(event.currentTarget);
+
+    const raw = {
+      email: String(formData.get("email") ?? ""),
+      password: String(formData.get("password") ?? ""),
+      confirmPassword: String(formData.get("confirmPassword") ?? ""),
+      firstName: String(formData.get("firstName") ?? ""),
+      lastName: String(formData.get("lastName") ?? ""),
+    };
+
+    // Clear previous errors
+    setFieldErrors({});
     setError(null);
 
-    try {
-      const formData = new FormData(event.currentTarget);
-      const email = formData.get("email") as string;
-      const password = formData.get("password") as string;
-      const firstName = formData.get("firstName") as string;
-      const lastName = formData.get("lastName") as string;
+    const result = signupSchema.safeParse(raw);
 
-      // Validate password
-      const validation = validatePassword(password);
-      if (!validation.isValid) {
-        setError(
-          "Password must be at least 8 characters and contain a number and special character",
-        );
-        setIsLoading(false);
-        return;
-      }
-
-      if (!signUp) {
-        throw new Error("SignUp is not available");
-      }
-
-      // Start the sign up process
-      await signUp.create({
-        emailAddress: email,
-        password,
-        firstName,
-        lastName,
+    if (!result.success) {
+      const errors: Record<string, string> = {};
+      result.error.issues.forEach((issue) => {
+        if (issue.path.length > 0) {
+          errors[issue.path[0] as string] = issue.message;
+        }
       });
-
-      // Send the verification email
-      await signUp.prepareEmailAddressVerification({
-        strategy: "email_code",
-      });
-
-      setPendingVerification(true);
-    } catch (err: any) {
-      console.error("Signup error:", err);
-      setError(
-        err?.errors?.[0]?.message ||
-          "Failed to create account. Please try again.",
-      );
-    } finally {
+      setFieldErrors(errors);
       setIsLoading(false);
+      return;
     }
-  };
+
+    const { email, password, firstName, lastName } = result.data;
+
+    if (!signUp) throw new Error("SignUp is not available");
+
+    await signUp.create({
+      emailAddress: email,
+      password,
+      firstName,
+      lastName,
+    });
+
+    await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
+
+    setPendingVerification(true);
+  } catch (err: any) {
+    console.error("Signup error:", err);
+    setError(
+      err?.errors?.[0]?.message || "Failed to create account. Please try again."
+    );
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const handleVerify = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -220,12 +230,6 @@ export function SignupForm({ className }: SignupFormProps) {
       </div>
 
       <form className="space-y-4 sm:space-y-6" onSubmit={handleSubmit}>
-        {error && (
-          <div className="p-3 rounded-sm bg-destructive/10 border border-destructive/20 text-destructive text-sm">
-            {error}
-          </div>
-        )}
-
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1.5">
             <Label htmlFor="firstName" className="text-sm">First Name</Label>
@@ -234,11 +238,19 @@ export function SignupForm({ className }: SignupFormProps) {
               name="firstName"
               type="text"
               placeholder="John"
-              required
               disabled={isLoading}
               autoComplete="given-name"
-              className="h-9 rounded-sm text-sm"
+              className={cn(
+                "h-9 rounded-sm text-sm",
+                fieldErrors.firstName && "border-destructive focus:border-destructive"
+              )}
             />
+            {fieldErrors.firstName && (
+              <div className="flex items-center gap-1 mt-1">
+                <AlertCircle className="h-3 w-3 text-destructive" />
+                <p className="text-xs text-destructive font-semibold">{fieldErrors.firstName}</p>
+              </div>
+            )}
           </div>
 
           <div className="space-y-1.5">
@@ -248,11 +260,19 @@ export function SignupForm({ className }: SignupFormProps) {
               name="lastName"
               type="text"
               placeholder="Doe"
-              required
               disabled={isLoading}
               autoComplete="family-name"
-              className="h-9 rounded-sm text-sm"
+              className={cn(
+                "h-9 rounded-sm text-sm",
+                fieldErrors.lastName && "border-destructive focus:border-destructive"
+              )}
             />
+            {fieldErrors.lastName && (
+              <div className="flex items-center gap-1 mt-1">
+                <AlertCircle className="h-3 w-3 text-destructive" />
+                <p className="text-xs text-destructive font-semibold">{fieldErrors.lastName}</p>
+              </div>
+            )}
           </div>
         </div>
 
@@ -263,11 +283,19 @@ export function SignupForm({ className }: SignupFormProps) {
             name="email"
             type="email"
             placeholder="you@company.com"
-            required
             disabled={isLoading}
             autoComplete="email"
-            className="h-9 rounded-sm text-sm"
+            className={cn(
+              "h-9 rounded-sm text-sm",
+              fieldErrors.email && "border-destructive focus:border-destructive"
+            )}
           />
+          {fieldErrors.email && (
+            <div className="flex items-center gap-1 mt-1">
+              <AlertCircle className="h-3 w-3 text-destructive" />
+              <p className="text-xs text-destructive font-semibold">{fieldErrors.email}</p>
+            </div>
+          )}
         </div>
 
         <div className="space-y-1.5">
@@ -278,7 +306,6 @@ export function SignupForm({ className }: SignupFormProps) {
               name="password"
               type={showPassword ? "text" : "password"}
               placeholder="Create a strong password"
-              required
               disabled={isLoading}
               autoComplete="new-password"
               className="h-9 rounded-sm text-sm pr-10"
@@ -339,22 +366,61 @@ export function SignupForm({ className }: SignupFormProps) {
             <div className="flex items-center gap-2 text-xs">
               <div
                 className={`h-1.5 w-1.5 rounded-full ${
-                  passwordValidation.hasSpecialChar
+                  passwordValidation.hasUppercase
                     ? "bg-green-500"
                     : "bg-muted-foreground/30"
                 }`}
               />
               <span
                 className={
-                  passwordValidation.hasSpecialChar
+                  passwordValidation.hasUppercase
                     ? "text-green-500"
                     : "text-muted-foreground"
                 }
               >
-                Contains a special character
+                Contains uppercase letter
               </span>
             </div>
           </div>
+        </div>
+
+        <div className="space-y-1.5">
+          <Label htmlFor="confirmPassword" className="text-sm">Confirm Password</Label>
+          <div className="relative">
+            <Input
+              id="confirmPassword"
+              name="confirmPassword"
+              type={showPassword ? "text" : "password"}
+              placeholder="Confirm your password"
+              disabled={isLoading}
+              autoComplete="new-password"
+              className={cn(
+                "h-9 rounded-sm text-sm pr-10",
+                fieldErrors.confirmPassword && "border-destructive focus:border-destructive"
+              )}
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              disabled={isLoading}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+              aria-label={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? (
+                <EyeOff className="h-4 w-4" />
+              ) : (
+                <Eye className="h-4 w-4" />
+              )}
+            </button>
+          </div>
+          {fieldErrors.confirmPassword && (
+            <div className="flex items-center gap-1 mt-1">
+              <AlertCircle className="h-3 w-3 text-destructive" />
+              <p className="text-xs text-destructive font-semibold">{fieldErrors.confirmPassword}</p>
+            </div>
+          )}
         </div>
 
         <Button

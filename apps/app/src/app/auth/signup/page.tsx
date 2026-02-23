@@ -48,7 +48,7 @@ export default function SignupPage() {
 
       {/* Right side - Marketing with Stacked Screenshots */}
       <div className="hidden lg:flex bg-muted relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/10" />
+        <div className="absolute inset-0 bg-linear-to-br from-primary/5 via-transparent to-primary/10" />
 
         {/* Floating shapes */}
         <div className="absolute top-20 right-20 w-72 h-72 bg-primary/5 rounded-full blur-3xl animate-pulse" />

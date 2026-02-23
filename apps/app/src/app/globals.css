@@ -830,3 +830,77 @@ html {
   color: var(--foreground);
   background-color: var(--muted);
 }
+
+/* Hide scrollbar utility */
+.scrollbar-hide {
+  -ms-overflow-style: none !important;  /* Internet Explorer 10+ */
+  scrollbar-width: none !important;  /* Firefox */
+  overflow: -moz-scrollbars-none !important;
+  scrollbar-color: transparent transparent !important;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none !important;  /* Safari and Chrome */
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
+  -webkit-appearance: none !important;
+}
+
+.scrollbar-hide::-webkit-scrollbar-track {
+  background: transparent !important;
+  -webkit-appearance: none !important;
+}
+
+.scrollbar-hide::-webkit-scrollbar-thumb {
+  background: transparent !important;
+  display: none !important;
+  -webkit-appearance: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+.scrollbar-hide::-webkit-scrollbar-button {
+  display: none !important;
+  -webkit-appearance: none !important;
+}
+
+.scrollbar-hide::-webkit-scrollbar-corner {
+  background: transparent !important;
+  display: none !important;
+}
+
+/* Alternative approach - hide scrollbars completely */
+.scrollbar-hide {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+  overflow: auto !important;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  width: 0px !important;
+  height: 0px !important;
+  background: transparent !important;
+  display: none !important;
+}
+
+@supports not (-webkit-appearance: none) {
+  .scrollbar-hide {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+}
+
+/* For browsers that support scrollbar-gutter */
+.scrollbar-hide {
+  scrollbar-gutter: stable !important;
+}
+
+@utility scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}

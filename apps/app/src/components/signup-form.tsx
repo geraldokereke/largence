@@ -149,10 +149,18 @@ export function SignupForm({ className }: SignupFormProps) {
       } else {
         setError("Verification incomplete. Please try again.");
       }
-    } catch (err: any) {
+      } catch (err: any) {
       console.error("Verification error:", err);
-      setError(err?.errors?.[0]?.message || "The OTP entered is invalid. Please check your email and try again.");
-    } finally {
+      const clerkError = err?.errors?.[0];
+
+      if (clerkError?.code === "form_code_incorrect") {
+      setError("The OTP entered is invalid. Please check your email and try again.");
+      } else if (clerkError?.code === "verification_expired") {
+      setError("Your verification code has expired. Please request a new one.");
+      } else {
+      setError(clerkError?.message || "Verification failed. Please try again.");
+      }
+      } finally {
       setIsLoading(false);
     }
   };

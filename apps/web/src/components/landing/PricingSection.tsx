@@ -189,7 +189,7 @@ export function PricingSection() {
               </ul>
 
               <Link
-                href={plan.name === "Enterprise" ? "#contact" : "https://app.largence.com/auth/signup"}
+                href={plan.name === "Enterprise" ? "/contact" : "https://app.largence.com/auth/signup"}
                 className="block mt-auto pt-4"
               >
                 <Button

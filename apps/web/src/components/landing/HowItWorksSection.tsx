@@ -51,7 +51,7 @@ export function HowItWorksSection() {
   }, []);
 
   return (
-    <section ref={sectionRef} className="relative py-20 md:py-28 px-4 sm:px-6 bg-muted/30 border-y border-border">
+    <section ref={sectionRef} id="how-it-works" className="relative py-20 md:py-28 px-4 sm:px-6 bg-muted/30 border-y border-border">
       {/* Grid pattern background */}
       <div className="absolute inset-0 -z-10 overflow-hidden">
         <div 

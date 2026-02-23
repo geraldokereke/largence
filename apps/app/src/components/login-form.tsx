@@ -88,12 +88,6 @@ export function LoginForm({
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
             <Label htmlFor="password" className="text-sm">Password</Label>
-            <Link
-              href="/auth/forgot-password"
-              className="text-xs text-primary hover:underline font-medium"
-            >
-              Forgot password?
-            </Link>
           </div>
           <div className="relative">
             <Input
@@ -121,6 +115,14 @@ export function LoginForm({
                 <Eye className="h-4 w-4" />
               )}
             </button>
+          </div>
+          <div className="flex items-center justify-end">
+            <Link
+              href="/auth/forgot-password"
+              className="text-xs text-primary hover:underline font-medium"
+            >
+              Forgot password?
+            </Link>
           </div>
           {fieldErrors.password && (
             <div className="flex items-center gap-1 mt-1">

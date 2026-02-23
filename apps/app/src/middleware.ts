@@ -17,14 +17,20 @@ const authOnlyRoutes = createRouteMatcher([
 ]);
 
 const requiresOrgRoute = createRouteMatcher([
+  "/account(.*)",
+  "/analytics(.*)",
+  "/audit(.*)",
+  "/clauses(.*)",
+  "/compliance(.*)",
+  "/create(.*)",
   "/documents(.*)",
   "/drafts(.*)",
-  "/templates(.*)",
-  "/compliance(.*)",
-  "/audit(.*)",
-  "/teams(.*)",
   "/integrations(.*)",
-  "/create(.*)",
+  "/matters(.*)",
+  "/messages(.*)",
+  "/teams(.*)",
+  "/templates(.*)",
+  "/", // Main dashboard
 ]);
 
 function getSubdomain(hostname: string): string | null {

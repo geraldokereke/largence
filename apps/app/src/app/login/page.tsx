@@ -38,8 +38,8 @@ export default function LoginPage() {
             </span>
           </a>
         </div>
-        <div className="flex flex-1 items-center justify-center py-4 sm:py-6 md:py-8">
-          <div className="w-full max-w-md px-0">
+        <div className="flex-1 items-center justify-center py-4 sm:py-6 md:py-8 overflow-y-auto">
+          <div className="w-full max-w-md px-0 scrollbar-hide">
             <LoginForm />
           </div>
         </div>

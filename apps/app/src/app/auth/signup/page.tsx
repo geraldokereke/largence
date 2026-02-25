@@ -22,9 +22,9 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-svh w-full flex flex-col lg:grid lg:grid-cols-2">
+    <div className="min-h-svh w-full flex flex-col lg:grid lg:grid-cols-2 lg:h-svh">
       {/* Left side - Signup Form */}
-      <div className="flex flex-col gap-4 p-4 sm:p-6 md:p-8 lg:p-10 flex-1 overflow-y-auto">
+      <div className="flex flex-col gap-4 p-4 sm:p-6 md:p-8 lg:p-10 flex-1 overflow-y-auto scrollbar-hide">
         <div className="flex justify-center gap-2 md:justify-start lg:justify-start shrink-0">
           <a href="#" className="flex items-center gap-2 font-medium">
             <Image
@@ -39,7 +39,7 @@ export default function SignupPage() {
             </span>
           </a>
         </div>
-        <div className="flex flex-1 items-center justify-center py-4 sm:py-6 md:py-8">
+        <div className="flex-1 items-center justify-center py-4 sm:py-6 md:py-8 overflow-y-auto">
           <div className="w-full max-w-md px-0">
             <SignupForm />
           </div>
@@ -48,7 +48,7 @@ export default function SignupPage() {
 
       {/* Right side - Marketing with Stacked Screenshots */}
       <div className="hidden lg:flex bg-muted relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/10" />
+        <div className="absolute inset-0 bg-linear-to-br from-primary/5 via-transparent to-primary/10" />
 
         {/* Floating shapes */}
         <div className="absolute top-20 right-20 w-72 h-72 bg-primary/5 rounded-full blur-3xl animate-pulse" />

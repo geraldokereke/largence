@@ -119,7 +119,7 @@ export function Hero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-8 min-h-[3.5rem] sm:min-h-[3rem]"
+            className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-8 min-h-14 sm:min-h-12"
           >
             Draft, manage, and automate legal documents with AI-powered intelligence. 
             Built for teams who need compliance without complexity.

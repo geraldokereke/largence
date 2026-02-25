@@ -30,7 +30,7 @@ export function DocumentTypeStep({
         </p>
       </div>
 
-      <ScrollArea className="h-[450px] pr-4">
+      <ScrollArea className="h-112.5 pr-4">
         <div className="grid grid-cols-2 gap-3">
           {documentTypes.map((type) => {
             const Icon = type.icon;

@@ -46,6 +46,31 @@ export const Navbar: React.FC = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Handle hash navigation on page load
+  React.useEffect(() => {
+    if (typeof window !== 'undefined' && pathname === '/') {
+      const hash = window.location.hash;
+      if (hash) {
+        const targetId = hash.substring(1);
+        const element = document.getElementById(targetId);
+        
+        if (element) {
+          // Small delay to ensure page is fully loaded
+          setTimeout(() => {
+            const offset = 80; // Account for fixed navbar height
+            const elementPosition = element.getBoundingClientRect().top;
+            const offsetPosition = elementPosition + window.pageYOffset - offset;
+            
+            window.scrollTo({
+              top: offsetPosition,
+              behavior: "smooth"
+            });
+          }, 100);
+        }
+      }
+    }
+  }, [pathname]);
+
   React.useEffect(() => {
     if (mobileMenuOpen) {
       document.body.style.overflow = "hidden";
@@ -59,6 +84,8 @@ export const Navbar: React.FC = () => {
 
   const menuItems = [
     { href: "#features", label: "Features" },
+    { href: "#how-it-works", label: "How it works" },
+    { href: "#product-tour", label: "Product Tour" },
     { href: "/templates", label: "Templates", isPage: true },
     { href: "#pricing", label: "Pricing" },
   ];
@@ -74,6 +101,25 @@ export const Navbar: React.FC = () => {
     if (item.href.startsWith("#") && pathname !== "/") {
       e.preventDefault();
       window.location.href = `/${item.href}`;
+      return;
+    }
+    
+    // If we're on the home page and it's a hash link, scroll smoothly
+    if (item.href.startsWith("#") && pathname === "/") {
+      e.preventDefault();
+      const targetId = item.href.substring(1);
+      const element = document.getElementById(targetId);
+      
+      if (element) {
+        const offset = 80; // Account for fixed navbar height
+        const elementPosition = element.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.pageYOffset - offset;
+        
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: "smooth"
+        });
+      }
     }
   };
 

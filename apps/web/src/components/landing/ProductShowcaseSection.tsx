@@ -51,6 +51,7 @@ export function ProductShowcaseSection() {
   return (
     <section
       ref={sectionRef}
+      id="product-tour"
       className="relative py-20 md:py-28 px-4 sm:px-6 overflow-hidden bg-muted/30 border-y border-border"
     >
       {/* Grid background pattern - consistent with other sections */}

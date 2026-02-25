@@ -8,6 +8,7 @@ import { ArrowRight, CheckCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useUser, useOrganization, useOrganizationList } from "@clerk/nextjs";
 import { useOnboarding } from "@largence/hooks/use-onboarding";
+import { billingContactSchema } from "@largence/lib/validations/onboarding.schema";
 import { CompanyInfoStep } from "@largence/components/onboarding/company-info-step";
 import { CompanyDetailsStep } from "@largence/components/onboarding/company-details-step";
 import { TeamSizeStep } from "@largence/components/onboarding/team-size-step";
@@ -78,6 +79,7 @@ export default function OnboardingPage() {
   });
   const router = useRouter();
   const [isClient, setIsClient] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   // Use the onboarding hook for all state management
   const {
@@ -154,6 +156,10 @@ export default function OnboardingPage() {
       case 4: // Use Case
         return formData.useCase;
       case 5: // Billing & Contact
+        // Only validate when user tries to proceed, not on every render
+        if (Object.keys(fieldErrors).length > 0) {
+          return false;
+        }
         return formData.billingEmail;
       case 6: // Integrations (optional)
         return true;
@@ -165,6 +171,26 @@ export default function OnboardingPage() {
   };
 
   const handleNext = async () => {
+    // Validate step 5 (Billing & Contact) before proceeding
+    if (step === 5) {
+      const billingData = {
+        billingEmail: formData.billingEmail || "",
+        phone: formData.phone || "",
+      };
+      const result = billingContactSchema.safeParse(billingData);
+      if (!result.success) {
+        const errors: Record<string, string> = {};
+        result.error.issues.forEach((issue) => {
+          if (issue.path.length > 0) {
+            errors[issue.path[0] as string] = issue.message;
+          }
+        });
+        setFieldErrors(errors);
+        return; // Don't proceed if validation fails
+      }
+      setFieldErrors({}); // Clear errors if validation passes
+    }
+
     if (step < 7) {
       nextStep();
     } else {
@@ -173,6 +199,10 @@ export default function OnboardingPage() {
   };
 
   const handleBack = () => {
+    // Clear field errors when leaving step 5
+    if (step === 5) {
+      setFieldErrors({});
+    }
     previousStep();
   };
 
@@ -182,8 +212,8 @@ export default function OnboardingPage() {
 
   return (
     <div className="min-h-svh w-full flex flex-col lg:grid lg:grid-cols-2">
-      <div className="flex flex-col gap-4 p-4 sm:p-6 md:p-8 lg:p-10 overflow-hidden">
-        <div className="flex justify-center gap-2 md:justify-start shrink-0">
+      <div className="flex flex-col gap-4 p-4 sm:p-6 md:p-8 lg:p-10 lg:h-svh scrollbar-hide overflow-y-auto">
+        <div className="flex justify-center gap-2 md:justify-start shrink-0 scrollbar-hide">
           <a href="#" className="flex items-center gap-2 font-medium">
             <Image
               src="/logo.png"
@@ -267,6 +297,7 @@ export default function OnboardingPage() {
               <BillingContactStep
                 formData={formData}
                 updateFormData={updateFormData}
+                fieldErrors={fieldErrors}
               />
             )}
 

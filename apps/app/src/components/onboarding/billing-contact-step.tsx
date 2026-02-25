@@ -1,19 +1,22 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Mail, Phone, CreditCard } from "lucide-react";
+import { Mail, Phone, CreditCard, AlertCircle } from "lucide-react";
 import { Input } from "@largence/components/ui/input";
 import { Label } from "@largence/components/ui/label";
+import { cn } from "@largence/lib/utils";
 import type { OnboardingFormData } from "@largence/hooks/use-onboarding";
 
 interface BillingContactStepProps {
   formData: OnboardingFormData;
   updateFormData: (data: Partial<OnboardingFormData>) => void;
+  fieldErrors?: Record<string, string>;
 }
 
 export function BillingContactStep({
   formData,
   updateFormData,
+  fieldErrors,
 }: BillingContactStepProps) {
   return (
     <motion.div
@@ -39,9 +42,18 @@ export function BillingContactStep({
             placeholder="billing@example.com"
             value={formData.billingEmail}
             onChange={(e) => updateFormData({ billingEmail: e.target.value })}
-            className="h-9 rounded-sm text-sm pl-9"
+            className={cn(
+              "h-9 rounded-sm text-sm pl-9",
+              fieldErrors?.billingEmail && "border-destructive focus:border-destructive"
+            )}
           />
         </div>
+        {fieldErrors?.billingEmail && (
+          <div className="flex items-center gap-1 mt-1">
+            <AlertCircle className="h-3 w-3 text-destructive" />
+            <p className="text-xs text-destructive font-semibold">{fieldErrors.billingEmail}</p>
+          </div>
+        )}
         <p className="text-xs text-muted-foreground">
           Invoices and receipts will be sent here
         </p>
@@ -57,9 +69,18 @@ export function BillingContactStep({
             placeholder="+1 (555) 000-0000"
             value={formData.phone}
             onChange={(e) => updateFormData({ phone: e.target.value })}
-            className="h-9 rounded-sm text-sm pl-9"
+            className={cn(
+              "h-9 rounded-sm text-sm pl-9",
+              fieldErrors?.phone && "border-destructive focus:border-destructive"
+            )}
           />
         </div>
+        {fieldErrors?.phone && (
+          <div className="flex items-center gap-1 mt-1">
+            <AlertCircle className="h-3 w-3 text-destructive" />
+            <p className="text-xs text-destructive font-semibold">{fieldErrors.phone}</p>
+          </div>
+        )}
         <p className="text-xs text-muted-foreground">
           Optional - for important account notifications
         </p>

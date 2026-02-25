@@ -7,6 +7,13 @@ import { Button } from "@largence/ui";
 import { Footer } from "@/components/landing/Footer";
 import { useUser } from "@clerk/nextjs";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../../../../app/src/components/ui/select";
+import {
   Search,
   Filter,
   Heart,
@@ -322,20 +329,24 @@ export default function TemplateMarketplacePage() {
             {/* Sort Dropdown */}
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground">Sort:</span>
-              <select
+              <Select
                 value={sortBy}
-                onChange={(e) => {
-                  setSortBy(e.target.value);
+                onValueChange={(value: string) => {
+                  setSortBy(value);
                   setPage(1);
                 }}
-                className="h-9 px-3 rounded-md border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
               >
-                {sortOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger className="h-9 w-35">
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent>
+                  {sortOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 

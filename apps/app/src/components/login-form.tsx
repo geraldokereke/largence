@@ -6,7 +6,7 @@ import { Button } from "@largence/components/ui/button";
 import { Input } from "@largence/components/ui/input";
 import { Label } from "@largence/components/ui/label";
 import { Spinner } from "@largence/components/ui/spinner";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, AlertCircle } from "lucide-react";
 import { FaGoogle, FaMicrosoft } from "react-icons/fa";
 import { useLoginForm } from "@largence/hooks/use-login-form";
 import { useSignIn } from "@clerk/nextjs";
@@ -29,6 +29,7 @@ export function LoginForm({
     showPassword,
     isLoading,
     error,
+    fieldErrors,
     togglePasswordVisibility,
     handleSubmit,
   } = useLoginForm();
@@ -62,12 +63,6 @@ export function LoginForm({
       </div>
 
       <form className="space-y-4 sm:space-y-6" onSubmit={handleSubmit(onSubmit)}>
-        {error && (
-          <div className="p-3 rounded-sm bg-destructive/10 border border-destructive/20 text-destructive text-sm">
-            {error}
-          </div>
-        )}
-
         <div className="space-y-1.5">
           <Label htmlFor="email" className="text-sm">Work Email</Label>
           <Input
@@ -75,22 +70,24 @@ export function LoginForm({
             name="email"
             type="email"
             placeholder="you@company.com"
-            required
             disabled={isLoading}
             autoComplete="email"
-            className="h-9 rounded-sm text-sm"
+            className={cn(
+              "h-9 rounded-sm text-sm",
+              fieldErrors.email && "border-destructive focus:border-destructive"
+            )}
           />
+          {fieldErrors.email && (
+            <div className="flex items-center gap-1 mt-1">
+              <AlertCircle className="h-3 w-3 text-destructive" />
+              <p className="text-xs text-destructive font-semibold">{fieldErrors.email}</p>
+            </div>
+          )}
         </div>
 
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
             <Label htmlFor="password" className="text-sm">Password</Label>
-            <Link
-              href="/auth/forgot-password"
-              className="text-xs text-primary hover:underline font-medium"
-            >
-              Forgot password?
-            </Link>
           </div>
           <div className="relative">
             <Input
@@ -98,10 +95,12 @@ export function LoginForm({
               name="password"
               type={showPassword ? "text" : "password"}
               placeholder="Enter your password"
-              required
               disabled={isLoading}
               autoComplete="current-password"
-              className="h-9 rounded-sm text-sm pr-10"
+              className={cn(
+                "h-9 rounded-sm text-sm pr-10",
+                fieldErrors.password && "border-destructive focus:border-destructive"
+              )}
             />
             <button
               type="button"
@@ -117,7 +116,27 @@ export function LoginForm({
               )}
             </button>
           </div>
+          <div className="flex items-center justify-end">
+            <Link
+              href="/auth/forgot-password"
+              className="text-xs text-primary hover:underline font-medium"
+            >
+              Forgot password?
+            </Link>
+          </div>
+          {fieldErrors.password && (
+            <div className="flex items-center gap-1 mt-1">
+              <AlertCircle className="h-3 w-3 text-destructive" />
+              <p className="text-xs text-destructive font-semibold">{fieldErrors.password}</p>
+            </div>
+          )}
         </div>
+
+        {error && (
+          <div className="p-3 rounded-sm bg-destructive/10 border border-destructive/20 text-destructive text-sm">
+            {error}
+          </div>
+        )}
 
         <Button
           type="submit"

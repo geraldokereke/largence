@@ -567,16 +567,18 @@ Please generate a comprehensive, legally sound document with:
 
               {/* Navigation */}
               {!isGenerating && (
-                <div className="flex items-center justify-between mt-5 pt-4 border-t">
-                  <Button
-                    variant="outline"
-                    onClick={handleBack}
-                    disabled={step === 1}
-                    className="h-8 rounded-sm text-sm"
+                <div className={`flex items-center ${step > 1 ? "justify-between" : "justify-end"} mt-5 pt-4 border-t`}>
+                  {step > 1 && (
+                    <Button
+                      variant="outline"
+                      onClick={handleBack}
+                      disabled={step === 1}
+                      className="h-8 rounded-sm text-sm"
                   >
                     <ArrowLeft className="h-3.5 w-3.5" />
                     Back
                   </Button>
+                  )}
 
                   <Button
                     onClick={handleNext}

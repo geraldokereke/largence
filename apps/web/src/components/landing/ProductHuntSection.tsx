@@ -39,7 +39,7 @@ export function ProductHuntSection() {
               Support us on Product Hunt
             </h2>
             <p className="text-muted-foreground mb-6">
-              We&apos;re building the future of legal document management for African enterprises. 
+              We&apos;re building the future of legal document management for teams and enterprises. 
               Your upvote helps us reach more teams who need better legal tools.
             </p>
             <div className="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start">

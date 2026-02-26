@@ -36,7 +36,7 @@ export async function generateDocument(
   const typeId = getDocumentTypeId(documentType);
   const typeConfig = documentTypeConfigs[typeId];
 
-  const systemPrompt = `You are an expert legal document generator specializing in African and international jurisdictions. 
+  const systemPrompt = `You are an expert legal document generator specializing in all jurisdictions. 
 
 CRITICAL INSTRUCTIONS:
 1. Generate ONLY the legal document content in clean HTML format
@@ -126,7 +126,7 @@ export async function generateDocumentStream(
   const typeId = getDocumentTypeId(documentType);
   const typeConfig = documentTypeConfigs[typeId];
 
-  const systemPrompt = `You are an expert legal document generator specializing in African and international jurisdictions.
+  const systemPrompt = `You are an expert legal document generator specializing in all jurisdictions.
 
 CRITICAL INSTRUCTIONS:
 1. Generate ONLY the legal document content in clean HTML format

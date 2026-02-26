@@ -47,7 +47,7 @@ export function SolutionsSection() {
                 },
                 {
                   title: "Smart Templates",
-                  desc: "Access 100+ pre-built templates for African markets",
+                  desc: "Access 100+ pre-built templates for all markets",
                 },
                 {
                   title: "Automated Workflows",
@@ -195,14 +195,14 @@ export function SolutionsSection() {
               Stay Ahead of Regulatory Changes
             </h2>
             <p className="text-xs sm:text-sm md:text-base lg:text-lg text-muted-foreground mb-8 leading-relaxed">
-              Monitor compliance across all African markets with real-time
-              regulatory updates and automated risk assessments.
+              Monitor compliance across global markets with
+              regulatory updates and risk assessments.
             </p>
             <ul className="space-y-4 mb-8">
               {[
                 {
                   title: "Real-Time Monitoring",
-                  desc: "Track regulatory changes across 54 African countries",
+                  desc: "Track regulatory changes across 54 different countries",
                 },
                 {
                   title: "Risk Assessment",

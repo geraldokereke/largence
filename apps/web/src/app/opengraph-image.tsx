@@ -82,7 +82,7 @@ export default async function Image() {
               marginTop: 12,
             }}
           >
-            Automate contract drafting, ensure regulatory compliance, and
+            Enhance contract drafting, regulatory compliance, and
             streamline governance
           </div>
         </div>

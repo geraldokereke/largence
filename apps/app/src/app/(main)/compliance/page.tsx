@@ -417,7 +417,7 @@ export default function CompliancePage() {
           <div>
             <h1 className="text-xl font-semibold font-display">Compliance Center</h1>
             <p className="text-sm text-muted-foreground">
-              Audit your documents for regulatory compliance across NDPR, GDPR, CCPA, and African data protection laws
+              Audit your documents for regulatory compliance across NDPR, GDPR, CCPA, and other data protection laws
             </p>
           </div>
           <div className="flex gap-2">

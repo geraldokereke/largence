@@ -79,7 +79,7 @@ export function TrustedBySection() {
           transition={{ duration: 0.5 }}
           className="text-center text-sm text-muted-foreground uppercase tracking-wider mb-10"
         >
-          Trusted by legal teams across Africa
+          Trusted by legal teams across the workd
         </motion.p>
         
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">

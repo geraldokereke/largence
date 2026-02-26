@@ -67,7 +67,7 @@ export default function LoginPage() {
                   clipRule="evenodd"
                 />
               </svg>
-              Built for African legal teams
+              Built for legal teams and enterprises
             </div>
             <h2 className="text-4xl font-bold mb-3 font-display leading-tight">
               Welcome back

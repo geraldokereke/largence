@@ -32,7 +32,7 @@ const showcaseItems = [
   {
     title: "Multi-Jurisdiction Support",
     description:
-      "Create documents compliant with legal requirements across multiple African jurisdictions and beyond.",
+      "Draft documents with built-in guidance tailored to different jurisdictions and legal frameworks.",
     icon: HiOutlineGlobeAlt,
     image: "/hero-v2.png",
     imageDark: "/hero-dark-v2.png",

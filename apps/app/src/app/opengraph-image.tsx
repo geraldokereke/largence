@@ -91,8 +91,8 @@ export default async function Image() {
               maxWidth: "800px",
             }}
           >
-            Automate contract drafting, ensure regulatory compliance, and
-            streamline governance for African enterprises.
+            Enhance contract drafting, regulatory compliance procedures, and
+            streamline governance for International teams and enterprises.
           </span>
         </div>
 

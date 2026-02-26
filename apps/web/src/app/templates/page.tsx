@@ -524,8 +524,8 @@ export default function TemplateMarketplacePage() {
             Create & Share Your Templates
           </h2>
           <p className="text-muted-foreground mb-6">
-            Join the Largence community and publish your legal templates to help
-            businesses across Africa. Gain recognition and contribute to legal
+            Join the Largence community and publish your legal templates to help other
+            businesses. Gain recognition and contribute to legal
             accessibility.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">

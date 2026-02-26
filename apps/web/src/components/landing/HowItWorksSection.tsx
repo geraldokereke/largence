@@ -22,7 +22,7 @@ const steps = [
     number: "02",
     icon: HiOutlineSparkles,
     title: "AI Enhancement",
-    description: "Our AI reviews your document, suggests improvements, and ensures legal accuracy.",
+    description: "Our AI reviews your document, suggests improvements, and enhances legal accuracy.",
   },
   {
     number: "03",

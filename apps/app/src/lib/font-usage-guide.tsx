@@ -54,7 +54,7 @@ export const HeroExample = () => (
       Enterprise Legal Intelligence
     </h1>
     <p className="text-xl text-muted-foreground">
-      Automate contract drafting and ensure compliance across Africa
+      Streamline contract drafting and support your team’s compliance efforts
     </p>
   </div>
 );

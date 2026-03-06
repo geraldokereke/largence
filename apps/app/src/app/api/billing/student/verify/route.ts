@@ -73,7 +73,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       success: true,
-      message: "Student status verified! You can now subscribe to the Student plan.",
+      message: "Student status verified! You can now subscribe to the Learn plan.",
       verified: true,
     });
   } catch (error: any) {

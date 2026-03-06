@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { stripe, getSubscription, PLANS } from "@/lib/stripe";
 import prisma from "@/lib/prisma";
+import { toInternalPlanId, toPublicPlanId } from "@/lib/plan-ids";
 
 // PATCH /api/billing/subscription - Update subscription plan
 export async function PATCH(request: Request) {
@@ -15,7 +16,20 @@ export async function PATCH(request: Request) {
     const body = await request.json();
     const { plan, billingPeriod = "monthly" } = body;
 
-    if (!plan || !["STARTER", "PROFESSIONAL", "BUSINESS", "ENTERPRISE"].includes(plan)) {
+    const publicPlan = toPublicPlanId(plan);
+    const internalPlan = toInternalPlanId(plan);
+    const stripePlan =
+      publicPlan === "LEARN"
+        ? "STARTER"
+        : publicPlan === "EDGE"
+        ? "PROFESSIONAL"
+        : publicPlan === "VERTEX"
+        ? "BUSINESS"
+        : publicPlan === "ZENITH"
+        ? "ENTERPRISE"
+        : "STARTER";
+
+    if (!plan || !["LEARN", "EDGE", "VERTEX", "ZENITH"].includes(publicPlan)) {
       return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
     }
 
@@ -28,14 +42,14 @@ export async function PATCH(request: Request) {
       );
     }
 
-    const planConfig = PLANS[plan as keyof typeof PLANS];
+    const planConfig = PLANS[stripePlan as keyof typeof PLANS];
     const priceId = billingPeriod === "annual" 
       ? planConfig.annualPriceId 
       : planConfig.monthlyPriceId;
 
     if (!priceId) {
       return NextResponse.json(
-        { error: `No price ID configured for plan: ${plan}` },
+        { error: `No price ID configured for plan: ${publicPlan}` },
         { status: 400 }
       );
     }
@@ -58,7 +72,7 @@ export async function PATCH(request: Request) {
         proration_behavior: "always_invoice", // Create invoice for proration
         metadata: {
           organizationId: orgId,
-          plan,
+          plan: publicPlan,
           billingPeriod,
         },
       }
@@ -70,7 +84,7 @@ export async function PATCH(request: Request) {
       where: { organizationId: orgId },
       data: {
         stripePriceId: priceId,
-        plan: plan as any,
+        plan: internalPlan as any,
         maxTeamMembers: planConfig.maxTeamMembers,
         maxContracts: planConfig.maxDocuments, // PLANS uses maxDocuments, schema uses maxContracts
         maxStorage: Math.round(planConfig.maxStorage / 1000), // Convert MB to GB
@@ -87,7 +101,7 @@ export async function PATCH(request: Request) {
       success: true,
       subscription: {
         id: updatedSubscription.id,
-        plan,
+        plan: publicPlan,
         status: updatedSubscription.status,
       },
     });

@@ -222,7 +222,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               <span className="font-semibold text-xs">Free Plan</span>
             </div>
             <p className="text-[11px] text-muted-foreground mb-2">
-              Upgrade to Pro for unlimited documents, compliance checks, and team collaboration.
+              Upgrade to Edge for unlimited documents, compliance checks, and team collaboration.
             </p>
             <Button
               size="sm"
@@ -233,7 +233,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 })
               }
             >
-              Upgrade to Pro
+              Upgrade to Edge
             </Button>
           </div>
         )}

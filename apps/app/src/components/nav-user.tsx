@@ -83,7 +83,7 @@ export function NavUser({
             <DropdownMenuGroup>
               <DropdownMenuItem>
                 <Sparkles />
-                Upgrade to Pro
+                Upgrade to Edge
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />

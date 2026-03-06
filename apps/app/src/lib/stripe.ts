@@ -12,10 +12,10 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
  * 
  * Strategy: Value-based pricing targeting African enterprises
  * - Free tier to drive adoption and word-of-mouth
- * - Starter for solopreneurs and small firms (affordable entry)
+ * - Origin for solopreneurs and small firms (affordable entry)
  * - Professional for growing teams (best value)
  * - Business for medium enterprises (advanced features)
- * - Enterprise for large organizations (custom pricing)
+ * - Zenith for large organizations (custom pricing)
  * 
  * Annual plans: ~17% discount (2 months free)
  * All prices in USD (convert to local currency via Stripe)
@@ -63,7 +63,7 @@ export const PLANS = {
     ],
   },
   STARTER: {
-    name: "Starter",
+    name: "Origin",
     description: "For solopreneurs and small legal practices",
     monthlyPrice: 2900, // $29/month
     annualPrice: 29000, // $290/year (~$24.17/month, 17% off)
@@ -195,7 +195,7 @@ export const PLANS = {
     ],
   },
   ENTERPRISE: {
-    name: "Enterprise",
+    name: "Zenith",
     description: "For large organizations with custom requirements",
     monthlyPrice: null, // Custom pricing
     annualPrice: null, // Custom pricing
@@ -375,12 +375,14 @@ export async function updateSubscriptionFromStripe(
 
   const priceId = stripeSubscription.items.data[0]?.price.id;
   const plan = getPlanFromPriceId(priceId);
-  // Map new plan types to old ones for PLANS lookup, or use defaults
+  const planId = String(plan);
+  // Map public and legacy plan IDs to Stripe plan table keys
   const planKey = (
-    plan === "STUDENT" ? "STARTER" :
-    plan === "PRO" ? "PROFESSIONAL" :
-    plan === "MAX" ? "BUSINESS" :
-    plan
+    planId === "LEARN" || planId === "STUDENT" ? "STARTER" :
+    planId === "EDGE" || planId === "PRO" ? "PROFESSIONAL" :
+    planId === "VERTEX" || planId === "MAX" ? "BUSINESS" :
+    planId === "ZENITH" ? "ENTERPRISE" :
+    planId
   ) as keyof typeof PLANS;
   const planConfig = PLANS[planKey] || PLANS.FREE;
 

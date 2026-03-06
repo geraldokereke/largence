@@ -144,7 +144,7 @@ interface PaymentMethod {
 
 const planDetails = {
   FREE: {
-    name: "Starter",
+    name: "Origin",
     price: 0,
     description: "Perfect for trying out Largence",
     icon: Zap,
@@ -160,7 +160,7 @@ const planDetails = {
     ],
   },
   STUDENT: {
-    name: "Largence Student",
+    name: "Largence Learn",
     price: 5,
     description: "Special pricing for verified students",
     icon: GraduationCap,
@@ -180,7 +180,7 @@ const planDetails = {
     requiresVerification: true,
   },
   PRO: {
-    name: "Largence Pro",
+    name: "Largence Edge",
     price: 20,
     description: "For professionals and small legal practices",
     icon: Crown,
@@ -200,7 +200,7 @@ const planDetails = {
     ],
   },
   MAX: {
-    name: "Largence Max",
+    name: "Largence Vertex",
     price: 100,
     description: "For growing teams and legal departments",
     icon: Crown,
@@ -218,7 +218,7 @@ const planDetails = {
     ],
   },
   ENTERPRISE: {
-    name: "Largence Enterprise",
+    name: "Largence Zenith",
     price: null,
     description: "For large organizations",
     icon: Building,
@@ -1220,8 +1220,8 @@ export default function AccountPage() {
                         Available Plans
                       </h3>
                       <div className="grid gap-4">
-                        {/* Starter Plan */}
-                        {/* Starter (FREE) Plan */}
+                        {/* Origin Plan */}
+                        {/* Origin (FREE) Plan */}
                         <div
                           className={`border rounded-sm p-5 transition-all ${
                             billingData?.subscription?.plan === "FREE"
@@ -1240,7 +1240,7 @@ export default function AccountPage() {
                               </div>
                               <div>
                                 <h4 className="font-semibold font-heading">
-                                  Starter
+                                  Origin
                                 </h4>
                                 <p className="text-sm text-muted-foreground">
                                   Perfect to get started
@@ -1287,10 +1287,10 @@ export default function AccountPage() {
                           </Button>
                         </div>
 
-                        {/* Pro Plan */}
+                        {/* Edge Plan */}
                         <div
                           className={`border rounded-sm p-5 relative transition-all ${
-                            billingData?.subscription?.plan === "PRO"
+                            billingData?.subscription?.plan === "EDGE"
                               ? "border-primary bg-primary/5"
                               : "hover:border-primary/50"
                           }`}
@@ -1309,7 +1309,7 @@ export default function AccountPage() {
                               </div>
                               <div>
                                 <h4 className="font-semibold font-heading">
-                                  Largence Pro
+                                  Largence Edge
                                 </h4>
                                 <p className="text-sm text-muted-foreground">
                                   For professionals and small teams
@@ -1341,32 +1341,32 @@ export default function AccountPage() {
                           <Button
                             className="w-full mt-4 rounded-sm"
                             variant={
-                              billingData?.subscription?.plan === "PRO"
+                              billingData?.subscription?.plan === "EDGE"
                                 ? "outline"
                                 : "default"
                             }
                             disabled={
                               billingData?.subscription?.plan ===
-                                "PRO" || checkoutMutation.isPending
+                                "EDGE" || checkoutMutation.isPending
                             }
                             onClick={() =>
-                              checkoutMutation.mutate("PRO")
+                              checkoutMutation.mutate("EDGE")
                             }
                           >
                             {checkoutMutation.isPending &&
-                            checkoutMutation.variables === "PRO" ? (
+                            checkoutMutation.variables === "EDGE" ? (
                               <Loader2 className="h-4 w-4 animate-spin mr-2" />
                             ) : null}
-                            {billingData?.subscription?.plan === "PRO"
+                            {billingData?.subscription?.plan === "EDGE"
                               ? "Current Plan"
-                              : "Upgrade to Pro"}
+                              : "Upgrade to Edge"}
                           </Button>
                         </div>
 
-                        {/* Max Plan */}
+                        {/* Vertex Plan */}
                         <div
                           className={`border rounded-sm p-5 transition-all ${
-                            billingData?.subscription?.plan === "MAX"
+                            billingData?.subscription?.plan === "VERTEX"
                               ? "border-primary bg-primary/5"
                               : "hover:border-primary/50"
                           }`}
@@ -1382,7 +1382,7 @@ export default function AccountPage() {
                               </div>
                               <div>
                                 <h4 className="font-semibold font-heading">
-                                  Largence Max
+                                  Largence Vertex
                                 </h4>
                                 <p className="text-sm text-muted-foreground">
                                   For power users and agencies
@@ -1409,36 +1409,36 @@ export default function AccountPage() {
                           <Button
                             className="w-full mt-4 rounded-sm"
                             variant={
-                              billingData?.subscription?.plan === "MAX"
+                              billingData?.subscription?.plan === "VERTEX"
                                 ? "outline"
                                 : "default"
                             }
                             disabled={
-                              billingData?.subscription?.plan === "MAX" ||
+                              billingData?.subscription?.plan === "VERTEX" ||
                               checkoutMutation.isPending
                             }
-                            onClick={() => checkoutMutation.mutate("MAX")}
+                            onClick={() => checkoutMutation.mutate("VERTEX")}
                           >
                             {checkoutMutation.isPending &&
-                            checkoutMutation.variables === "MAX" ? (
+                            checkoutMutation.variables === "VERTEX" ? (
                               <Loader2 className="h-4 w-4 animate-spin mr-2" />
                             ) : null}
-                            {billingData?.subscription?.plan === "MAX"
+                            {billingData?.subscription?.plan === "VERTEX"
                               ? "Current Plan"
-                              : "Upgrade to Max"}
+                              : "Upgrade to Vertex"}
                           </Button>
                         </div>
 
-                        {/* Student Plan */}
+                        {/* Learn Plan */}
                         <div
                           className={`border rounded-sm p-5 transition-all ${
-                            billingData?.subscription?.plan === "STUDENT"
+                            billingData?.subscription?.plan === "LEARN"
                               ? "border-primary bg-primary/5"
                               : "hover:border-primary/50"
                           }`}
                         >
                           <div className="absolute -top-3 right-4 px-2 py-0.5 bg-blue-500 text-white text-xs font-medium rounded-sm">
-                            Student Discount
+                            Learn Discount
                           </div>
                           <div className="flex items-start justify-between">
                             <div className="flex items-center gap-3">
@@ -1451,7 +1451,7 @@ export default function AccountPage() {
                               </div>
                               <div>
                                 <h4 className="font-semibold font-heading">
-                                  Largence Student
+                                  Largence Learn
                                 </h4>
                                 <p className="text-sm text-muted-foreground">
                                   For verified students
@@ -1478,30 +1478,30 @@ export default function AccountPage() {
                           <Button
                             className="w-full mt-4 rounded-sm"
                             variant={
-                              billingData?.subscription?.plan === "STUDENT"
+                              billingData?.subscription?.plan === "LEARN"
                                 ? "outline"
                                 : "default"
                             }
                             disabled={
-                              billingData?.subscription?.plan === "STUDENT" ||
+                              billingData?.subscription?.plan === "LEARN" ||
                               checkoutMutation.isPending
                             }
-                            onClick={() => checkoutMutation.mutate("STUDENT")}
+                            onClick={() => checkoutMutation.mutate("LEARN")}
                           >
                             {checkoutMutation.isPending &&
-                            checkoutMutation.variables === "STUDENT" ? (
+                            checkoutMutation.variables === "LEARN" ? (
                               <Loader2 className="h-4 w-4 animate-spin mr-2" />
                             ) : null}
-                            {billingData?.subscription?.plan === "STUDENT"
+                            {billingData?.subscription?.plan === "LEARN"
                               ? "Current Plan"
-                              : "Verify Student Status"}
+                              : "Verify Learn Status"}
                           </Button>
                         </div>
 
-                        {/* Enterprise Plan */}
+                        {/* Zenith Plan */}
                         <div
                           className={`border rounded-sm p-5 transition-all ${
-                            billingData?.subscription?.plan === "ENTERPRISE"
+                            billingData?.subscription?.plan === "ZENITH"
                               ? "border-primary bg-primary/5"
                               : "hover:border-primary/50"
                           }`}
@@ -1517,7 +1517,7 @@ export default function AccountPage() {
                               </div>
                               <div>
                                 <h4 className="font-semibold font-heading">
-                                  Enterprise
+                                  Zenith
                                 </h4>
                                 <p className="text-sm text-muted-foreground">
                                   Tailored for large organizations
@@ -1546,7 +1546,7 @@ export default function AccountPage() {
                             variant="outline"
                             onClick={() =>
                               window.open(
-                                "mailto:sales@largence.com?subject=Enterprise%20Plan%20Inquiry",
+                                "mailto:sales@largence.com?subject=Zenith%20Plan%20Inquiry",
                                 "_blank",
                               )
                             }

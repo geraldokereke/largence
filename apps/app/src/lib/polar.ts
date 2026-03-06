@@ -12,11 +12,11 @@ export const polar = new Polar({
  * LARGENCE PRICING STRUCTURE (Polar.sh)
  *
  * Pricing tiers based on ACTUAL app features:
- * - Starter: $0/month (Free tier)
- * - Largence Student: $5/month (requires student verification)
- * - Largence Pro: $20/month
- * - Largence Max: $100/month
- * - Largence Enterprise: Custom pricing
+ * - Origin: $0/month (Free tier)
+ * - Largence Learn: $5/month (requires student verification)
+ * - Largence Edge: $20/month
+ * - Largence Vertex: $100/month
+ * - Largence Zenith: Custom pricing
  *
  * ACTUAL FEATURES IN THE APP:
  * - Document creation & AI generation
@@ -47,7 +47,7 @@ export const TOKEN_USAGE_RATES = {
 // Monthly prices in cents - Features aligned with actual app capabilities
 export const PLANS = {
   FREE: {
-    name: "Starter",
+    name: "Origin",
     description: "Perfect for trying out Largence",
     monthlyPrice: 0,
     annualPrice: 0,
@@ -97,7 +97,7 @@ export const PLANS = {
     ],
   },
   STUDENT: {
-    name: "Largence Student",
+    name: "Largence Learn",
     description: "Special pricing for verified students",
     monthlyPrice: 500, // $5/month
     annualPrice: 5000, // $50/year
@@ -139,7 +139,7 @@ export const PLANS = {
       hasApiAccess: false,
     },
     highlights: [
-      "Student verified pricing",
+      "Learn verified pricing",
       "30 documents/month",
       "50 AI generations/month",
       "AI document editing",
@@ -151,7 +151,7 @@ export const PLANS = {
     ],
   },
   PRO: {
-    name: "Largence Pro",
+    name: "Largence Edge",
     description: "For professionals and small legal practices",
     monthlyPrice: 2000, // $20/month
     annualPrice: 20000, // $200/year
@@ -205,7 +205,7 @@ export const PLANS = {
     popular: true,
   },
   MAX: {
-    name: "Largence Max",
+    name: "Largence Vertex",
     description: "For growing teams and legal departments",
     monthlyPrice: 10000, // $100/month
     annualPrice: 100000, // $1,000/year
@@ -258,7 +258,7 @@ export const PLANS = {
     ],
   },
   ENTERPRISE: {
-    name: "Largence Enterprise",
+    name: "Largence Zenith",
     description: "For large organizations with custom requirements",
     monthlyPrice: null, // Custom pricing
     annualPrice: null,
@@ -314,6 +314,11 @@ export const PLANS = {
 // Plan type mapping for database
 export const PLAN_TYPE_MAPPING: Record<string, PlanType> = {
   FREE: PlanType.FREE,
+  ORIGIN: PlanType.FREE,
+  LEARN: PlanType.STUDENT,
+  EDGE: PlanType.PRO,
+  VERTEX: PlanType.MAX,
+  ZENITH: PlanType.ENTERPRISE,
   STUDENT: PlanType.STUDENT,
   PRO: PlanType.PRO,
   MAX: PlanType.MAX,

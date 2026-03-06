@@ -24,7 +24,7 @@ interface UpgradeModalProps {
 const PLANS = [
   {
     id: "FREE",
-    name: "Starter",
+    name: "Origin",
     price: "$0",
     period: "/month",
     description: "Perfect for trying out Largence",
@@ -41,8 +41,8 @@ const PLANS = [
     cta: "Current Plan",
   },
   {
-    id: "STUDENT",
-    name: "Student",
+    id: "LEARN",
+    name: "Learn",
     price: "$5",
     period: "/month",
     description: "Special pricing for verified students",
@@ -58,12 +58,12 @@ const PLANS = [
       "2GB storage",
     ],
     popular: false,
-    cta: "Apply as Student",
+    cta: "Apply as Learn",
     requiresVerification: true,
   },
   {
-    id: "PRO",
-    name: "Largence Pro",
+    id: "EDGE",
+    name: "Largence Edge",
     price: "$20",
     period: "/month",
     description: "For professionals and small legal practices",
@@ -81,11 +81,11 @@ const PLANS = [
       "10GB storage",
     ],
     popular: true,
-    cta: "Upgrade to Pro",
+    cta: "Upgrade to Edge",
   },
   {
-    id: "MAX",
-    name: "Largence Max",
+    id: "VERTEX",
+    name: "Largence Vertex",
     price: "$100",
     period: "/month",
     description: "For growing teams and legal departments",
@@ -102,11 +102,11 @@ const PLANS = [
       "100GB storage",
     ],
     popular: false,
-    cta: "Upgrade to Max",
+    cta: "Upgrade to Vertex",
   },
   {
-    id: "ENTERPRISE",
-    name: "Enterprise",
+    id: "ZENITH",
+    name: "Zenith",
     price: "Custom",
     period: "",
     description: "For large organizations",
@@ -137,7 +137,7 @@ export function UpgradeModal({
   const [loading, setLoading] = useState<string | null>(null);
 
   const handleUpgrade = async (planId: string) => {
-    if (planId === "ENTERPRISE") {
+    if (planId === "ZENITH") {
       // Redirect to contact sales
       router.push("/account?tab=billing");
       onClose();
@@ -188,13 +188,43 @@ export function UpgradeModal({
 
   const isCurrentPlan = (planId: string) => {
     // Handle legacy plan names
-    const normalizedCurrent = currentPlan === "STARTER" ? "FREE" : currentPlan;
+    const normalizedCurrent =
+      currentPlan === "STARTER"
+        ? "FREE"
+        : currentPlan === "STUDENT"
+        ? "LEARN"
+        : currentPlan === "PRO"
+        ? "EDGE"
+        : currentPlan === "PROFESSIONAL"
+        ? "EDGE"
+        : currentPlan === "MAX"
+        ? "VERTEX"
+        : currentPlan === "BUSINESS"
+        ? "VERTEX"
+        : currentPlan === "ENTERPRISE"
+        ? "ZENITH"
+        : currentPlan;
     return planId === normalizedCurrent;
   };
 
   const isPlanDowngrade = (planId: string) => {
-    const planOrder = ["FREE", "STUDENT", "PRO", "MAX", "ENTERPRISE"];
-    const normalizedCurrent = currentPlan === "STARTER" ? "FREE" : currentPlan;
+    const planOrder = ["FREE", "LEARN", "EDGE", "VERTEX", "ZENITH"];
+    const normalizedCurrent =
+      currentPlan === "STARTER"
+        ? "FREE"
+        : currentPlan === "STUDENT"
+        ? "LEARN"
+        : currentPlan === "PRO"
+        ? "EDGE"
+        : currentPlan === "PROFESSIONAL"
+        ? "EDGE"
+        : currentPlan === "MAX"
+        ? "VERTEX"
+        : currentPlan === "BUSINESS"
+        ? "VERTEX"
+        : currentPlan === "ENTERPRISE"
+        ? "ZENITH"
+        : currentPlan;
     const currentIndex = planOrder.indexOf(normalizedCurrent);
     const targetIndex = planOrder.indexOf(planId);
     return targetIndex < currentIndex;

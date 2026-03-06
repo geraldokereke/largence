@@ -55,9 +55,9 @@ const useCases = [
     id: "compliance",
     icon: HiOutlineShieldCheck,
     title: "Compliance Teams",
-    description: "Stay compliant across African jurisdictions",
+    description: "Stay compliant across multiple jurisdictions",
     features: [
-      "Real-time regulatory updates",
+      "Regulatory updates",
       "Automated audit trails",
       "Risk assessment tools",
       "Compliance dashboards",

@@ -1,8 +1,8 @@
 # Largence
 
-**AI-Powered Legal Document Platform for African Enterprise**
+**AI-Powered Legal Document Platform for Enterprise**
 
-Largence is an enterprise-grade platform that uses AI to generate legally compliant documents in seconds. Built with African jurisdictions in mind — Nigeria, South Africa, Kenya, Ghana — we understand the local legal requirements.
+Largence is an enterprise-grade platform that uses AI to generate legally compliant documents in seconds. Built with every jurisdictions in mind 
 
 ![Next.js](https://img.shields.io/badge/Next.js-16.0.7-black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue)

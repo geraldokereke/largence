@@ -80,7 +80,7 @@ export async function POST(
     });
 
     // System prompt for agentic compliance
-    const systemPrompt = `You are an expert legal compliance AI agent specializing in African jurisdictions and international business law.
+    const systemPrompt = `You are an expert legal compliance AI agent specializing in all jurisdictions and international business law.
 
 Your task is to analyze the provided legal document and rewrite it with ALL compliance issues fixed.
 

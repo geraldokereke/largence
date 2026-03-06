@@ -94,13 +94,13 @@ export const metadata: Metadata = {
     template: "%s | Largence",
   },
   description:
-    "Automate contract drafting, ensure regulatory compliance, and streamline governance for African enterprises with AI-powered legal intelligence.",
+    "Streamline drafting workflows and strengthen compliance oversight with AI-enabled legal support solutions..",
   keywords: [
     "legal tech",
     "contract management",
     "compliance automation",
     "legal AI",
-    "Africa legal software",
+    "legal software",
     "contract drafting",
     "regulatory compliance",
     "enterprise legal",

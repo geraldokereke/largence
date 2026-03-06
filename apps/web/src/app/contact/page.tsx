@@ -242,7 +242,7 @@ export default function ContactPage() {
             </div>
             <div className="flex items-center gap-2">
               <Globe className="h-4 w-4" />
-              <span>Pan-African Support</span>
+              <span>Global Support</span>
             </div>
             <div className="flex items-center gap-2">
               <Users className="h-4 w-4" />
@@ -466,7 +466,7 @@ export default function ContactPage() {
               <div className="mt-8 p-6 bg-primary/5 rounded-lg border border-primary/20">
                 <h3 className="font-semibold mb-3">Remote-First Company</h3>
                 <p className="text-sm text-muted-foreground mb-3">
-                  We're a fully remote team serving clients across the African continent. 
+                  We're a fully remote team serving clients across the world. 
                   This allows us to provide flexible support and maintain lower operational costs, 
                   which we pass on to our customers through competitive pricing.
                 </p>
@@ -477,7 +477,7 @@ export default function ContactPage() {
                   </div>
                   <div className="flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-emerald-600" />
-                    <span>Pan-African Coverage</span>
+                    <span>Global Coverage</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-emerald-600" />
@@ -508,7 +508,7 @@ export default function ContactPage() {
             <div className="bg-background rounded-lg border p-4">
               <h3 className="font-semibold mb-2">What is Largence?</h3>
               <p className="text-sm text-muted-foreground">
-                Largence is an AI-powered legal intelligence platform designed for African enterprises, offering automated contract drafting and compliance management.
+                Largence is an AI-powered legal intelligence platform designed for  enterprises, offering AI enhanced contract drafting and compliance management.
               </p>
             </div>
             <div className="bg-background rounded-lg border p-4">
@@ -526,7 +526,7 @@ export default function ContactPage() {
             <div className="bg-background rounded-lg border p-4">
               <h3 className="font-semibold mb-2">Is my data secure?</h3>
               <p className="text-sm text-muted-foreground">
-                Absolutely. We use enterprise-grade encryption and comply with data protection regulations across all African jurisdictions.
+                Absolutely. We use enterprise-grade encryption and comply with data protection regulations.
               </p>
             </div>
           </div>

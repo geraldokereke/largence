@@ -76,7 +76,8 @@ export function CTASection() {
           viewport={{ once: true }}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
-         Join hundreds of enterprises using Largence to streamline legal workflows and ensure compliance wherever they do business.
+          Join hundreds of enterprises using Largence to streamline their legal
+          workflows and enhance compliance oversight across the world.
         </motion.p>
         <motion.div
           className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center items-center mb-8 md:mb-12"

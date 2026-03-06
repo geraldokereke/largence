@@ -129,7 +129,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Largence - Legal Intelligence made Simple",
   description:
-    "Automate contract drafting, ensure regulatory compliance, and streamline governance for African enterprises.",
+    "Automate contract drafting, ensure regulatory compliance, and streamline governance for International teams and enterprises.",
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://app.largence.com"),
   icons: {
     icon: [
@@ -141,7 +141,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Largence - Legal Intelligence for Enterprises",
     description:
-      "Automate contract drafting, ensure regulatory compliance, and streamline governance for African enterprises.",
+      "Automate contract drafting, ensure regulatory compliance, and streamline governance for International teams and  enterprises.",
     url: "https://largence.com",
     siteName: "Largence",
     images: [
@@ -159,7 +159,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Largence - Legal Intelligence for Enterprises",
     description:
-      "Automate contract drafting, ensure regulatory compliance, and streamline governance for African enterprises.",
+      "Automate contract drafting, ensure regulatory compliance, and streamline governance for International teams and  enterprises.",
     images: ["/og-image.png"],
     creator: "@largence",
   },

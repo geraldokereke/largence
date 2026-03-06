@@ -10,6 +10,7 @@ import {
   TOKEN_USAGE_RATES,
   calculateOverageCharges,
 } from "@/lib/polar";
+import { toInternalPlanId, toPublicPlanId } from "@/lib/plan-ids";
 
 // GET /api/billing - Get subscription and usage info for the organization
 export async function GET(request: Request) {
@@ -44,7 +45,7 @@ export async function GET(request: Request) {
       subscription: subscription
         ? {
             id: subscription.id,
-            plan: subscription.plan,
+            plan: toPublicPlanId(subscription.plan),
             status: subscription.status,
             currentPeriodEnd: subscription.currentPeriodEnd,
             trialEnd: subscription.trialEnd,
@@ -102,7 +103,7 @@ export async function GET(request: Request) {
           maxStorage: PLANS.FREE.maxStorage,
           highlights: PLANS.FREE.highlights,
         },
-        STUDENT: {
+        LEARN: {
           name: PLANS.STUDENT.name,
           description: PLANS.STUDENT.description,
           monthlyPrice: PLANS.STUDENT.monthlyPrice,
@@ -116,7 +117,7 @@ export async function GET(request: Request) {
           highlights: PLANS.STUDENT.highlights,
           requiresVerification: true,
         },
-        PRO: {
+        EDGE: {
           name: PLANS.PRO.name,
           description: PLANS.PRO.description,
           monthlyPrice: PLANS.PRO.monthlyPrice,
@@ -130,7 +131,7 @@ export async function GET(request: Request) {
           highlights: PLANS.PRO.highlights,
           isPopular: true,
         },
-        MAX: {
+        VERTEX: {
           name: PLANS.MAX.name,
           description: PLANS.MAX.description,
           monthlyPrice: PLANS.MAX.monthlyPrice,
@@ -143,7 +144,7 @@ export async function GET(request: Request) {
           maxStorage: PLANS.MAX.maxStorage,
           highlights: PLANS.MAX.highlights,
         },
-        ENTERPRISE: {
+        ZENITH: {
           name: PLANS.ENTERPRISE.name,
           description: PLANS.ENTERPRISE.description,
           monthlyPrice: null,
@@ -176,12 +177,14 @@ export async function POST(request: Request) {
 
     const body = await request.json();
     const { plan, billingPeriod = "monthly" } = body;
+    const publicPlan = toPublicPlanId(plan);
+    const internalPlan = toInternalPlanId(plan);
 
     // Validate plan
-    const validPlans = ["STUDENT", "PRO", "MAX", "ENTERPRISE"];
-    if (!plan || !validPlans.includes(plan)) {
+    const validPlans = ["LEARN", "EDGE", "VERTEX", "ZENITH"];
+    if (!plan || !validPlans.includes(publicPlan)) {
       return NextResponse.json(
-        { error: "Invalid plan. Choose from: STUDENT, PRO, MAX, or ENTERPRISE" },
+        { error: "Invalid plan. Choose from: LEARN, EDGE, VERTEX, or ZENITH" },
         { status: 400 }
       );
     }
@@ -191,21 +194,21 @@ export async function POST(request: Request) {
     }
 
     // Enterprise requires contacting sales
-    if (plan === "ENTERPRISE") {
+    if (publicPlan === "ZENITH") {
       return NextResponse.json({
         requiresContact: true,
-        message: "Enterprise plan requires a custom quote. Please contact sales.",
-        contactUrl: "mailto:sales@largence.com?subject=Enterprise%20Plan%20Inquiry",
+        message: "Zenith plan requires a custom quote. Please contact sales.",
+        contactUrl: "mailto:sales@largence.com?subject=Zenith%20Plan%20Inquiry",
       });
     }
 
     // Student plan requires verification
-    if (plan === "STUDENT") {
+    if (publicPlan === "LEARN") {
       const subscription = await getSubscription(orgId);
       if (!subscription?.isStudentVerified) {
         return NextResponse.json({
           requiresVerification: true,
-          message: "Student plan requires verification of your student status.",
+          message: "Learn plan requires verification of your student status.",
           verificationUrl: "/account?tab=billing&verify=student",
         });
       }
@@ -223,12 +226,12 @@ export async function POST(request: Request) {
     await getOrCreatePolarCustomer(orgId, email, user?.fullName || undefined);
 
     // Get the Polar product ID for the plan
-    const planConfig = PLANS[plan as keyof typeof PLANS];
+    const planConfig = PLANS[internalPlan as keyof typeof PLANS];
     const productId = planConfig.polarProductId;
 
     if (!productId) {
       return NextResponse.json(
-        { error: `No product configured for plan: ${plan}` },
+        { error: `No product configured for plan: ${publicPlan}` },
         { status: 500 }
       );
     }
@@ -243,7 +246,7 @@ export async function POST(request: Request) {
       "metadata",
       JSON.stringify({
         organizationId: orgId,
-        plan,
+        plan: publicPlan,
         billingPeriod,
       })
     );

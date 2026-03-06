@@ -8,7 +8,7 @@ import { motion, useInView } from "framer-motion";
 
 const plans = [
   {
-    name: "Starter",
+    name: "Origin",
     price: "$0",
     period: "/month",
     description: "Perfect for trying out Largence",
@@ -24,7 +24,7 @@ const plans = [
     popular: false,
   },
   {
-    name: "Student",
+    name: "Learn",
     price: "$5",
     period: "/month",
     description: "Special pricing for verified students",
@@ -37,12 +37,12 @@ const plans = [
       "2GB storage",
       "Analytics dashboard",
     ],
-    cta: "Apply as Student",
+    cta: "Apply as Learn",
     popular: false,
     isStudent: true,
   },
   {
-    name: "Largence Pro",
+    name: "Largence Edge",
     price: "$20",
     period: "/month",
     description: "For professionals and small legal practices",
@@ -60,7 +60,7 @@ const plans = [
     popular: true,
   },
   {
-    name: "Largence Max",
+    name: "Largence Vertex",
     price: "$100",
     period: "/month",
     description: "For growing teams and legal departments",
@@ -78,7 +78,7 @@ const plans = [
     popular: false,
   },
   {
-    name: "Enterprise",
+    name: "Zenith",
     price: "Custom",
     period: "",
     description: "For large organizations",
@@ -152,7 +152,7 @@ export function PricingSection() {
               {"isStudent" in plan && plan.isStudent && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-blue-500 text-white text-xs font-medium rounded-sm flex items-center gap-1">
                   <HiOutlineAcademicCap className="w-3 h-3" />
-                  For Students
+                  For Learners
                 </div>
               )}
 
@@ -189,7 +189,7 @@ export function PricingSection() {
               </ul>
 
               <Link
-                href={plan.name === "Enterprise" ? "/contact" : "https://app.largence.com/auth/signup"}
+                href={plan.name === "Zenith" ? "/contact" : "https://app.largence.com/auth/signup"}
                 className="block mt-auto pt-4"
               >
                 <Button

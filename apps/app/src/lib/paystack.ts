@@ -454,12 +454,14 @@ export async function updateSubscriptionFromPaystack(
   organizationId: string
 ): Promise<void> {
   const plan = getPlanFromPaystackCode(planCode);
-  // Map new plan types to old ones for PLANS lookup, or use defaults
+  const planId = String(plan);
+  // Map public and legacy plan IDs to Paystack plan table keys
   const planKey = (
-    plan === "STUDENT" ? "STARTER" :
-    plan === "PRO" ? "PROFESSIONAL" :
-    plan === "MAX" ? "BUSINESS" :
-    plan
+    planId === "LEARN" || planId === "STUDENT" ? "STARTER" :
+    planId === "EDGE" || planId === "PRO" ? "PROFESSIONAL" :
+    planId === "VERTEX" || planId === "MAX" ? "BUSINESS" :
+    planId === "ZENITH" ? "ENTERPRISE" :
+    planId
   ) as keyof typeof PLANS;
   const planConfig = PLANS[planKey] || PLANS.FREE;
   const subscriptionStatus = mapPaystackStatus(status);

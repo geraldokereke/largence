@@ -7,6 +7,7 @@
 
 import prisma from "@/lib/prisma";
 import { PLANS } from "./polar";
+import { toPublicPlanId } from "./plan-ids";
 
 export type FeatureKey = 
   // AI Features
@@ -160,7 +161,7 @@ export async function getSubscriptionWithFeatures(organizationId: string) {
   const planConfig = PLANS[planKey] || PLANS.FREE;
 
   return {
-    plan: planKey,
+    plan: toPublicPlanId(planKey),
     features: {
       hasAiDrafting: subscription.hasAiDrafting,
       hasAiEditing: subscription.hasAiEditing ?? planConfig.features.hasAiEditing,
@@ -207,12 +208,13 @@ export async function canUseFeature(
   const featureField = FEATURE_MAP[feature];
   const hasFeature = features[featureField as keyof typeof features] ?? false;
   const requiredPlan = FEATURE_MIN_PLAN[feature];
+  const requiredPublicPlan = toPublicPlanId(requiredPlan);
 
   return {
     allowed: hasFeature,
     feature: FEATURE_NAMES[feature],
     currentPlan: plan,
-    requiredPlan,
+    requiredPlan: requiredPublicPlan,
     reason: hasFeature
       ? undefined
       : `${FEATURE_NAMES[feature]} requires ${PLANS[requiredPlan].name} plan or higher.`,

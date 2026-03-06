@@ -3,6 +3,7 @@ import { validateEvent } from "@polar-sh/sdk/webhooks";
 import prisma from "@/lib/prisma";
 import { PlanType, SubscriptionStatus } from "@prisma/client";
 import { PLANS, PLAN_TYPE_MAPPING, getSubscriptionDataFromPlan } from "@/lib/polar";
+import { toInternalPlanId } from "@/lib/plan-ids";
 
 export async function POST(request: NextRequest) {
   try {
@@ -40,7 +41,7 @@ export async function POST(request: NextRequest) {
       }
 
       const plan = (data.metadata?.plan as string) || "FREE";
-      const planKey = plan as keyof typeof PLANS;
+      const planKey = toInternalPlanId(plan) as keyof typeof PLANS;
       const planData = getSubscriptionDataFromPlan(planKey);
 
       await prisma.subscription.upsert({

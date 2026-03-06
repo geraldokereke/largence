@@ -123,9 +123,22 @@ export function isValidPlanChange(
   currentPlan: string,
   newPlan: string
 ): { valid: boolean; reason?: string } {
-  const planOrder = ["FREE", "STUDENT", "PRO", "MAX", "ENTERPRISE"];
-  const currentIndex = planOrder.indexOf(currentPlan);
-  const newIndex = planOrder.indexOf(newPlan);
+  const normalizePlan = (plan: string) =>
+    plan === "STARTER"
+      ? "FREE"
+      : plan === "STUDENT"
+      ? "LEARN"
+      : plan === "PRO"
+      ? "EDGE"
+      : plan === "MAX"
+      ? "VERTEX"
+      : plan === "ENTERPRISE"
+      ? "ZENITH"
+      : plan;
+
+  const planOrder = ["FREE", "LEARN", "EDGE", "VERTEX", "ZENITH"];
+  const currentIndex = planOrder.indexOf(normalizePlan(currentPlan));
+  const newIndex = planOrder.indexOf(normalizePlan(newPlan));
 
   if (currentIndex === -1 || newIndex === -1) {
     return { valid: false, reason: "Invalid plan" };
@@ -145,15 +158,15 @@ export function getRecommendedPlan(usage: {
   documentsGenerated: number;
   complianceChecks: number;
   teamMembers: number;
-}): "FREE" | "PRO" | "MAX" | "ENTERPRISE" {
+}): "FREE" | "EDGE" | "VERTEX" | "ZENITH" {
   const totalActions = usage.documentsGenerated + usage.complianceChecks;
 
   if (totalActions > 500 || usage.teamMembers > 25) {
-    return "ENTERPRISE";
+    return "ZENITH";
   } else if (totalActions > 100 || usage.teamMembers > 5) {
-    return "MAX";
+    return "VERTEX";
   } else if (totalActions > 50 || usage.teamMembers > 1) {
-    return "PRO";
+    return "EDGE";
   } else {
     return "FREE";
   }

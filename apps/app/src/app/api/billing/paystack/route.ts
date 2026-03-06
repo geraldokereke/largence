@@ -9,6 +9,7 @@ import {
   PAYSTACK_COUNTRIES,
   type PaystackCurrency,
 } from "@/lib/paystack";
+import { toPublicPlanId } from "@/lib/plan-ids";
 
 // POST /api/billing/paystack - Create Paystack checkout session
 export async function POST(request: Request) {
@@ -21,9 +22,18 @@ export async function POST(request: Request) {
 
     const body = await request.json();
     const { plan, billingPeriod = "monthly", currency = "NGN", country } = body;
+    const publicPlan = toPublicPlanId(plan);
+    const paystackPlan =
+      publicPlan === "LEARN"
+        ? "STARTER"
+        : publicPlan === "EDGE"
+        ? "PROFESSIONAL"
+        : publicPlan === "VERTEX"
+        ? "BUSINESS"
+        : null;
 
     // Validate plan
-    if (!plan || !["STARTER", "PROFESSIONAL", "BUSINESS"].includes(plan)) {
+    if (!plan || !paystackPlan) {
       return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
     }
 
@@ -78,7 +88,7 @@ export async function POST(request: Request) {
     const { authorizationUrl, reference } = await createPaystackCheckout(
       orgId,
       email,
-      plan as "STARTER" | "PROFESSIONAL" | "BUSINESS",
+      paystackPlan,
       billingPeriod as "monthly" | "annual",
       currency as PaystackCurrency,
       callbackUrl

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { currentUser } from "@clerk/nextjs/server";
 import { createPolarCheckout, getOrCreatePolarCustomer, PLANS } from "@/lib/polar";
+import { toInternalPlanId } from "@/lib/plan-ids";
 
 export async function GET(request: NextRequest) {
   try {
@@ -13,7 +14,8 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const productId = searchParams.get("products");
-    const plan = searchParams.get("plan") || "PRO";
+    const plan = searchParams.get("plan") || "EDGE";
+    const internalPlan = toInternalPlanId(plan);
     const billingPeriod = (searchParams.get("billingPeriod") || "monthly") as "monthly" | "annual";
 
     // Get user info
@@ -33,7 +35,7 @@ export async function GET(request: NextRequest) {
     const { checkoutUrl } = await createPolarCheckout(
       orgId,
       email,
-      plan as keyof typeof PLANS,
+      internalPlan as keyof typeof PLANS,
       billingPeriod,
       successUrl,
       { organizationId: orgId }

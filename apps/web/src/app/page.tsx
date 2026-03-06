@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import { Hero } from "@/components/Hero";
 import { TrustedBySection } from "@/components/landing/TrustedBySection";
+import { SupportedBySection } from "@/components/landing/SupportedBySection";
 import { FeaturesSection } from "@/components/landing/FeaturesSection";
 import { HowItWorksSection } from "@/components/landing/HowItWorksSection";
 import { ProductShowcaseSection } from "@/components/landing/ProductShowcaseSection";
@@ -27,6 +28,7 @@ export default function Home() {
       <Navbar />
       <Hero />
       <ProductHuntSection />
+      <SupportedBySection />
       <FeaturesSection />
       <HowItWorksSection />
       <ProductShowcaseSection />

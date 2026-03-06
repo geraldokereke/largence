@@ -24,7 +24,7 @@ export default function ForgotPasswordPage() {
   return (
     <div className="min-h-svh w-full flex flex-col lg:grid lg:grid-cols-2">
       {/* Left side - Forgot Password Form */}
-      <div className="flex flex-col gap-4 p-4 sm:p-6 md:p-8 lg:p-10 flex-1 overflow-y-auto">
+      <div className="m-auto max-h-fit flex flex-col gap-4 p-4 sm:p-6 md:p-8 lg:p-10 flex-1 overflow-y-auto">
         <div className="flex justify-center gap-2 md:justify-start shrink-0">
           <a href="#" className="flex items-center gap-2 font-medium">
             <Image

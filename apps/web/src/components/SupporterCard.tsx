@@ -6,7 +6,7 @@ export const supporters = [
         logo: "/Anglia Ruskin Enterprise Academy Logo.jpeg",
     },
     {
-        name: "LawTech",
+        name: "LawTechUK",
         logo: "/lawTech.png",
     },
     {

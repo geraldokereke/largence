@@ -1,14 +1,13 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import Image from "next/image";
-import { motion, useInView, AnimatePresence } from "framer-motion";
-import { 
-  HiOutlineDocumentText, 
-  HiOutlineSparkles, 
-  HiOutlineShieldCheck, 
-  HiOutlineUserGroup, 
-  HiOutlineScale, 
+import { motion, useInView } from "framer-motion";
+import {
+  HiOutlineDocumentText,
+  HiOutlineSparkles,
+  HiOutlineShieldCheck,
+  HiOutlineUserGroup,
+  HiOutlineScale,
   HiOutlinePencilSquare,
   HiChevronRight
 } from "react-icons/hi2";
@@ -20,42 +19,36 @@ const features = [
     icon: HiOutlineDocumentText,
     title: "Document Creation",
     description: "Create legal documents from templates or use AI to help draft new ones. Export to DOCX when needed.",
-    screenshot: "/hero-v2.png",
   },
   {
     id: "ai-assistant",
     icon: HiOutlineSparkles,
     title: "AI Assistant",
     description: "Get intelligent suggestions, draft clauses, and improve your documents with AI-powered assistance.",
-    screenshot: "/hero-dark-v2.png",
   },
   {
     id: "compliance",
     icon: HiOutlineShieldCheck,
     title: "Compliance Checks",
     description: "Run automated compliance analysis on your documents. Get flagged for potential issues.",
-    screenshot: "/hero-v2.png",
   },
   {
     id: "collaboration",
     icon: HiOutlineUserGroup,
     title: "Team Collaboration",
     description: "Share documents with your team, set permissions, and track changes. Work together in one place.",
-    screenshot: "/hero-dark-v2.png",
   },
   {
     id: "matters",
     icon: HiOutlineScale,
     title: "Matter Management",
     description: "Organize your legal matters, track deadlines, and keep all related documents in one place.",
-    screenshot: "/hero-v2.png",
   },
   {
     id: "signatures",
     icon: HiOutlinePencilSquare,
     title: "E-Signatures",
     description: "Send documents for signature via DocuSign integration. Track signing status in real-time.",
-    screenshot: "/hero-dark-v2.png",
   },
 ];
 
@@ -73,7 +66,7 @@ export function FeaturesSection() {
     <section id="features" className="relative py-20 md:py-28 px-4 sm:px-6" ref={sectionRef}>
       {/* Grid background */}
       <div className="absolute inset-0 -z-10 overflow-hidden">
-        <div 
+        <div
           className="absolute inset-0 opacity-[0.08]"
           style={{
             backgroundImage: 'linear-gradient(to right, hsl(var(--foreground)) 1px, transparent 1px), linear-gradient(to bottom, hsl(var(--foreground)) 1px, transparent 1px)',
@@ -145,17 +138,15 @@ export function FeaturesSection() {
                   transition={{ duration: 0.3, delay: 0.15 + index * 0.05 }}
                   onClick={() => setActiveFeature(feature)}
                   whileHover={{ x: 4 }}
-                  className={`w-full text-left p-4 rounded-lg border transition-all duration-200 ${
-                    isActive
-                      ? "bg-card border-primary shadow-md"
-                      : "bg-background border-transparent hover:border-border"
-                  }`}
+                  className={`w-full text-left p-4 rounded-lg border transition-all duration-200 ${isActive
+                    ? "bg-card border-primary shadow-md"
+                    : "bg-background border-transparent hover:border-border"
+                    }`}
                 >
                   <div className="flex items-start gap-3">
-                    <motion.div 
-                      className={`w-10 h-10 rounded-md flex items-center justify-center shrink-0 transition-colors ${
-                        isActive ? "bg-primary text-primary-foreground" : "bg-muted"
-                      }`}
+                    <motion.div
+                      className={`w-10 h-10 rounded-md flex items-center justify-center shrink-0 transition-colors ${isActive ? "bg-primary text-primary-foreground" : "bg-muted"
+                        }`}
                       animate={isActive ? { rotate: [0, -5, 5, 0] } : {}}
                       transition={{ duration: 0.4 }}
                     >
@@ -171,9 +162,8 @@ export function FeaturesSection() {
                       animate={isActive ? { x: [0, 3, 0] } : {}}
                       transition={{ duration: 0.4, repeat: isActive ? Infinity : 0, repeatDelay: 1 }}
                     >
-                      <HiChevronRight className={`w-5 h-5 shrink-0 transition-all ${
-                        isActive ? "text-primary" : "text-muted-foreground opacity-0"
-                      }`} />
+                      <HiChevronRight className={`w-5 h-5 shrink-0 transition-all ${isActive ? "text-primary" : "text-muted-foreground opacity-0"
+                        }`} />
                     </motion.div>
                   </div>
                 </motion.button>
@@ -181,7 +171,7 @@ export function FeaturesSection() {
             })}
           </motion.div>
 
-          {/* Feature Preview */}
+          {/* Feature Preview — single GIF showcase */}
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={isInView ? { opacity: 1, x: 0 } : {}}
@@ -190,23 +180,21 @@ export function FeaturesSection() {
           >
             <div className="rounded-lg border bg-card overflow-hidden">
               <div className="relative aspect-16/10 w-full bg-muted overflow-hidden">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={activeFeature.id}
-                    initial={{ opacity: 0, scale: 1.05 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    transition={{ duration: 0.3 }}
-                    className="relative w-full h-full"
-                  >
-                    <Image
-                      src={activeFeature.screenshot}
-                      alt={activeFeature.title}
-                      fill
-                      className="object-cover"
-                    />
-                  </motion.div>
-                </AnimatePresence>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <video
+                  src="/document-creation.mp4"
+                  // alt="Largence platform demo"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="w-full h-full object-cover"
+                />
+                 {/* <img
+                  src="/document-creation.gif"
+                  alt="Largence platform demo"  
+                  className="w-full h-full object-contain"
+                /> */}
               </div>
               <div className="p-4 border-t">
                 <div className="flex items-center gap-2 mb-2">

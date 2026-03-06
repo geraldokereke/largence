@@ -37,7 +37,7 @@ export function SupportedBySection() {
                     className="flex items-center gap-4 mb-14 px-4 sm:px-6 lg:px-8"
                 >
                     <div className="flex-1 h-px bg-linear-to-r from-transparent via-border to-border" />
-                    <p className="text-xs text-muted-foreground uppercase tracking-[0.2em] font-medium whitespace-nowrap">
+                    <p className="text-sm text-muted-foreground uppercase tracking-[0.2em] font-medium whitespace-nowrap">
                         Supported By
                     </p>
                     <div className="flex-1 h-px bg-linear-to-l from-transparent via-border to-border" />

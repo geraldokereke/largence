@@ -14,8 +14,8 @@ export const polar = new Polar({
  * Pricing tiers based on ACTUAL app features:
  * - Origin: $0/month (Free tier)
  * - Largence Learn: $5/month (requires student verification)
- * - Largence Edge: $20/month
- * - Largence Vertex: $100/month
+ * - Edge: $20/month
+ * - Vertex: $100/month
  * - Largence Zenith: Custom pricing
  *
  * ACTUAL FEATURES IN THE APP:
@@ -151,7 +151,7 @@ export const PLANS = {
     ],
   },
   PRO: {
-    name: "Largence Edge",
+    name: "Edge",
     description: "For professionals and small legal practices",
     monthlyPrice: 2000, // $20/month
     annualPrice: 20000, // $200/year
@@ -205,7 +205,7 @@ export const PLANS = {
     popular: true,
   },
   MAX: {
-    name: "Largence Vertex",
+    name: "Vertex",
     description: "For growing teams and legal departments",
     monthlyPrice: 10000, // $100/month
     annualPrice: 100000, // $1,000/year

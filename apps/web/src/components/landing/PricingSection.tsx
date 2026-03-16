@@ -42,7 +42,7 @@ const plans = [
     isStudent: true,
   },
   {
-    name: "Largence Edge",
+    name: "Edge",
     price: "$20",
     period: "/month",
     description: "For professionals and small legal practices",
@@ -60,7 +60,7 @@ const plans = [
     popular: true,
   },
   {
-    name: "Largence Vertex",
+    name: "Vertex",
     price: "$100",
     period: "/month",
     description: "For growing teams and legal departments",

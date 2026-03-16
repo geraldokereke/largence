@@ -63,7 +63,7 @@ const PLANS = [
   },
   {
     id: "EDGE",
-    name: "Largence Edge",
+    name: "Edge",
     price: "$20",
     period: "/month",
     description: "For professionals and small legal practices",
@@ -85,7 +85,7 @@ const PLANS = [
   },
   {
     id: "VERTEX",
-    name: "Largence Vertex",
+    name: "Vertex",
     price: "$100",
     period: "/month",
     description: "For growing teams and legal departments",

@@ -241,7 +241,7 @@ export default function TemplateMarketplacePage() {
             </div>
             <h1 className="font-display text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-foreground mb-4">
               Legal Templates{" "}<br className="hidden sm:block" />
-              <span className="text-primary">Built for Africa</span>
+              <span className="text-primary">Without Borders</span>
             </h1>
             <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
               Browse professionally crafted legal templates created by legal experts and the Largence community. 

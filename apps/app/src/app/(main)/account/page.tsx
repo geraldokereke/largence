@@ -180,7 +180,7 @@ const planDetails = {
     requiresVerification: true,
   },
   PRO: {
-    name: "Largence Edge",
+    name: "Edge",
     price: 20,
     description: "For professionals and small legal practices",
     icon: Crown,
@@ -200,7 +200,7 @@ const planDetails = {
     ],
   },
   MAX: {
-    name: "Largence Vertex",
+    name: "Vertex",
     price: 100,
     description: "For growing teams and legal departments",
     icon: Crown,
@@ -1309,7 +1309,7 @@ export default function AccountPage() {
                               </div>
                               <div>
                                 <h4 className="font-semibold font-heading">
-                                  Largence Edge
+                                  Edge
                                 </h4>
                                 <p className="text-sm text-muted-foreground">
                                   For professionals and small teams
@@ -1382,7 +1382,7 @@ export default function AccountPage() {
                               </div>
                               <div>
                                 <h4 className="font-semibold font-heading">
-                                  Largence Vertex
+                                  Vertex
                                 </h4>
                                 <p className="text-sm text-muted-foreground">
                                   For power users and agencies

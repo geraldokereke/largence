@@ -44,8 +44,7 @@ export async function POST(request: NextRequest) {
     let content = "";
 
     if (ext === "pdf") {
-      const pdfParseModule = await import("pdf-parse");
-      const pdfParse = pdfParseModule.default ?? pdfParseModule;
+      const pdfParse = (await import("pdf-parse")) as unknown as (buf: Buffer) => Promise<{ text: string }>;
       const data = await pdfParse(buffer);
       content = textToHtml(data.text);
     } else if (ext === "docx" || ext === "doc") {

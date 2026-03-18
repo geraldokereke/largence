@@ -42,7 +42,7 @@ const INTEGRATION_CATALOG: Record<
     description: "Store and access your legal documents in Google Drive",
     category: "Cloud Storage",
     features: ["Auto-backup", "Folder mapping", "Version control"],
-    oauthSupported: false, // Disabled until Google verification complete
+    oauthSupported: true, // Disabled until Google verification complete
   },
   DROPBOX: {
     name: "Dropbox",
@@ -59,11 +59,11 @@ const INTEGRATION_CATALOG: Record<
     oauthSupported: false,
   },
   MICROSOFT_365: {
-    name: "Microsoft 365",
-    description: "Connect with Word, Excel, and OneDrive for seamless workflow",
+    name: "Microsoft",
+    description: "Connect with Word and OneDrive for seamless workflow",
     category: "Productivity",
-    features: ["Office integration", "OneDrive sync", "Calendar sync"],
-    oauthSupported: false,
+    features: ["Office integration", "OneDrive sync", "Word Online"],
+    oauthSupported: true,
   },
   DOCUSIGN: {
     name: "DocuSign",
@@ -303,6 +303,8 @@ export async function POST(request: Request) {
         oauthEndpoint = "/api/integrations/oauth/dropbox";
       } else if (provider === "DOCUSIGN") {
         oauthEndpoint = "/api/integrations/oauth/docusign";
+      } else if (provider === "MICROSOFT_365") {
+        oauthEndpoint = "/api/integrations/oauth/microsoft";
       }
 
       if (oauthEndpoint) {
@@ -400,21 +402,54 @@ export async function POST(request: Request) {
               { status: 500 }
             );
           }
-          
+
           const DOCUSIGN_REDIRECT_URI = `${baseUrl}/api/integrations/oauth/docusign/callback`;
           const SCOPES = ["signature", "extended"];
           const state = Buffer.from(JSON.stringify({ userId, orgId })).toString("base64");
-          
+
           // Use demo environment for development
-          const docusignAuthBase = process.env.DOCUSIGN_ENVIRONMENT === "production" 
-            ? "https://account.docusign.com" 
+          const docusignAuthBase = process.env.DOCUSIGN_ENVIRONMENT === "production"
+            ? "https://account.docusign.com"
             : "https://account-d.docusign.com";
-          
+
           const authUrl = new URL(`${docusignAuthBase}/oauth/auth`);
           authUrl.searchParams.set("client_id", DOCUSIGN_CLIENT_ID);
           authUrl.searchParams.set("redirect_uri", DOCUSIGN_REDIRECT_URI);
           authUrl.searchParams.set("response_type", "code");
           authUrl.searchParams.set("scope", SCOPES.join(" "));
+          authUrl.searchParams.set("state", state);
+
+          return NextResponse.json({
+            success: true,
+            requiresOAuth: true,
+            authUrl: authUrl.toString(),
+          });
+        } else if (provider === "MICROSOFT_365") {
+          const MICROSOFT_CLIENT_ID = process.env.MICROSOFT_CLIENT_ID;
+          if (!MICROSOFT_CLIENT_ID) {
+            return NextResponse.json(
+              { error: "Microsoft integration is not configured. Please add MICROSOFT_CLIENT_ID to environment variables." },
+              { status: 500 }
+            );
+          }
+
+          const MICROSOFT_REDIRECT_URI = `${baseUrl}/api/integrations/oauth/microsoft/callback`;
+          const MICROSOFT_SCOPES = [
+            "https://graph.microsoft.com/Files.ReadWrite",
+            "https://graph.microsoft.com/User.Read",
+            "offline_access",
+          ];
+          const state = Buffer.from(JSON.stringify({ userId, orgId })).toString("base64");
+
+          const authUrl = new URL(
+            "https://login.microsoftonline.com/common/oauth2/v2.0/authorize"
+          );
+          authUrl.searchParams.set("client_id", MICROSOFT_CLIENT_ID);
+          authUrl.searchParams.set("redirect_uri", MICROSOFT_REDIRECT_URI);
+          authUrl.searchParams.set("response_type", "code");
+          authUrl.searchParams.set("scope", MICROSOFT_SCOPES.join(" "));
+          authUrl.searchParams.set("response_mode", "query");
+          authUrl.searchParams.set("prompt", "consent");
           authUrl.searchParams.set("state", state);
 
           return NextResponse.json({

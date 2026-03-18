@@ -92,6 +92,8 @@ export default function DocumentEditorPage() {
   const [status, setStatus] = useState<"DRAFT" | "FINAL" | "ARCHIVED">("DRAFT");
   const [document, setDocument] = useState<any>(null);
   const [saveTemplateOpen, setSaveTemplateOpen] = useState(false);
+  const [diffState, setDiffState] = useState<{ active: boolean; original: string; modified: string } | null>(null);
+
   const upgradeModal = useUpgradeModal();
   const agenticModal = useAgenticComplianceModal();
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -136,6 +138,34 @@ export default function DocumentEditorPage() {
   useEffect(() => {
     const fetchDocument = async () => {
       try {
+        if (params.id === 'test-diff') {
+          const doc = {
+            id: 'test-diff',
+            title: 'Sample Data Processing Agreement',
+            status: 'DRAFT' as const,
+            content: `
+              <h1>Data Processing Agreement</h1>
+              <p>This Data Processing Agreement ("DPA") is entered into by and between the parties in connection with the Master Services Agreement.</p>
+              <h2>1. Definitions</h2>
+              <p><strong>"Data Protection Laws"</strong> means all applicable worldwide legislation relating to data protection and privacy which applies to the respective party in the role of processing Personal Data in question under the Agreement.</p>
+              <h2>2. Roles of the Parties</h2>
+              <p>The parties acknowledge and agree that with regard to the Processing of Personal Data, Customer is the Controller and Provider is the Processor. Provider will process Personal Data only in accordance with Customer's documented instructions.</p>
+              <h2>3. Security Measures</h2>
+              <p>Provider shall implement and maintain appropriate technical and organizational security measures to protect Personal Data from Security Incidents and to preserve the security and confidentiality of the Personal Data.</p>
+              <h2>4. Sub-processors</h2>
+              <p>Customer grants Provider a general authorization to engage Sub-processors to Process Personal Data on Customer's behalf.</p>
+            `,
+            documentType: 'Agreement',
+            jurisdiction: 'Global'
+          };
+          setDocument(doc);
+          setTitle(doc.title);
+          setStatus(doc.status);
+          if (editor) editor.commands.setContent(doc.content);
+          setLoading(false);
+          return;
+        }
+
         const response = await fetch(`/api/documents/${params.id}`);
         if (response.ok) {
           const data = await response.json();
@@ -1016,9 +1046,54 @@ export default function DocumentEditorPage() {
                 </div>
               </div>
 
-              {/* Document Editor - A4 content area */}
+              {/* Document Editor Area */}
               <div className="min-h-[280mm]">
-                <EditorContent editor={editor} className="prose prose-base sm:prose-lg max-w-none px-6 sm:px-8 lg:px-12 py-6 sm:py-8" />
+                {diffState?.active ? (
+                  <div className="flex flex-col h-full bg-background rounded-b-xl border-t shadow-inner shadow-black/5 dark:shadow-white/5">
+                    <div className="flex justify-between items-center p-3 bg-muted/40 border-b">
+                      <div className="font-medium text-sm text-foreground flex items-center gap-2 px-2">
+                        <Sparkles className="w-4 h-4 text-primary" /> Review Incoming Changes
+                      </div>
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="sm" onClick={() => setDiffState(null)} className="h-8 text-xs">
+                          Discard
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          className="h-8 text-xs bg-green-600 hover:bg-green-700 text-white"
+                          onClick={() => {
+                            if (editor) {
+                              const parser = new DOMParser();
+                              const doc = parser.parseFromString(diffState.modified, 'text/html');
+                              const wrappers = doc.querySelectorAll('.diff-wrapper');
+                              wrappers.forEach(wrapper => {
+                                const incoming = wrapper.querySelector('.diff-incoming .diff-content');
+                                if (incoming) {
+                                  const p = doc.createElement('p');
+                                  p.innerHTML = incoming.innerHTML;
+                                  Object.assign(p.style, { color: 'inherit', margin: '0' });
+                                  wrapper.parentNode?.replaceChild(p, wrapper);
+                                } else {
+                                  wrapper.remove();
+                                }
+                              });
+                              editor.commands.setContent(doc.body.innerHTML);
+                              setDiffState(null);
+                              toast.success("Changes accepted successfully.");
+                            }
+                          }}
+                        >
+                          Accept Incoming
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="flex-1 overflow-auto bg-slate-50/30 dark:bg-slate-900/20">
+                      <div className="prose prose-base sm:prose-lg max-w-none px-6 sm:px-8 lg:px-12 py-6 sm:py-8 min-h-[280mm]" dangerouslySetInnerHTML={{ __html: diffState.modified }} />
+                    </div>
+                  </div>
+                ) : (
+                  <EditorContent editor={editor} className="prose prose-base sm:prose-lg max-w-none px-6 sm:px-8 lg:px-12 py-6 sm:py-8" />
+                )}
               </div>
             </div>
           </div>
@@ -1037,6 +1112,7 @@ export default function DocumentEditorPage() {
           isOpen={sidebarOpen}
           onClose={() => setSidebarOpen(false)}
           onOpenSignatureDialog={() => setSignatureDialogOpen(true)}
+          onStartDiff={(originalHTML, modifiedHTML) => setDiffState({ active: true, original: originalHTML, modified: modifiedHTML })}
           onRunAgenticCompliance={handleAgenticComplianceClick}
           runningAgenticCompliance={runningAgenticCompliance}
           onCancelAgenticCompliance={cancelAgenticCompliance}

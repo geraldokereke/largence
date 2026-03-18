@@ -25,6 +25,8 @@ import {
   Info,
   PenTool,
   X,
+  FileSearch2,
+  FileSearch,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -61,6 +63,7 @@ interface EditorSidebarProps {
   runningAgenticCompliance?: boolean;
   onCancelAgenticCompliance?: () => void;
   onRequireUpgrade?: (options: { reason?: string; feature?: string; currentPlan?: string }) => void;
+  onStartDiff?: (originalHTML: string, modifiedHTML: string) => void;
 }
 
 const quickActions = [
@@ -127,8 +130,9 @@ export function EditorSidebar({
   runningAgenticCompliance,
   onCancelAgenticCompliance,
   onRequireUpgrade,
+  onStartDiff,
 }: EditorSidebarProps) {
-  const [activeTab, setActiveTab] = useState<"compliance" | "ai">("compliance");
+  const [activeTab, setActiveTab] = useState<"compliance" | "ai" | "research">("compliance");
 
   // AI Assistant State
   const [prompt, setPrompt] = useState("");
@@ -142,6 +146,11 @@ export function EditorSidebar({
   const [checkingCompliance, setCheckingCompliance] = useState(false);
   const [complianceResult, setComplianceResult] =
     useState<ComplianceResult | null>(null);
+
+  // Research State
+  const [researchQuery, setResearchQuery] = useState("");
+  const [isResearching, setIsResearching] = useState(false);
+  const [researchResults, setResearchResults] = useState<{id: string; title: string; source: string; snippet: string}[] | null>(null);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -385,6 +394,114 @@ export function EditorSidebar({
     }
   }, [documentId, getContent, checkingCompliance, onRequireUpgrade]);
 
+  const handleRunResearch = useCallback(async () => {
+    if (!researchQuery.trim() || isResearching) return;
+    setIsResearching(true);
+    
+    // Simulate API call for research
+    setTimeout(() => {
+      setResearchResults([
+        {
+          id: "1",
+          title: "Standard Contract Addendums in Software",
+          source: "LegalTech Journal, 2024",
+          snippet: "Discover the standard clauses that typically accompany software licensing agreements..."
+        },
+        {
+          id: "2",
+          title: "Compliance requirements for Data Processors",
+          source: "Privacy Law Quarterly, 2023",
+          snippet: "Data processing agreements must specify security measures, an overview of modern privacy compliances."
+        },
+        {
+          id: "3",
+          title: "Best Practices in Modern Legal Drafting",
+          source: "Global Law Review, 2022",
+          snippet: "How to simplify complex legal jargon without losing the original meaning or enforceability."
+        }
+      ]);
+      setIsResearching(false);
+    }, 1500);
+  }, [researchQuery, isResearching]);
+
+  const handleUseInDocument = async (result: { title: string; source: string; snippet: string }) => {
+    // Save current content for revert
+    const currentHTML = getContent();
+    
+    // Simulate finding the right place and injecting the content via AI
+    toast.info("Generating intelligent placement...", {
+      description: "AI is weaving the research into your document."
+    });
+
+    setTimeout(() => {
+        // Dummy implementation to show how "diffing" works inline
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(currentHTML, 'text/html');
+        const paragraphs = Array.from(doc.querySelectorAll('p')).filter(p => !p.querySelector('br') && p.textContent?.trim().length);
+        
+        let newHTML = currentHTML;
+        if (paragraphs.length > 0) {
+           // Target a paragraph that isn't the last one if possible to show inline injection better
+           const targetIndex = paragraphs.length > 2 ? 2 : (paragraphs.length - 1);
+           const targetP = paragraphs[targetIndex];
+           const originalText = targetP.innerHTML;
+           
+           const wrapper = doc.createElement('div');
+           wrapper.className = "diff-wrapper not-prose my-6 font-sans flex flex-col rounded-sm border border-border shadow-sm bg-card overflow-hidden";
+           wrapper.innerHTML = `
+             <div class="diff-removed flex items-stretch border-b border-border/60 bg-red-500/5 relative">
+               <div class="w-1 bg-red-500 shrink-0"></div>
+               <div class="flex-1 p-3">
+                 <div class="diff-label flex items-center gap-1.5 text-[10px] font-bold tracking-widest uppercase text-red-500 mb-1 opacity-80">
+                   Removed
+                 </div>
+                 <div class="diff-content" style="text-decoration: line-through; color: hsl(var(--destructive)); opacity: 0.7; line-height: 1.6; font-size: 0.95em; margin: 0;">
+                    ${originalText}
+                 </div>
+               </div>
+             </div>
+             <div class="diff-incoming flex items-stretch bg-emerald-500/5 relative">
+               <div class="w-1 bg-emerald-500 shrink-0"></div>
+               <div class="flex-1 p-3">
+                 <div class="diff-label flex items-center gap-1.5 text-[10px] font-bold tracking-widest uppercase text-emerald-600 dark:text-emerald-500 mb-1">
+                   Incoming Changes
+                 </div>
+                 <div class="diff-content" style="color: rgb(16, 185, 129); line-height: 1.6; font-size: 0.95em; margin: 0;">
+                    ${originalText} <strong>${result.snippet}</strong>
+                 </div>
+               </div>
+             </div>
+           `;
+           targetP.parentNode?.replaceChild(wrapper, targetP);
+           newHTML = doc.body.innerHTML;
+        } else {
+           const addedHTML = `
+             <div class="diff-wrapper not-prose my-6 font-sans flex flex-col rounded-sm border border-border bg-card shadow-sm overflow-hidden">
+               <div class="diff-incoming flex items-stretch bg-emerald-500/5 relative">
+                 <div class="w-1 bg-emerald-500 shrink-0"></div>
+                 <div class="flex-1 p-3">
+                   <div class="diff-label flex items-center gap-1.5 text-[10px] font-bold tracking-widest uppercase text-emerald-600 dark:text-emerald-500 mb-1">
+                     Incoming Context Added
+                   </div>
+                   <div class="diff-content" style="color: rgb(16, 185, 129); line-height: 1.6; font-size: 0.95em; margin: 0;">
+                      <strong>${result.title}</strong>: ${result.snippet}
+                   </div>
+                 </div>
+               </div>
+             </div>
+           `;
+           newHTML = currentHTML + addedHTML;
+        }
+        
+        if (onStartDiff) {
+           onStartDiff(currentHTML, newHTML);
+        } else {
+           // Fallback
+           setContent(newHTML);
+        }
+    }, 1500);
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -393,17 +510,21 @@ export function EditorSidebar({
       <div className="px-4 py-3 border-b flex items-center justify-between shrink-0">
         <Tabs
           value={activeTab}
-          onValueChange={(v) => setActiveTab(v as "compliance" | "ai")}
+          onValueChange={(v) => setActiveTab(v as "compliance" | "ai" | "research")}
           className="w-full"
         >
-          <TabsList className="grid w-full grid-cols-2 h-9">
-            <TabsTrigger value="compliance" className="text-xs">
-              <ShieldCheck className="h-3.5 w-3.5 mr-1.5" />
+          <TabsList className="grid w-full grid-cols-3 h-9">
+            <TabsTrigger value="compliance" className="text-[10px]">
+              <ShieldCheck className="size-2.5 mr-1" />
               Compliance
             </TabsTrigger>
-            <TabsTrigger value="ai" className="text-xs">
-              <Sparkles className="h-3.5 w-3.5 mr-1.5" />
+            <TabsTrigger value="ai" className="text-[10px]">
+              <Sparkles className="size-2.5 mr-1" />
               AI Assistant
+            </TabsTrigger>
+            <TabsTrigger value="research" className="text-[10px]">
+              <FileSearch className="size-2.5 mr-1" />
+              Research
             </TabsTrigger>
           </TabsList>
         </Tabs>
@@ -627,7 +748,7 @@ export function EditorSidebar({
               )}
             </ScrollArea>
           </div>
-        ) : (
+        ) : activeTab === "ai" ? (
           <div className="flex flex-col h-full">
             {/* Quick Actions */}
             <div className="px-4 py-3 border-b shrink-0">
@@ -787,6 +908,93 @@ export function EditorSidebar({
                 )}
               </div>
             </div>
+          </div>
+        ) : (
+          <div className="flex flex-col h-full">
+            {/* Input Area */}
+            <div className="p-4 border-b shrink-0 bg-background">
+              <div className="flex gap-2">
+                <Textarea
+                  value={researchQuery}
+                  onChange={(e) => setResearchQuery(e.target.value)}
+                  placeholder="Ask a question or enter a topic to research..."
+                  className="min-h-[72px] resize-none text-sm"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      handleRunResearch();
+                    }
+                  }}
+                  disabled={isResearching}
+                />
+              </div>
+              <div className="flex items-center justify-between mt-2">
+                <p className="text-[10px] text-muted-foreground">
+                  Press Enter to search
+                </p>
+                <Button
+                  size="sm"
+                  onClick={handleRunResearch}
+                  disabled={!researchQuery.trim() || isResearching}
+                  className="h-7 text-xs"
+                >
+                  {isResearching ? (
+                    <>
+                      Searching...
+                      <Loader2 className="h-3 w-3 ml-1 animate-spin" />
+                    </>
+                  ) : (
+                    <>
+                      Search
+                      <FileSearch className="h-3 w-3 ml-1" />
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+
+            {/* Results Area */}
+            <ScrollArea className="flex-1 px-4">
+              <div className="py-4 space-y-4">
+                {!researchResults ? (
+                  <div className="flex flex-col items-center justify-center py-12 text-center">
+                    <div className="p-3 rounded-full bg-muted mb-3">
+                      <FileSearch2 className="h-6 w-6 text-muted-foreground" />
+                    </div>
+                    <h3 className="text-sm font-medium mb-1">Document Research</h3>
+                    <p className="text-xs text-muted-foreground max-w-70">
+                      Search for relevant articles, legal precedents, or standard clauses to enhance this document.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="text-xs font-medium text-muted-foreground">Found {researchResults.length} relevant results</div>
+                    {researchResults.map((result) => (
+                      <div key={result.id} className="p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer group">
+                        <h4 className="text-sm font-medium text-black group-hover:underline mb-1 leading-tight">{result.title}</h4>
+                        <p className="text-[10px] text-emerald-600 dark:text-emerald-500 font-medium mb-1.5">{result.source}</p>
+                        <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed">{result.snippet}</p>
+                        <div className="flex items-center gap-3 mt-3 text-[10px] font-medium text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button 
+                            className="flex items-center gap-1 hover:text-foreground"
+                            onClick={() => handleCopy(`${result.title}: ${result.snippet} (${result.source})`, result.id)}
+                          >
+                            {copiedId === result.id ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />} Cite
+                          </button>
+                          <button 
+                            className="flex items-center gap-1 hover:text-foreground"
+                            onClick={() => handleUseInDocument(result)}
+                          >
+                            <FileEdit className="h-3 w-3" /> 
+                            Use in document
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </ScrollArea>
           </div>
         )}
       </div>

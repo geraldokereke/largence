@@ -7,14 +7,10 @@ import { Button } from "@largence/components/ui/button";
 import { Input } from "@largence/components/ui/input";
 import {
   Search,
-  CheckCircle2,
-  Settings,
   Trash2,
-  Clock,
   RefreshCw,
   AlertCircle,
   Loader2,
-  ExternalLink,
   Zap,
   Bell,
   Sparkles,
@@ -46,20 +42,23 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@largence/components/ui/dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@largence/components/ui/dropdown-menu";
-import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
-import { Badge } from "@/components/ui/badge";
 
 // Only show these integrations (Notion is functional, others coming soon)
-const AVAILABLE_PROVIDERS = ["NOTION", "GOOGLE_DRIVE", "DROPBOX", "DOCUSIGN"];
-const OAUTH_ENABLED_PROVIDERS = ["NOTION", "DROPBOX", "DOCUSIGN"];
+const AVAILABLE_PROVIDERS = [
+  "NOTION",
+  "GOOGLE_DRIVE",
+  "DROPBOX",
+  "DOCUSIGN",
+  "MICROSOFT_365",
+];
+const OAUTH_ENABLED_PROVIDERS = [
+  "NOTION",
+  "DROPBOX",
+  "DOCUSIGN",
+  "MICROSOFT_365",
+  "GOOGLE_DRIVE",
+];
 
 // UI catalog for provider names
 const INTEGRATION_CATALOG_UI: Record<string, { name: string }> = {
@@ -67,6 +66,7 @@ const INTEGRATION_CATALOG_UI: Record<string, { name: string }> = {
   GOOGLE_DRIVE: { name: "Google Drive" },
   DROPBOX: { name: "Dropbox" },
   DOCUSIGN: { name: "DocuSign" },
+  MICROSFT_365: { name: "Microsoft" },
 };
 
 // Icon mapping for integration providers
@@ -142,6 +142,14 @@ const INTEGRATION_USAGE: Record<string, { title: string; steps: string[] }> = {
       "Document will be synced to your Drive",
     ],
   },
+  MICROSOFT_365: {
+    title: "Connect with Microsoft Word and OneDrive",
+    steps: [
+      "Go to Documents → click menu (...) on any document",
+      "Select 'Export to Cloud' → choose OneDrive",
+      "Document will be shared in your Teams channel",
+    ],
+  },
 };
 
 interface Integration {
@@ -188,9 +196,7 @@ interface ConnectResponse {
   error?: string;
 }
 
-async function connectIntegration(
-  provider: string,
-): Promise<ConnectResponse> {
+async function connectIntegration(provider: string): Promise<ConnectResponse> {
   const res = await fetch("/api/integrations", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -224,10 +230,16 @@ export default function IntegrationsPage() {
     useState<Integration | null>(null);
 
   const [showComingSoonDialog, setShowComingSoonDialog] = useState(false);
-  const [comingSoonIntegration, setComingSoonIntegration] = useState<string | null>(null);
-  const [notifiedIntegrations, setNotifiedIntegrations] = useState<Set<string>>(new Set());
+  const [comingSoonIntegration, setComingSoonIntegration] = useState<
+    string | null
+  >(null);
+  const [notifiedIntegrations, setNotifiedIntegrations] = useState<Set<string>>(
+    new Set(),
+  );
   const [showUsageDialog, setShowUsageDialog] = useState(false);
-  const [selectedUsageProvider, setSelectedUsageProvider] = useState<string | null>(null);
+  const [selectedUsageProvider, setSelectedUsageProvider] = useState<
+    string | null
+  >(null);
 
   // Track if OAuth toast has been shown to prevent duplicates
   const oauthToastShown = useRef(false);
@@ -236,7 +248,7 @@ export default function IntegrationsPage() {
   useEffect(() => {
     // Prevent double toast in StrictMode
     if (oauthToastShown.current) return;
-    
+
     const success = searchParams.get("success");
     const error = searchParams.get("error");
 
@@ -272,8 +284,10 @@ export default function IntegrationsPage() {
         oauth_denied: "Authorization was denied. Please try again.",
         missing_params: "Missing required parameters. Please try again.",
         invalid_state: "Invalid request state. Please try again.",
-        token_exchange_failed: "Failed to complete authorization. Please try again.",
-        callback_failed: "An error occurred during connection. Please try again.",
+        token_exchange_failed:
+          "Failed to complete authorization. Please try again.",
+        callback_failed:
+          "An error occurred during connection. Please try again.",
       };
       toast.error("Connection failed", {
         description: errorMessages[error] || "An unknown error occurred.",
@@ -283,7 +297,7 @@ export default function IntegrationsPage() {
   }, [searchParams]);
 
   const handleNotifyMe = (provider: string, integrationName: string) => {
-    setNotifiedIntegrations(prev => {
+    setNotifiedIntegrations((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(provider)) {
         newSet.delete(provider);
@@ -314,17 +328,17 @@ export default function IntegrationsPage() {
         window.location.href = data.authUrl;
         return;
       }
-      
+
       // Handle coming soon
       if (data.comingSoon) {
         setConnectingProvider(null);
         setComingSoonIntegration(
-          INTEGRATION_CATALOG_UI[provider]?.name || provider.replace(/_/g, " ")
+          INTEGRATION_CATALOG_UI[provider]?.name || provider.replace(/_/g, " "),
         );
         setShowComingSoonDialog(true);
         return;
       }
-      
+
       queryClient.invalidateQueries({ queryKey: ["integrations"] });
       setConnectingProvider(null);
       toast.success("Integration connected", {
@@ -334,7 +348,9 @@ export default function IntegrationsPage() {
     onError: (error: Error, provider) => {
       setConnectingProvider(null);
       toast.error("Connection failed", {
-        description: error.message || `Failed to connect to ${provider.replace(/_/g, " ").toLowerCase()}`,
+        description:
+          error.message ||
+          `Failed to connect to ${provider.replace(/_/g, " ").toLowerCase()}`,
       });
     },
   });
@@ -360,20 +376,29 @@ export default function IntegrationsPage() {
   const availableIntegrations = useMemo(() => {
     if (!data?.integrations) return [];
     return data.integrations.filter((integration) =>
-      AVAILABLE_PROVIDERS.includes(integration.provider)
+      AVAILABLE_PROVIDERS.includes(integration.provider),
     );
   }, [data?.integrations]);
 
   // Calculate accurate category counts based on available integrations only
   const calculatedCategories = useMemo(() => {
-    const categoryMap = new Map<string, { id: string; name: string; count: number }>();
-    
+    const categoryMap = new Map<
+      string,
+      { id: string; name: string; count: number }
+    >();
+
     // Add "all" category
-    categoryMap.set("all", { id: "all", name: "All", count: availableIntegrations.length });
-    
+    categoryMap.set("all", {
+      id: "all",
+      name: "All",
+      count: availableIntegrations.length,
+    });
+
     // Count integrations per category
     availableIntegrations.forEach((integration) => {
-      const categoryId = integration.category.toLowerCase().replace(/\s+/g, "-");
+      const categoryId = integration.category
+        .toLowerCase()
+        .replace(/\s+/g, "-");
       const existing = categoryMap.get(categoryId);
       if (existing) {
         existing.count++;
@@ -385,11 +410,17 @@ export default function IntegrationsPage() {
         });
       }
     });
-    
+
     // Add "connected" category
-    const connectedCount = availableIntegrations.filter(i => i.status === "CONNECTED").length;
-    categoryMap.set("connected", { id: "connected", name: "Connected", count: connectedCount });
-    
+    const connectedCount = availableIntegrations.filter(
+      (i) => i.status === "CONNECTED",
+    ).length;
+    categoryMap.set("connected", {
+      id: "connected",
+      name: "Connected",
+      count: connectedCount,
+    });
+
     return Array.from(categoryMap.values());
   }, [availableIntegrations]);
 
@@ -402,7 +433,9 @@ export default function IntegrationsPage() {
         if (activeCategory === "connected") {
           if (integration.status !== "CONNECTED") return false;
         } else {
-          const categoryId = integration.category.toLowerCase().replace(/\s+/g, "-");
+          const categoryId = integration.category
+            .toLowerCase()
+            .replace(/\s+/g, "-");
           if (categoryId !== activeCategory) return false;
         }
       }
@@ -428,7 +461,7 @@ export default function IntegrationsPage() {
       connectMutation.mutate(provider);
       return;
     }
-    
+
     // Show coming soon dialog for others
     setComingSoonIntegration(integrationName);
     setShowComingSoonDialog(true);
@@ -502,8 +535,10 @@ export default function IntegrationsPage() {
               Connect Your Tools
             </h3>
             <p className="text-sm text-blue-700 dark:text-blue-400/80 mt-1">
-              Google Drive and Notion integrations are now available! Connect your accounts to sync documents seamlessly.
-              More integrations coming soon - click &quot;Notify Me&quot; to be alerted when they launch.
+              Google Drive and Notion integrations are now available! Connect
+              your accounts to sync documents seamlessly. More integrations
+              coming soon - click &quot;Notify Me&quot; to be alerted when they
+              launch.
             </p>
           </div>
         </div>
@@ -513,9 +548,7 @@ export default function IntegrationsPage() {
       <div className="mb-4">
         <div className="flex items-center justify-between mb-1">
           <div>
-            <h1 className="text-xl font-semibold font-display">
-              Integrations
-            </h1>
+            <h1 className="text-xl font-semibold font-display">Integrations</h1>
             <p className="text-sm text-muted-foreground">
               Connect Largence with your favorite tools and automate your legal
               workflows
@@ -612,10 +645,16 @@ export default function IntegrationsPage() {
                         <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                         Connected
                       </span>
-                    ) : OAUTH_ENABLED_PROVIDERS.includes(integration.provider) ? (
-                      <span className="text-[10px] text-blue-600 dark:text-blue-400">Available</span>
+                    ) : OAUTH_ENABLED_PROVIDERS.includes(
+                        integration.provider,
+                      ) ? (
+                      <span className="text-[10px] text-blue-600 dark:text-blue-400">
+                        Available
+                      </span>
                     ) : (
-                      <span className="text-[10px] text-amber-600 dark:text-amber-400">Coming Soon</span>
+                      <span className="text-[10px] text-amber-600 dark:text-amber-400">
+                        Coming Soon
+                      </span>
                     )}
                   </div>
                 </div>
@@ -656,7 +695,9 @@ export default function IntegrationsPage() {
                     variant="default"
                     size="sm"
                     className="w-full h-8 rounded-md text-xs"
-                    onClick={() => handleConnect(integration.provider, integration.name)}
+                    onClick={() =>
+                      handleConnect(integration.provider, integration.name)
+                    }
                     disabled={isConnecting}
                   >
                     {isConnecting ? (
@@ -676,7 +717,9 @@ export default function IntegrationsPage() {
                     variant="secondary"
                     size="sm"
                     className="w-full h-8 rounded-md text-xs"
-                    onClick={() => handleNotifyMe(integration.provider, integration.name)}
+                    onClick={() =>
+                      handleNotifyMe(integration.provider, integration.name)
+                    }
                   >
                     <BellRing className="h-3.5 w-3.5 mr-1.5" />
                     Subscribed
@@ -686,7 +729,9 @@ export default function IntegrationsPage() {
                     variant="outline"
                     size="sm"
                     className="w-full h-8 rounded-md text-xs"
-                    onClick={() => handleNotifyMe(integration.provider, integration.name)}
+                    onClick={() =>
+                      handleNotifyMe(integration.provider, integration.name)
+                    }
                   >
                     <Bell className="h-3.5 w-3.5 mr-1.5" />
                     Notify Me
@@ -728,8 +773,9 @@ export default function IntegrationsPage() {
           <DialogHeader>
             <DialogTitle>Disconnect Integration</DialogTitle>
             <DialogDescription>
-              Are you sure you want to disconnect {integrationToDisconnect?.name}? 
-              This will stop syncing and remove access to this integration.
+              Are you sure you want to disconnect{" "}
+              {integrationToDisconnect?.name}? This will stop syncing and remove
+              access to this integration.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -762,33 +808,45 @@ export default function IntegrationsPage() {
         <DialogContent className="rounded-sm sm:max-w-[450px]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              {selectedUsageProvider && PROVIDER_ICONS[selectedUsageProvider] && (
+              {selectedUsageProvider &&
+                PROVIDER_ICONS[selectedUsageProvider] &&
                 (() => {
                   const Icon = PROVIDER_ICONS[selectedUsageProvider];
-                  const colors = PROVIDER_COLORS[selectedUsageProvider] || { text: "text-primary", bg: "bg-primary/10" };
+                  const colors = PROVIDER_COLORS[selectedUsageProvider] || {
+                    text: "text-primary",
+                    bg: "bg-primary/10",
+                  };
                   return (
                     <div className={`p-1.5 rounded-sm ${colors.bg}`}>
                       <Icon className={`h-4 w-4 ${colors.text}`} />
                     </div>
                   );
-                })()
-              )}
-              How to use {selectedUsageProvider && INTEGRATION_CATALOG_UI[selectedUsageProvider]?.name}
+                })()}
+              How to use{" "}
+              {selectedUsageProvider &&
+                INTEGRATION_CATALOG_UI[selectedUsageProvider]?.name}
             </DialogTitle>
             <DialogDescription>
-              {selectedUsageProvider && INTEGRATION_USAGE[selectedUsageProvider]?.title}
+              {selectedUsageProvider &&
+                INTEGRATION_USAGE[selectedUsageProvider]?.title}
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="py-4 space-y-3">
-            {selectedUsageProvider && INTEGRATION_USAGE[selectedUsageProvider]?.steps.map((step, idx) => (
-              <div key={idx} className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-medium">
-                  {idx + 1}
-                </span>
-                <p className="text-sm text-foreground pt-0.5">{step}</p>
-              </div>
-            ))}
+            {selectedUsageProvider &&
+              INTEGRATION_USAGE[selectedUsageProvider]?.steps.map(
+                (step, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-start gap-3 p-3 rounded-lg bg-muted/50"
+                  >
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-medium">
+                      {idx + 1}
+                    </span>
+                    <p className="text-sm text-foreground pt-0.5">{step}</p>
+                  </div>
+                ),
+              )}
           </div>
 
           <DialogFooter className="sm:justify-between">

@@ -4,7 +4,12 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@largence/ui";
-import { HiOutlineRocketLaunch, HiOutlineArrowRight, HiOutlinePlay, HiOutlineXMark } from "react-icons/hi2";
+import {
+  HiOutlineRocketLaunch,
+  HiOutlineArrowRight,
+  HiOutlinePlay,
+  HiOutlineXMark,
+} from "react-icons/hi2";
 import { motion, AnimatePresence } from "framer-motion";
 
 // Fixed positions for animated dots (no random - prevents hydration issues)
@@ -35,31 +40,33 @@ export function Hero() {
         {/* Background with grid pattern */}
         <div className="absolute inset-0 -z-10">
           {/* Static grid pattern */}
-          <div 
+          <div
             className="absolute inset-0 opacity-[0.15]"
             style={{
-              backgroundImage: 'linear-gradient(to right, hsl(var(--foreground)) 1px, transparent 1px), linear-gradient(to bottom, hsl(var(--foreground)) 1px, transparent 1px)',
-              backgroundSize: '60px 60px',
+              backgroundImage:
+                "linear-gradient(to right, hsl(var(--foreground)) 1px, transparent 1px), linear-gradient(to bottom, hsl(var(--foreground)) 1px, transparent 1px)",
+              backgroundSize: "60px 60px",
             }}
           />
           {/* Animated floating dots - only render after mount to avoid hydration issues */}
-          {isMounted && dotPositions.map((pos, i) => (
-            <motion.div
-              key={i}
-              className="absolute w-1.5 h-1.5 rounded-full bg-primary/40"
-              style={{ left: pos.left, top: pos.top }}
-              animate={{
-                y: [0, -20, 0],
-                opacity: [0.3, 0.6, 0.3],
-              }}
-              transition={{
-                duration: pos.duration,
-                repeat: Infinity,
-                delay: pos.delay,
-                ease: "easeInOut",
-              }}
-            />
-          ))}
+          {isMounted &&
+            dotPositions.map((pos, i) => (
+              <motion.div
+                key={i}
+                className="absolute w-1.5 h-1.5 rounded-full bg-primary/40"
+                style={{ left: pos.left, top: pos.top }}
+                animate={{
+                  y: [0, -20, 0],
+                  opacity: [0.3, 0.6, 0.3],
+                }}
+                transition={{
+                  duration: pos.duration,
+                  repeat: Infinity,
+                  delay: pos.delay,
+                  ease: "easeInOut",
+                }}
+              />
+            ))}
           {/* Animated horizontal line */}
           {isMounted && (
             <motion.div
@@ -77,8 +84,8 @@ export function Hero() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <Link 
-              href="https://www.producthunt.com/posts/largence" 
+            <Link
+              href="https://www.producthunt.com/posts/largence"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-primary/30 bg-primary/5 text-sm font-medium text-primary mb-6 hover:bg-primary/10 transition-colors"
@@ -100,8 +107,7 @@ export function Hero() {
             transition={{ duration: 0.6, delay: 0.1 }}
             className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-foreground mb-6"
           >
-            The legal layer for{" "}
-            <br className="hidden sm:block" />
+            The legal layer for <br className="hidden sm:block" />
             <span className="relative">
               <span className="text-primary">modern work</span>
               {/* Animated underline */}
@@ -121,8 +127,9 @@ export function Hero() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-8 min-h-14 sm:min-h-12"
           >
-            Draft, manage, and automate legal documents with AI-powered intelligence. 
-            Built for teams who need compliance without complexity.
+            Draft, manage, and automate legal documents with AI-powered
+            intelligence. Built for teams who need compliance without
+            complexity.
           </motion.p>
 
           {/* Buttons */}
@@ -132,7 +139,10 @@ export function Hero() {
             transition={{ duration: 0.6, delay: 0.3 }}
             className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12"
           >
-            <Link href="https://app.largence.com/auth/signup" className="w-full sm:w-auto group">
+            <Link
+              href="https://app.largence.com/auth/signup"
+              className="w-full sm:w-auto group"
+            >
               <Button
                 size="lg"
                 className="w-full h-12 px-8 rounded-sm text-base transition-all duration-300"
@@ -159,7 +169,7 @@ export function Hero() {
             transition={{ duration: 0.8, delay: 0.5 }}
             className="w-full"
           >
-            <div 
+            <div
               className="relative group rounded-lg border border-border bg-card overflow-hidden shadow-2xl cursor-pointer"
               onClick={() => setIsVideoModalOpen(true)}
             >

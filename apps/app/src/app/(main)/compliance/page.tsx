@@ -44,6 +44,7 @@ import {
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 import { ImportDialog } from "@/components/import-dialog";
+import { UploadDocumentDialog } from "@/components/upload-document-dialog";
 
 interface ComplianceCheck {
   id: string;
@@ -142,6 +143,7 @@ export default function CompliancePage() {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [cloudImportOpen, setCloudImportOpen] = useState(false);
+  const [uploadDocOpen, setUploadDocOpen] = useState(false);
   const [cloudImportedContent, setCloudImportedContent] = useState<{
     title: string;
     content: string;
@@ -429,6 +431,14 @@ export default function CompliancePage() {
             >
               <RefreshCw className={`h-4 w-4 ${complianceLoading ? "animate-spin" : ""}`} />
               <span className="hidden sm:inline ml-1">Refresh</span>
+            </Button>
+            <Button
+              variant="outline"
+              className="h-8 rounded-sm text-sm flex-1 sm:flex-none"
+              onClick={() => setUploadDocOpen(true)}
+            >
+              <Upload className="h-4 w-4" />
+              <span className="hidden sm:inline ml-1">Upload Document</span>
             </Button>
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <DialogTrigger asChild>
@@ -847,6 +857,8 @@ export default function CompliancePage() {
           })}
         </div>
       )}
+
+      <UploadDocumentDialog open={uploadDocOpen} onOpenChange={setUploadDocOpen} />
     </div>
   );
 }

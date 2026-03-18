@@ -30,6 +30,7 @@ import {
   Share2,
   Cloud,
   PenTool,
+  Upload,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -58,6 +59,7 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { ShareDocumentDialog } from "@/components/share-document-dialog";
 import { ExportDocumentDialog } from "@/components/export-document-dialog";
 import { ImportDialog } from "@/components/import-dialog";
+import { UploadDocumentDialog } from "@/components/upload-document-dialog";
 import { DocuSignSignatureDialog } from "@/components/docusign-signature-dialog";
 import {
   DndContext,
@@ -375,6 +377,7 @@ export default function DocumentsPage() {
   const [exportCloudDocument, setExportCloudDocument] = useState<Document | null>(null);
   const [docuSignDocument, setDocuSignDocument] = useState<Document | null>(null);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   
   // New state for enhanced features
   const [searchQuery, setSearchQuery] = useState("");
@@ -728,6 +731,10 @@ export default function DocumentsPage() {
           <Button variant="outline" size="icon" onClick={() => refetch()} className="h-8 w-8 rounded-sm">
             <RefreshCw className="h-3.5 w-3.5" />
           </Button>
+          <Button variant="outline" onClick={() => setUploadDialogOpen(true)} className="h-8 rounded-sm text-sm">
+            <Upload className="h-3.5 w-3.5 mr-1" />
+            Upload
+          </Button>
           <Button variant="outline" onClick={() => setImportDialogOpen(true)} className="h-8 rounded-sm text-sm">
             <Cloud className="h-3.5 w-3.5 mr-1" />
             Import
@@ -1055,6 +1062,13 @@ export default function DocumentsPage() {
         onImport={(doc) => {
           router.push(`/documents/${doc.id}`);
         }}
+      />
+
+      {/* Upload from computer */}
+      <UploadDocumentDialog
+        open={uploadDialogOpen}
+        onOpenChange={setUploadDialogOpen}
+        navigateOnSuccess
       />
     </div>
   );

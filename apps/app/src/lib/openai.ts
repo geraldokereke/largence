@@ -1,9 +1,198 @@
 import OpenAI from "openai";
-import { documentTypeConfigs, type DocumentTypeConfig } from "./document-types";
+import { documentTypeConfigs } from "./document-types";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY || "dummy-key",
 });
+
+// ─── Legal Research ──────────────────────────────────────────────────────────
+
+export interface LegalResearchParams {
+  query: string;
+  jurisdiction?: string;
+  docTypes?: string[];
+  legalTopics?: string[];
+}
+
+export interface LegalResearchResult {
+  id: string;
+  title: string;
+  source: string;
+  sourceUrl: string;
+  jurisdiction: string;
+  date?: string;
+  snippet: string;
+  type: "case" | "statute" | "regulation" | "article" | "treaty" | "other";
+  citation?: string;
+}
+
+export interface LegalResearchResponse {
+  query: string;
+  summary: string;
+  results: LegalResearchResult[];
+  searchedSources: string[];
+}
+
+const JURISDICTION_SOURCES: Record<string, { label: string; sources: string[] }> = {
+  all: {
+    label: "Global",
+    sources: [
+      "courtlistener.com", "scholar.google.com", "case.law", "govinfo.gov",
+      "oyez.org", "justia.com", "legislation.gov.uk", "bailii.org",
+      "eur-lex.europa.eu", "hudoc.echr.coe.int", "worldlii.org",
+      "icj-cij.org", "wto.org",
+    ],
+  },
+  us: {
+    label: "United States",
+    sources: [
+      "courtlistener.com", "scholar.google.com", "case.law",
+      "govinfo.gov", "oyez.org", "justia.com", "pacer.uscourts.gov",
+      "courtlistener.com/recap", "public.law",
+    ],
+  },
+  uk: {
+    label: "United Kingdom",
+    sources: [
+      "legislation.gov.uk", "supremecourt.uk", "bailii.org",
+      "westlaw.co.uk", "public.law",
+    ],
+  },
+  eu: {
+    label: "European Union",
+    sources: [
+      "eur-lex.europa.eu", "hudoc.echr.coe.int", "n-lex.europa.eu",
+      "legifrance.gouv.fr", "beck-online.beck.de",
+    ],
+  },
+  canada: {
+    label: "Canada",
+    sources: ["canlii.org", "lexisnexis.ca", "commonlii.org"],
+  },
+  australia: {
+    label: "Australia",
+    sources: ["austlii.edu.au", "jade.io", "nzlii.org", "commonlii.org"],
+  },
+  africa: {
+    label: "Africa",
+    sources: [
+      "africanlii.org", "nigerialii.org", "saflii.org",
+      "kenyalaw.org", "vlex.com.ng",
+    ],
+  },
+  asia: {
+    label: "Asia",
+    sources: [
+      "asianlii.org", "japaneselawtranslation.go.jp",
+      "lawnet.sg", "advocatekhoj.com",
+    ],
+  },
+  latam: {
+    label: "Latin America",
+    sources: ["vlex.com.br", "microjuris.com", "vlex.com.co"],
+  },
+  international: {
+    label: "International",
+    sources: [
+      "icj-cij.org", "hudoc.echr.coe.int", "wto.org", "icc-cpi.int",
+      "pca-cpa.org", "documents.un.org", "treaties.un.org",
+      "worldlii.org", "commonlii.org",
+    ],
+  },
+  academic: {
+    label: "Academic & Journals",
+    sources: [
+      "ssrn.com", "lawarxiv.info", "philarchive.org",
+      "doaj.org", "core.ac.uk",
+    ],
+  },
+};
+
+export async function performLegalResearch(
+  params: LegalResearchParams,
+): Promise<LegalResearchResponse> {
+  const { query, jurisdiction = "all", docTypes = [], legalTopics = [] } = params;
+
+  const jurisdictionData = JURISDICTION_SOURCES[jurisdiction] ?? JURISDICTION_SOURCES.all;
+  const sources = jurisdictionData.sources;
+
+  const filtersText = [
+    docTypes.length ? `Document types: ${docTypes.join(", ")}` : "",
+    legalTopics.length ? `Legal topics: ${legalTopics.join(", ")}` : "",
+  ]
+    .filter(Boolean)
+    .join("\n");
+
+  const systemPrompt = `You are Largence, an expert AI legal research assistant used by professional lawyers and legal practitioners.
+
+Your role is to conduct thorough legal research and return well-structured, accurate results from authoritative legal databases and sources.
+
+When responding, always:
+1. Provide a concise executive summary of the research findings
+2. List specific cases, statutes, regulations, or articles relevant to the query
+3. Include the source database, jurisdiction, and citation where available
+4. Format your response as a valid JSON object matching this exact structure:
+
+{
+  "summary": "A 2-4 sentence executive summary of the key findings",
+  "results": [
+    {
+      "id": "unique-id",
+      "title": "Full case/statute/article title",
+      "source": "Source database name (e.g., CourtListener, EUR-Lex)",
+      "sourceUrl": "Full URL to the source if known",
+      "jurisdiction": "Jurisdiction (e.g., US Federal, UK Supreme Court, EU)",
+      "date": "Year or date if known",
+      "snippet": "2-3 sentence description of the relevant holding, provision, or content",
+      "type": "case|statute|regulation|article|treaty|other",
+      "citation": "Official citation string if applicable"
+    }
+  ],
+  "searchedSources": ["list", "of", "source", "domains", "searched"]
+}
+
+Focus your research on these authoritative legal databases: ${sources.join(", ")}.
+Always populate sourceUrl with the real URL of the document on the listed database where possible.
+Aim to return 6–10 highly relevant results.`;
+
+  const userPrompt = `Research query: ${query}
+Jurisdiction: ${jurisdictionData.label}
+${filtersText}
+
+Search the legal databases and return comprehensive results in the specified JSON format.`;
+
+  const completion = await openai.chat.completions.create({
+    model: "gpt-4o",
+    temperature: 0.2,
+    response_format: { type: "json_object" },
+    messages: [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: userPrompt },
+    ],
+  });
+
+  const rawText = completion.choices[0]?.message?.content ?? "";
+  const jsonText = rawText;
+
+  let parsed: { summary: string; results: LegalResearchResult[]; searchedSources: string[] };
+  try {
+    parsed = JSON.parse(jsonText.trim());
+  } catch {
+    // Fallback: return summary as plain text with no structured results
+    parsed = {
+      summary: rawText.slice(0, 800),
+      results: [],
+      searchedSources: sources,
+    };
+  }
+
+  return {
+    query,
+    summary: parsed.summary ?? "",
+    results: (parsed.results ?? []).map((r, i) => ({ ...r, id: r.id ?? `result-${i}` })),
+    searchedSources: parsed.searchedSources ?? sources,
+  };
+}
 
 export interface DocumentGenerationParams {
   documentType: string;

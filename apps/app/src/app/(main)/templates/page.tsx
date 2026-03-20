@@ -26,7 +26,11 @@ import {
   Users,
   Download,
 } from "lucide-react";
-import { templates as allTemplates, categories, Template } from "@/lib/templates-data";
+import {
+  templates as allTemplates,
+  categories,
+  Template,
+} from "@/lib/templates-data";
 import { TemplatePreviewModal } from "@largence/components/template-preview-modal";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -98,7 +102,9 @@ async function fetchUserTemplates(): Promise<{ templates: UserTemplate[] }> {
   return response.json();
 }
 
-async function fetchCommunityTemplates(): Promise<{ templates: CommunityTemplate[] }> {
+async function fetchCommunityTemplates(): Promise<{
+  templates: CommunityTemplate[];
+}> {
   const response = await fetch("/api/templates?community=true");
   if (!response.ok) throw new Error("Failed to fetch community templates");
   return response.json();
@@ -109,7 +115,10 @@ async function deleteTemplate(id: string): Promise<void> {
   if (!response.ok) throw new Error("Failed to delete template");
 }
 
-async function togglePublishTemplate(id: string, publish: boolean): Promise<void> {
+async function togglePublishTemplate(
+  id: string,
+  publish: boolean,
+): Promise<void> {
   const response = await fetch(`/api/templates/${id}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
@@ -125,30 +134,40 @@ export default function TemplatesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [communityCategory, setCommunityCategory] = useState("all");
-  const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
+  const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(
+    null,
+  );
   const [previewOpen, setPreviewOpen] = useState(false);
   const [displayCount, setDisplayCount] = useState(ITEMS_PER_PAGE);
-  const [communityDisplayCount, setCommunityDisplayCount] = useState(ITEMS_PER_PAGE);
+  const [communityDisplayCount, setCommunityDisplayCount] =
+    useState(ITEMS_PER_PAGE);
   const [jurisdictionFilter, setJurisdictionFilter] = useState<string[]>([]);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [templateToDelete, setTemplateToDelete] = useState<UserTemplate | null>(null);
-  const [previewUserTemplate, setPreviewUserTemplate] = useState<UserTemplate | null>(null);
-  const [previewCommunityTemplate, setPreviewCommunityTemplate] = useState<CommunityTemplate | null>(null);
-  
+  const [templateToDelete, setTemplateToDelete] = useState<UserTemplate | null>(
+    null,
+  );
+  const [previewUserTemplate, setPreviewUserTemplate] =
+    useState<UserTemplate | null>(null);
+  const [previewCommunityTemplate, setPreviewCommunityTemplate] =
+    useState<CommunityTemplate | null>(null);
+
   // Loading states for template actions to prevent double-clicks
   const [usingTemplateId, setUsingTemplateId] = useState<string | null>(null);
 
   // Fetch user templates
-  const { data: userTemplatesData, isLoading: loadingUserTemplates } = useQuery({
-    queryKey: ["user-templates"],
-    queryFn: fetchUserTemplates,
-  });
+  const { data: userTemplatesData, isLoading: loadingUserTemplates } = useQuery(
+    {
+      queryKey: ["user-templates"],
+      queryFn: fetchUserTemplates,
+    },
+  );
 
   // Fetch community templates
-  const { data: communityTemplatesData, isLoading: loadingCommunityTemplates } = useQuery({
-    queryKey: ["community-templates"],
-    queryFn: fetchCommunityTemplates,
-  });
+  const { data: communityTemplatesData, isLoading: loadingCommunityTemplates } =
+    useQuery({
+      queryKey: ["community-templates"],
+      queryFn: fetchCommunityTemplates,
+    });
 
   const userTemplates = userTemplatesData?.templates || [];
   const communityTemplates = communityTemplatesData?.templates || [];
@@ -173,7 +192,9 @@ export default function TemplatesPage() {
       togglePublishTemplate(id, publish),
     onSuccess: (_, { publish }) => {
       queryClient.invalidateQueries({ queryKey: ["user-templates"] });
-      toast.success(publish ? "Template published to directory" : "Template unpublished");
+      toast.success(
+        publish ? "Template published to directory" : "Template unpublished",
+      );
     },
     onError: () => {
       toast.error("Failed to update template");
@@ -203,7 +224,7 @@ export default function TemplatesPage() {
 
     if (selectedCategory !== "all") {
       filtered = filtered.filter(
-        (t) => t.category.toLowerCase() === selectedCategory.toLowerCase()
+        (t) => t.category.toLowerCase() === selectedCategory.toLowerCase(),
       );
     }
 
@@ -214,13 +235,13 @@ export default function TemplatesPage() {
           t.name.toLowerCase().includes(query) ||
           t.description.toLowerCase().includes(query) ||
           t.category.toLowerCase().includes(query) ||
-          t.jurisdictions.some((j) => j.toLowerCase().includes(query))
+          t.jurisdictions.some((j) => j.toLowerCase().includes(query)),
       );
     }
 
     if (jurisdictionFilter.length > 0) {
       filtered = filtered.filter((t) =>
-        t.jurisdictions.some((j) => jurisdictionFilter.includes(j))
+        t.jurisdictions.some((j) => jurisdictionFilter.includes(j)),
       );
     }
 
@@ -235,30 +256,30 @@ export default function TemplatesPage() {
       (t) =>
         t.name.toLowerCase().includes(query) ||
         t.description.toLowerCase().includes(query) ||
-        t.category.toLowerCase().includes(query)
+        t.category.toLowerCase().includes(query),
     );
   }, [userTemplates, searchQuery]);
 
   // Filter community templates
   const filteredCommunityTemplates = useMemo(() => {
     let filtered = communityTemplates;
-    
+
     if (communityCategory !== "all") {
       filtered = filtered.filter(
-        (t) => t.category.toLowerCase() === communityCategory.toLowerCase()
+        (t) => t.category.toLowerCase() === communityCategory.toLowerCase(),
       );
     }
-    
+
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(
         (t) =>
           t.name.toLowerCase().includes(query) ||
           t.description.toLowerCase().includes(query) ||
-          t.category.toLowerCase().includes(query)
+          t.category.toLowerCase().includes(query),
       );
     }
-    
+
     return filtered;
   }, [communityTemplates, communityCategory, searchQuery]);
 
@@ -271,9 +292,13 @@ export default function TemplatesPage() {
 
   const displayedTemplates = filteredTemplates.slice(0, displayCount);
   const hasMore = displayCount < filteredTemplates.length;
-  
-  const displayedCommunityTemplates = filteredCommunityTemplates.slice(0, communityDisplayCount);
-  const hasMoreCommunity = communityDisplayCount < filteredCommunityTemplates.length;
+
+  const displayedCommunityTemplates = filteredCommunityTemplates.slice(
+    0,
+    communityDisplayCount,
+  );
+  const hasMoreCommunity =
+    communityDisplayCount < filteredCommunityTemplates.length;
 
   const handleUseTemplate = (templateType: string) => {
     router.push(`/create?type=${templateType}`);
@@ -289,7 +314,7 @@ export default function TemplatesPage() {
   const handleUseUserTemplate = async (template: UserTemplate) => {
     if (usingTemplateId) return; // Prevent double-click
     setUsingTemplateId(template.id);
-    
+
     // Create a new document from this template
     try {
       const response = await fetch("/api/documents", {
@@ -332,7 +357,7 @@ export default function TemplatesPage() {
     setJurisdictionFilter((prev) =>
       prev.includes(jurisdiction)
         ? prev.filter((j) => j !== jurisdiction)
-        : [...prev, jurisdiction]
+        : [...prev, jurisdiction],
     );
   };
 
@@ -363,7 +388,10 @@ export default function TemplatesPage() {
                 Browse the library or manage your saved templates
               </p>
             </div>
-            <Button onClick={() => router.push("/create")} className="rounded-sm h-8 text-sm w-full sm:w-auto">
+            <Button
+              onClick={() => router.push("/create")}
+              className="rounded-sm h-8 text-sm w-full sm:w-auto"
+            >
               <Sparkles className="h-3.5 w-3.5" />
               Create Custom
             </Button>
@@ -373,21 +401,30 @@ export default function TemplatesPage() {
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="mb-4 h-9 p-1 rounded-sm">
-            <TabsTrigger value="library" className="text-sm rounded-sm h-7 px-3">
+            <TabsTrigger
+              value="library"
+              className="text-sm rounded-sm h-7 px-3"
+            >
               <FileText className="h-3.5 w-3.5 mr-1.5" />
-              Library
+              By Largence
               <span className="ml-1.5 text-xs text-muted-foreground">
                 ({filteredTemplates.length})
               </span>
             </TabsTrigger>
-            <TabsTrigger value="community" className="text-sm rounded-sm h-7 px-3">
+            <TabsTrigger
+              value="community"
+              className="text-sm rounded-sm h-7 px-3"
+            >
               <Users className="h-3.5 w-3.5 mr-1.5" />
               Community
               <span className="ml-1.5 text-xs text-muted-foreground">
                 ({communityTemplates.length})
               </span>
             </TabsTrigger>
-            <TabsTrigger value="my-templates" className="text-sm rounded-sm h-7 px-3">
+            <TabsTrigger
+              value="my-templates"
+              className="text-sm rounded-sm h-7 px-3"
+            >
               <FileStack className="h-3.5 w-3.5 mr-1.5" />
               My Templates
               <span className="ml-1.5 text-xs text-muted-foreground">
@@ -499,7 +536,7 @@ export default function TemplatesPage() {
                   category.id === "all"
                     ? filteredTemplates.length
                     : filteredTemplates.filter(
-                        (t) => t.category.toLowerCase() === category.id
+                        (t) => t.category.toLowerCase() === category.id,
                       ).length;
 
                 return (
@@ -513,7 +550,9 @@ export default function TemplatesPage() {
                     }`}
                   >
                     <span className="text-sm font-medium">{category.name}</span>
-                    <span className="ml-2 text-xs opacity-70">({categoryCount})</span>
+                    <span className="ml-2 text-xs opacity-70">
+                      ({categoryCount})
+                    </span>
                   </button>
                 );
               })}
@@ -525,7 +564,9 @@ export default function TemplatesPage() {
                 <div className="rounded-full bg-muted p-4 mb-3">
                   <Search className="h-6 w-6 text-muted-foreground" />
                 </div>
-                <h3 className="text-lg font-semibold mb-2">No templates found</h3>
+                <h3 className="text-lg font-semibold mb-2">
+                  No templates found
+                </h3>
                 <p className="text-sm text-muted-foreground mb-4 max-w-md">
                   We couldn't find any templates matching your search criteria.
                 </p>
@@ -554,14 +595,16 @@ export default function TemplatesPage() {
                         {template.description}
                       </p>
                       <div className="flex flex-wrap gap-1 mb-3">
-                        {template.jurisdictions.slice(0, 2).map((jurisdiction, idx) => (
-                          <span
-                            key={idx}
-                            className="inline-flex items-center px-1.5 py-0.5 rounded-sm bg-muted text-[10px]"
-                          >
-                            {jurisdiction}
-                          </span>
-                        ))}
+                        {template.jurisdictions
+                          .slice(0, 2)
+                          .map((jurisdiction, idx) => (
+                            <span
+                              key={idx}
+                              className="inline-flex items-center px-1.5 py-0.5 rounded-sm bg-muted text-[10px]"
+                            >
+                              {jurisdiction}
+                            </span>
+                          ))}
                         {template.jurisdictions.length > 2 && (
                           <span className="inline-flex items-center px-1.5 py-0.5 rounded-sm bg-muted text-[10px]">
                             +{template.jurisdictions.length - 2}
@@ -598,7 +641,8 @@ export default function TemplatesPage() {
                   className="h-8 rounded-sm text-sm"
                   onClick={handleLoadMore}
                 >
-                  Load More Templates ({filteredTemplates.length - displayCount} remaining)
+                  Load More Templates ({filteredTemplates.length - displayCount}{" "}
+                  remaining)
                 </Button>
               </div>
             )}
@@ -610,10 +654,13 @@ export default function TemplatesPage() {
             <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
               {communityCategories.map((cat) => {
                 const isActive = communityCategory === cat;
-                const categoryCount = cat === "all" 
-                  ? communityTemplates.length
-                  : communityTemplates.filter(t => t.category.toLowerCase() === cat.toLowerCase()).length;
-                
+                const categoryCount =
+                  cat === "all"
+                    ? communityTemplates.length
+                    : communityTemplates.filter(
+                        (t) => t.category.toLowerCase() === cat.toLowerCase(),
+                      ).length;
+
                 return (
                   <button
                     key={cat}
@@ -624,8 +671,12 @@ export default function TemplatesPage() {
                         : "bg-background hover:bg-accent"
                     }`}
                   >
-                    <span className="text-sm font-medium capitalize">{cat === "all" ? "All" : cat}</span>
-                    <span className="ml-2 text-xs opacity-70">({categoryCount})</span>
+                    <span className="text-sm font-medium capitalize">
+                      {cat === "all" ? "All" : cat}
+                    </span>
+                    <span className="ml-2 text-xs opacity-70">
+                      ({categoryCount})
+                    </span>
                   </button>
                 );
               })}
@@ -648,7 +699,9 @@ export default function TemplatesPage() {
                   <Users className="h-6 w-6 text-muted-foreground" />
                 </div>
                 <h3 className="text-lg font-semibold mb-2">
-                  {searchQuery ? "No templates found" : "No community templates yet"}
+                  {searchQuery
+                    ? "No templates found"
+                    : "No community templates yet"}
                 </h3>
                 <p className="text-sm text-muted-foreground mb-4 max-w-md">
                   {searchQuery
@@ -716,7 +769,8 @@ export default function TemplatesPage() {
                     {/* Actions */}
                     <div className="flex items-center justify-between pt-2 border-t border-border/50 mt-auto">
                       <span className="text-[10px] text-muted-foreground">
-                        {template.reviewCount} review{template.reviewCount !== 1 ? "s" : ""}
+                        {template.reviewCount} review
+                        {template.reviewCount !== 1 ? "s" : ""}
                       </span>
                       <div className="flex items-center gap-1">
                         <Button
@@ -747,9 +801,13 @@ export default function TemplatesPage() {
                 <Button
                   variant="outline"
                   className="h-8 rounded-sm text-sm"
-                  onClick={() => setCommunityDisplayCount((prev) => prev + ITEMS_PER_PAGE)}
+                  onClick={() =>
+                    setCommunityDisplayCount((prev) => prev + ITEMS_PER_PAGE)
+                  }
                 >
-                  Load More ({filteredCommunityTemplates.length - communityDisplayCount} remaining)
+                  Load More (
+                  {filteredCommunityTemplates.length - communityDisplayCount}{" "}
+                  remaining)
                 </Button>
               </div>
             )}
@@ -774,7 +832,9 @@ export default function TemplatesPage() {
                   <FileStack className="h-6 w-6 text-muted-foreground" />
                 </div>
                 <h3 className="text-lg font-semibold mb-2">
-                  {searchQuery ? "No templates found" : "No saved templates yet"}
+                  {searchQuery
+                    ? "No templates found"
+                    : "No saved templates yet"}
                 </h3>
                 <p className="text-sm text-muted-foreground mb-4 max-w-md">
                   {searchQuery
@@ -782,7 +842,10 @@ export default function TemplatesPage() {
                     : "Save a document as a template from the editor to reuse it later or share it with others."}
                 </p>
                 {!searchQuery && (
-                  <Button variant="outline" onClick={() => router.push("/documents")}>
+                  <Button
+                    variant="outline"
+                    onClick={() => router.push("/documents")}
+                  >
                     <Plus className="h-4 w-4 mr-2" />
                     Go to Documents
                   </Button>
@@ -839,7 +902,10 @@ export default function TemplatesPage() {
                             {template.isPublished ? (
                               <DropdownMenuItem
                                 onClick={() =>
-                                  publishMutation.mutate({ id: template.id, publish: false })
+                                  publishMutation.mutate({
+                                    id: template.id,
+                                    publish: false,
+                                  })
                                 }
                                 className="text-xs"
                               >
@@ -849,7 +915,10 @@ export default function TemplatesPage() {
                             ) : (
                               <DropdownMenuItem
                                 onClick={() =>
-                                  publishMutation.mutate({ id: template.id, publish: true })
+                                  publishMutation.mutate({
+                                    id: template.id,
+                                    publish: true,
+                                  })
                                 }
                                 className="text-xs"
                               >
@@ -889,7 +958,8 @@ export default function TemplatesPage() {
                     {/* Stats */}
                     <div className="flex items-center justify-between pt-2 border-t border-border/50 mt-auto">
                       <span className="text-[10px] text-muted-foreground">
-                        Used {template.usageCount} time{template.usageCount !== 1 ? "s" : ""}
+                        Used {template.usageCount} time
+                        {template.usageCount !== 1 ? "s" : ""}
                       </span>
                       <div className="flex items-center gap-1">
                         <Button
@@ -918,35 +988,59 @@ export default function TemplatesPage() {
       </div>
 
       {/* User Template Preview Dialog */}
-      <Dialog open={!!previewUserTemplate} onOpenChange={(open) => !open && setPreviewUserTemplate(null)}>
+      <Dialog
+        open={!!previewUserTemplate}
+        onOpenChange={(open) => !open && setPreviewUserTemplate(null)}
+      >
         <DialogContent className="sm:max-w-3xl max-h-[80vh] rounded-sm">
           <DialogHeader>
             <div className="flex items-center gap-2">
               <FileStack className="h-4 w-4 text-primary" />
-              <DialogTitle className="text-base flex-1">{previewUserTemplate?.name}</DialogTitle>
+              <DialogTitle className="text-base flex-1">
+                {previewUserTemplate?.name}
+              </DialogTitle>
               {previewUserTemplate && (
-                <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-sm text-[10px] border mr-6 ${
-                  previewUserTemplate.isPublished
-                    ? "bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900"
-                    : previewUserTemplate.isPublic
-                    ? "bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-900"
-                    : "bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800"
-                }`}>
-                  {previewUserTemplate.isPublished ? <><Globe className="h-3 w-3" /> Published</> : previewUserTemplate.isPublic ? <><Globe className="h-3 w-3" /> Public</> : <><Lock className="h-3 w-3" /> Private</>}
+                <span
+                  className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-sm text-[10px] border mr-6 ${
+                    previewUserTemplate.isPublished
+                      ? "bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900"
+                      : previewUserTemplate.isPublic
+                        ? "bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-900"
+                        : "bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800"
+                  }`}
+                >
+                  {previewUserTemplate.isPublished ? (
+                    <>
+                      <Globe className="h-3 w-3" /> Published
+                    </>
+                  ) : previewUserTemplate.isPublic ? (
+                    <>
+                      <Globe className="h-3 w-3" /> Public
+                    </>
+                  ) : (
+                    <>
+                      <Lock className="h-3 w-3" /> Private
+                    </>
+                  )}
                 </span>
               )}
             </div>
             <DialogDescription className="text-xs">
-              {previewUserTemplate?.category} • {previewUserTemplate?.documentType}{previewUserTemplate?.jurisdiction && ` • ${previewUserTemplate.jurisdiction}`}
+              {previewUserTemplate?.category} •{" "}
+              {previewUserTemplate?.documentType}
+              {previewUserTemplate?.jurisdiction &&
+                ` • ${previewUserTemplate.jurisdiction}`}
             </DialogDescription>
           </DialogHeader>
           <div className="text-sm text-muted-foreground mb-3">
             {previewUserTemplate?.description || "No description"}
           </div>
           <div className="overflow-y-auto max-h-[50vh] pr-2 border rounded-sm p-3 bg-muted/30">
-            <div 
+            <div
               className="prose prose-sm dark:prose-invert max-w-none"
-              dangerouslySetInnerHTML={{ __html: previewUserTemplate?.content || "<p>No content</p>" }}
+              dangerouslySetInnerHTML={{
+                __html: previewUserTemplate?.content || "<p>No content</p>",
+              }}
             />
           </div>
           <DialogFooter className="gap-2 sm:gap-2">
@@ -974,19 +1068,27 @@ export default function TemplatesPage() {
       </Dialog>
 
       {/* Community Template Preview Dialog */}
-      <Dialog open={!!previewCommunityTemplate} onOpenChange={(open) => !open && setPreviewCommunityTemplate(null)}>
+      <Dialog
+        open={!!previewCommunityTemplate}
+        onOpenChange={(open) => !open && setPreviewCommunityTemplate(null)}
+      >
         <DialogContent className="sm:max-w-3xl max-h-[80vh] rounded-sm">
           <DialogHeader>
             <div className="flex items-center gap-2">
               <Globe className="h-4 w-4 text-primary" />
-              <DialogTitle className="text-base flex-1">{previewCommunityTemplate?.name}</DialogTitle>
+              <DialogTitle className="text-base flex-1">
+                {previewCommunityTemplate?.name}
+              </DialogTitle>
               <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-sm bg-violet-50 dark:bg-violet-950/50 text-violet-700 dark:text-violet-400 text-[10px] border border-violet-200 dark:border-violet-900 mr-6">
                 <Users className="h-3 w-3" />
                 Community
               </span>
             </div>
             <DialogDescription className="text-xs">
-              {previewCommunityTemplate?.category} • {previewCommunityTemplate?.documentType}{previewCommunityTemplate?.jurisdiction && ` • ${previewCommunityTemplate.jurisdiction}`}
+              {previewCommunityTemplate?.category} •{" "}
+              {previewCommunityTemplate?.documentType}
+              {previewCommunityTemplate?.jurisdiction &&
+                ` • ${previewCommunityTemplate.jurisdiction}`}
             </DialogDescription>
           </DialogHeader>
           <div className="text-sm text-muted-foreground mb-3">
@@ -999,7 +1101,8 @@ export default function TemplatesPage() {
             </span>
             <span className="inline-flex items-center gap-1">
               <Star className="h-3.5 w-3.5 text-amber-500" />
-              {previewCommunityTemplate?.rating.toFixed(1)} ({previewCommunityTemplate?.reviewCount} reviews)
+              {previewCommunityTemplate?.rating.toFixed(1)} (
+              {previewCommunityTemplate?.reviewCount} reviews)
             </span>
             <span className="inline-flex items-center gap-1">
               <Heart className="h-3.5 w-3.5 text-red-500" />
@@ -1011,14 +1114,18 @@ export default function TemplatesPage() {
           </div>
           {previewCommunityTemplate?.content ? (
             <div className="overflow-y-auto max-h-[45vh] pr-2 border rounded-sm p-3 bg-muted/30">
-              <div 
+              <div
                 className="prose prose-sm dark:prose-invert max-w-none"
-                dangerouslySetInnerHTML={{ __html: previewCommunityTemplate.content }}
+                dangerouslySetInnerHTML={{
+                  __html: previewCommunityTemplate.content,
+                }}
               />
             </div>
           ) : (
             <div className="flex items-center justify-center py-8 border rounded-sm bg-muted/30">
-              <p className="text-sm text-muted-foreground">Content preview available after using this template</p>
+              <p className="text-sm text-muted-foreground">
+                Content preview available after using this template
+              </p>
             </div>
           )}
           <DialogFooter className="gap-2 sm:gap-2">
@@ -1081,7 +1188,9 @@ export default function TemplatesPage() {
             </Button>
             <Button
               variant="destructive"
-              onClick={() => templateToDelete && deleteMutation.mutate(templateToDelete.id)}
+              onClick={() =>
+                templateToDelete && deleteMutation.mutate(templateToDelete.id)
+              }
               disabled={deleteMutation.isPending}
               className="h-8 rounded-sm text-sm"
             >

@@ -8,7 +8,7 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-inter);
   --font-heading: var(--font-general-sans);
-  --font-display: var(--font-poly-sans);
+  --font-display: var(--font-clash-display);
   --font-mono: var(--font-geist-mono);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -167,11 +167,11 @@ html {
 
 /* Font utility classes */
 .font-display {
-  font-family: var(--font-poly-sans), var(--font-general-sans), sans-serif;
+  font-family: var(--font-clash-display), var(--font-general-sans), sans-serif;
 }
 
 .font-title {
-  font-family: var(--font-poly-sans), var(--font-general-sans), sans-serif;
+  font-family: var(--font-clash-display), var(--font-general-sans), sans-serif;
 }
 
 .font-heading {

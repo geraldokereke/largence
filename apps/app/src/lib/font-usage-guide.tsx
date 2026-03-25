@@ -3,9 +3,9 @@
  *
  * This project uses three primary font families:
  *
- * 1. PolySans (--font-poly-sans) - For titles, hero text, and design elements
+ * 1. Clash Display (--font-clash-display) - For titles, hero text, and design elements
  *    - Use: font-display or font-title classes
- *    - Weights: 300 (slim), 400 (neutral), 500 (median), 700 (bulky)
+ *    - Weights: 200 (extralight), 300 (light), 400 (regular), 500 (medium), 600 (semibold), 700 (bold)
  *    - Best for: Large headings, hero sections, marketing content
  *
  * 2. General Sans (--font-general-sans) - For primary headings and UI elements
@@ -23,7 +23,7 @@
  *    - Best for: Code blocks, technical data
  *
  * @example
- * // Hero title with PolySans
+ * // Hero title with Clash Display
  * <h1 className="font-display text-6xl font-bold">Welcome to Largence</h1>
  *
  * @example
@@ -41,7 +41,7 @@
  * <p className="text-base">This is regular body text using Satoshi.</p>
  *
  * @example
- * // Design element with PolySans
+ * // Design element with Clash Display
  * <div className="font-title text-2xl font-medium">Feature Title</div>
  */
 
@@ -54,7 +54,7 @@ export const HeroExample = () => (
       Enterprise Legal Intelligence
     </h1>
     <p className="text-xl text-muted-foreground">
-      Streamline contract drafting and support your team’s compliance efforts
+      Streamline contract drafting and support your team's compliance efforts
     </p>
   </div>
 );

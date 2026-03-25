@@ -43,30 +43,40 @@ const generalSans = localFont({
   display: "swap",
 });
 
-const polySans = localFont({
+const clashDisplay = localFont({
   src: [
     {
-      path: "../../../../packages/fonts/polysanstrial-slim.otf",
+      path: "../../../../packages/fonts/ClashDisplay-Extralight.woff2",
+      weight: "200",
+      style: "normal",
+    },
+    {
+      path: "../../../../packages/fonts/ClashDisplay-Light.woff2",
       weight: "300",
       style: "normal",
     },
     {
-      path: "../../../../packages/fonts/polysanstrial-neutral.otf",
+      path: "../../../../packages/fonts/ClashDisplay-Regular.woff2",
       weight: "400",
       style: "normal",
     },
     {
-      path: "../../../../packages/fonts/polysanstrial-median.otf",
+      path: "../../../../packages/fonts/ClashDisplay-Medium.woff2",
       weight: "500",
       style: "normal",
     },
     {
-      path: "../../../../packages/fonts/polysanstrial-bulky.otf",
+      path: "../../../../packages/fonts/ClashDisplay-Semibold.woff2",
+      weight: "600",
+      style: "normal",
+    },
+    {
+      path: "../../../../packages/fonts/ClashDisplay-Bold.woff2",
       weight: "700",
       style: "normal",
     },
   ],
-  variable: "--font-poly-sans",
+  variable: "--font-clash-display",
   display: "swap",
 });
 
@@ -191,7 +201,7 @@ export default function RootLayout({
           <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
         </head>
         <body
-          className={`${inter.variable} ${generalSans.variable} ${polySans.variable} ${geistMono.variable} font-sans antialiased`}
+          className={`${inter.variable} ${generalSans.variable} ${clashDisplay.variable} ${geistMono.variable} font-sans antialiased`}
         >
             {children}
         </body>

@@ -33,7 +33,7 @@ import { cn } from "@largence/lib/utils";
 const ThinkingIndicator = () => {
   const [thinkingText, setThinkingText] = useState("Analyzing document");
   const [dots, setDots] = useState("");
-  
+
   const thinkingStates = [
     "Analyzing document",
     "Understanding context",
@@ -71,11 +71,15 @@ const ThinkingIndicator = () => {
           <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce" />
         </div>
         <span className="text-xs text-muted-foreground">
-          {thinkingText}<span className="inline-block w-4">{dots}</span>
+          {thinkingText}
+          <span className="inline-block w-4">{dots}</span>
         </span>
       </div>
       <div className="h-1 w-full bg-muted rounded-full overflow-hidden">
-        <div className="h-full bg-primary/60 rounded-full animate-pulse" style={{ width: "60%" }} />
+        <div
+          className="h-full bg-primary/60 rounded-full animate-pulse"
+          style={{ width: "60%" }}
+        />
       </div>
     </div>
   );
@@ -101,25 +105,29 @@ const quickActions = [
     id: "improve",
     label: "Improve Writing",
     icon: Wand2,
-    prompt: "Improve the writing quality, clarity, and professionalism of this document while maintaining its legal accuracy.",
+    prompt:
+      "Improve the writing quality, clarity, and professionalism of this document while maintaining its legal accuracy.",
   },
   {
     id: "simplify",
     label: "Simplify Language",
     icon: FileEdit,
-    prompt: "Simplify the language in this document to make it more readable while preserving legal meaning and enforceability.",
+    prompt:
+      "Simplify the language in this document to make it more readable while preserving legal meaning and enforceability.",
   },
   {
     id: "checklist",
     label: "Add Checklist",
     icon: ListChecks,
-    prompt: "Add a compliance checklist at the end of this document summarizing key obligations and deadlines for each party.",
+    prompt:
+      "Add a compliance checklist at the end of this document summarizing key obligations and deadlines for each party.",
   },
   {
     id: "formalize",
     label: "Make Formal",
     icon: Languages,
-    prompt: "Make this document more formal and professional, using appropriate legal terminology and structure.",
+    prompt:
+      "Make this document more formal and professional, using appropriate legal terminology and structure.",
   },
 ];
 
@@ -215,9 +223,13 @@ export function AiAssistantPanel({
                 setMessages((prev) =>
                   prev.map((msg) =>
                     msg.id === assistantMessageId
-                      ? { ...msg, content: "✓ Document updated successfully!", isStreaming: false }
-                      : msg
-                  )
+                      ? {
+                          ...msg,
+                          content: "✓ Document updated successfully!",
+                          isStreaming: false,
+                        }
+                      : msg,
+                  ),
                 );
               }
               if (data.error) {
@@ -235,16 +247,20 @@ export function AiAssistantPanel({
           prev.map((msg) =>
             msg.id === assistantMessageId
               ? { ...msg, content: "Request cancelled.", isStreaming: false }
-              : msg
-          )
+              : msg,
+          ),
         );
       } else {
         setMessages((prev) =>
           prev.map((msg) =>
             msg.id === assistantMessageId
-              ? { ...msg, content: "Sorry, something went wrong. Please try again.", isStreaming: false }
-              : msg
-          )
+              ? {
+                  ...msg,
+                  content: "Sorry, something went wrong. Please try again.",
+                  isStreaming: false,
+                }
+              : msg,
+          ),
         );
       }
     } finally {
@@ -272,11 +288,7 @@ export function AiAssistantPanel({
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button
-          variant="outline"
-          size="sm"
-          className="h-8 gap-1.5 rounded-sm"
-        >
+        <Button variant="outline" size="sm" className="h-8 gap-1.5 rounded-sm">
           <Sparkles className="h-3.5 w-3.5" />
           <span className="hidden sm:inline">AI Assistant</span>
         </Button>
@@ -288,7 +300,9 @@ export function AiAssistantPanel({
               <div className="p-1.5 rounded-sm bg-primary/10">
                 <Sparkles className="h-4 w-4 text-primary" />
               </div>
-              <SheetTitle className="text-base font-medium">AI Assistant</SheetTitle>
+              <SheetTitle className="text-base font-medium">
+                AI Assistant
+              </SheetTitle>
             </div>
             {messages.length > 0 && (
               <Button
@@ -316,7 +330,9 @@ export function AiAssistantPanel({
                 className="flex items-center gap-2 p-2 rounded-sm border bg-card hover:bg-accent/50 hover:border-primary/30 transition-all text-left disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <action.icon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                <span className="text-xs font-medium truncate">{action.label}</span>
+                <span className="text-xs font-medium truncate">
+                  {action.label}
+                </span>
               </button>
             ))}
           </div>
@@ -332,7 +348,8 @@ export function AiAssistantPanel({
                 </div>
                 <h3 className="text-sm font-medium mb-1">Largence AI</h3>
                 <p className="text-xs text-muted-foreground max-w-[280px]">
-                  Ask me to edit, improve, or modify your document. I can help with formatting, language, and content changes.
+                  Ask me to edit, improve, or modify your document. I can help
+                  with formatting, language, and content changes.
                 </p>
               </div>
             ) : (
@@ -341,7 +358,7 @@ export function AiAssistantPanel({
                   key={message.id}
                   className={cn(
                     "flex gap-2",
-                    message.role === "user" ? "justify-end" : "justify-start"
+                    message.role === "user" ? "justify-end" : "justify-start",
                   )}
                 >
                   {message.role === "assistant" && (
@@ -354,7 +371,7 @@ export function AiAssistantPanel({
                       "rounded-sm px-3 py-2 max-w-[85%] text-sm",
                       message.role === "user"
                         ? "bg-primary text-primary-foreground"
-                        : "bg-muted"
+                        : "bg-muted",
                     )}
                   >
                     {message.isStreaming ? (
@@ -369,24 +386,31 @@ export function AiAssistantPanel({
                         )}
                       </p>
                     )}
-                    {message.role === "assistant" && message.content && !message.isStreaming && !message.content.startsWith("✓") && !message.content.includes("cancelled") && !message.content.includes("wrong") && (
-                      <button
-                        onClick={() => handleCopy(message.content, message.id)}
-                        className="mt-1.5 text-[10px] text-muted-foreground hover:text-foreground flex items-center gap-1"
-                      >
-                        {copiedId === message.id ? (
-                          <>
-                            <Check className="h-3 w-3" />
-                            Copied
-                          </>
-                        ) : (
-                          <>
-                            <Copy className="h-3 w-3" />
-                            Copy response
-                          </>
-                        )}
-                      </button>
-                    )}
+                    {message.role === "assistant" &&
+                      message.content &&
+                      !message.isStreaming &&
+                      !message.content.startsWith("✓") &&
+                      !message.content.includes("cancelled") &&
+                      !message.content.includes("wrong") && (
+                        <button
+                          onClick={() =>
+                            handleCopy(message.content, message.id)
+                          }
+                          className="mt-1.5 text-[10px] text-muted-foreground hover:text-foreground flex items-center gap-1"
+                        >
+                          {copiedId === message.id ? (
+                            <>
+                              <Check className="h-3 w-3" />
+                              Copied
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="h-3 w-3" />
+                              Copy response
+                            </>
+                          )}
+                        </button>
+                      )}
                   </div>
                   {message.role === "user" && (
                     <div className="p-1.5 rounded-sm bg-primary h-fit shrink-0">

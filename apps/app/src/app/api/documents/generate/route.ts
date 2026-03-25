@@ -4,6 +4,7 @@ import { generateDocument } from "@largence/lib/openai";
 import prisma from "@largence/lib/prisma";
 import { canPerformAction, recordUsage } from "@/lib/stripe";
 import { createAuditLog, getUserInitials } from "@/lib/audit";
+import { checkAccessCodeAiLimit, incrementAccessCodeAiUsage } from "@/lib/access-codes";
 
 export async function POST(request: Request) {
   try {
@@ -45,17 +46,33 @@ export async function POST(request: Request) {
       );
     }
 
-    // Check usage limits before generating
-    const usageCheck = await canPerformAction(orgId, "document");
-    if (!usageCheck.allowed) {
-      return NextResponse.json(
-        {
-          error: usageCheck.reason,
-          requiresUpgrade: true,
-          currentPlan: usageCheck.subscription?.plan || "FREE",
-        },
-        { status: 402 }, // Payment Required
-      );
+    // Check access code AI rate limit first
+    const accessCodeStatus = await checkAccessCodeAiLimit(orgId);
+    if (accessCodeStatus?.hasAccessCode) {
+      if (!accessCodeStatus.allowed) {
+        return NextResponse.json(
+          {
+            error: `You've reached your daily AI limit of ${accessCodeStatus.limit} requests. Resets at midnight UTC.`,
+            rateLimited: true,
+            remaining: 0,
+            resetAt: accessCodeStatus.resetAt,
+          },
+          { status: 429 },
+        );
+      }
+    } else {
+      // Normal billing flow for non-access-code users
+      const usageCheck = await canPerformAction(orgId, "document");
+      if (!usageCheck.allowed) {
+        return NextResponse.json(
+          {
+            error: usageCheck.reason,
+            requiresUpgrade: true,
+            currentPlan: usageCheck.subscription?.plan || "FREE",
+          },
+          { status: 402 },
+        );
+      }
     }
 
     const body = await request.json();
@@ -103,6 +120,9 @@ export async function POST(request: Request) {
     });
 
     // Record usage after successful generation
+    if (accessCodeStatus?.hasAccessCode) {
+      await incrementAccessCodeAiUsage(orgId);
+    }
     await recordUsage(orgId, "DOCUMENT_GENERATED", document.id);
 
     // Log audit event for document creation

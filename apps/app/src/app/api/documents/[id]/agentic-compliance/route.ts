@@ -4,6 +4,7 @@ import OpenAI from "openai";
 import prisma from "@largence/lib/prisma";
 import { canPerformAction, recordUsage } from "@/lib/stripe";
 import { createAuditLog, getUserInitials } from "@/lib/audit";
+import { checkAccessCodeAiLimit, incrementAccessCodeAiUsage } from "@/lib/access-codes";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY || "dummy-key",
@@ -45,21 +46,42 @@ export async function POST(
       });
     }
 
-    // Check usage limits before running compliance check
+    // Check access code AI rate limit first
+    let hasAccessCode = false;
     if (orgId) {
-      const usageCheck = await canPerformAction(orgId, "compliance");
-      if (!usageCheck.allowed) {
-        return new Response(
-          JSON.stringify({
-            error: usageCheck.reason,
-            requiresUpgrade: true,
-            currentPlan: usageCheck.subscription?.plan || "FREE",
-          }),
-          {
-            status: 402,
-            headers: { "Content-Type": "application/json" },
-          },
-        );
+      const accessCodeStatus = await checkAccessCodeAiLimit(orgId);
+      if (accessCodeStatus?.hasAccessCode) {
+        hasAccessCode = true;
+        if (!accessCodeStatus.allowed) {
+          return new Response(
+            JSON.stringify({
+              error: `You've reached your daily AI limit of ${accessCodeStatus.limit} requests. Resets at midnight UTC.`,
+              rateLimited: true,
+              remaining: 0,
+              resetAt: accessCodeStatus.resetAt,
+            }),
+            {
+              status: 429,
+              headers: { "Content-Type": "application/json" },
+            },
+          );
+        }
+      } else {
+        // Normal billing flow for non-access-code users
+        const usageCheck = await canPerformAction(orgId, "compliance");
+        if (!usageCheck.allowed) {
+          return new Response(
+            JSON.stringify({
+              error: usageCheck.reason,
+              requiresUpgrade: true,
+              currentPlan: usageCheck.subscription?.plan || "FREE",
+            }),
+            {
+              status: 402,
+              headers: { "Content-Type": "application/json" },
+            },
+          );
+        }
       }
     }
 
@@ -169,6 +191,9 @@ Rewrite the document with all compliance issues fixed, maintaining the original 
 
           // Record usage after successful compliance check
           if (orgId) {
+            if (hasAccessCode) {
+              await incrementAccessCodeAiUsage(orgId);
+            }
             await recordUsage(orgId, "COMPLIANCE_CHECK", complianceCheck.id);
 
             // Log audit event for agentic compliance

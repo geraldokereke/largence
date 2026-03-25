@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import OpenAI from "openai";
+import { checkAccessCodeAiLimit, incrementAccessCodeAiUsage } from "@/lib/access-codes";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY || "dummy-key",
@@ -11,11 +12,27 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { userId } = await auth();
+    const { userId, orgId } = await auth();
     const { id } = await params;
 
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Check access code AI rate limit
+    if (orgId) {
+      const accessCodeStatus = await checkAccessCodeAiLimit(orgId);
+      if (accessCodeStatus?.hasAccessCode && !accessCodeStatus.allowed) {
+        return NextResponse.json(
+          {
+            error: `You've reached your daily AI limit of ${accessCodeStatus.limit} requests. Resets at midnight UTC.`,
+            rateLimited: true,
+            remaining: 0,
+            resetAt: accessCodeStatus.resetAt,
+          },
+          { status: 429 },
+        );
+      }
     }
 
     if (!process.env.OPENAI_API_KEY) {
@@ -78,6 +95,14 @@ Please apply the requested changes and return the complete modified document.`;
             const text = chunk.choices[0]?.delta?.content || "";
             if (text) {
               controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text })}\n\n`));
+            }
+          }
+
+          // Increment access code AI usage on success
+          if (orgId) {
+            const acStatus = await checkAccessCodeAiLimit(orgId);
+            if (acStatus?.hasAccessCode) {
+              await incrementAccessCodeAiUsage(orgId);
             }
           }
 

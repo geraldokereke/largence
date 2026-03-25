@@ -244,6 +244,7 @@ export default function AccountPage() {
   const [activeTab, setActiveTab] = useState<Tab>("profile");
   const [isSaving, setIsSaving] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState("English (US)");
+  const [accessCode, setAccessCode] = useState("");
   
   // Currency state for billing
   const detectedCurrency = useDetectedCurrency();
@@ -459,6 +460,46 @@ export default function AccountPage() {
     },
     onError: () => {
       toast.error("Failed to remove payment method. Please try again.");
+    },
+  });
+
+  // Access code status query
+  const { data: accessCodeData, refetch: refetchAccessCode } = useQuery<{
+    hasAccessCode: boolean;
+    allowed?: boolean;
+    remaining?: number;
+    limit?: number;
+    resetAt?: string | null;
+  }>({
+    queryKey: ["access-code-status"],
+    queryFn: async () => {
+      const res = await fetch("/api/billing/access-code");
+      if (!res.ok) throw new Error("Failed to check access code");
+      return res.json();
+    },
+    enabled: activeTab === "billing",
+  });
+
+  // Redeem access code mutation
+  const redeemCodeMutation = useMutation({
+    mutationFn: async (code: string) => {
+      const res = await fetch("/api/billing/access-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to redeem code");
+      return data;
+    },
+    onSuccess: (data) => {
+      toast.success(data.message);
+      setAccessCode("");
+      refetchBilling();
+      refetchAccessCode();
+    },
+    onError: (error: Error) => {
+      toast.error(error.message);
     },
   });
 
@@ -795,6 +836,62 @@ export default function AccountPage() {
                     </p>
                   </div>
                 )}
+
+                {/* Access Code Section */}
+                <div className="border rounded-sm p-4">
+                  <h3 className="text-sm font-semibold mb-2 font-heading flex items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-purple-500" />
+                    Have an Access Code?
+                  </h3>
+                  {accessCodeData?.hasAccessCode ? (
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-sm text-emerald-600">
+                        <Check className="h-4 w-4" />
+                        <span>Access code active — full features unlocked</span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm text-muted-foreground">
+                        <span>
+                          AI requests today: {(accessCodeData.limit ?? 10) - (accessCodeData.remaining ?? 0)}/{accessCodeData.limit ?? 10}
+                        </span>
+                        <span>{accessCodeData.remaining ?? 0} remaining</span>
+                      </div>
+                      <Progress
+                        value={(((accessCodeData.limit ?? 10) - (accessCodeData.remaining ?? 0)) / (accessCodeData.limit ?? 10)) * 100}
+                        className="h-1.5"
+                      />
+                      {accessCodeData.resetAt && (
+                        <p className="text-xs text-muted-foreground">
+                          Resets at midnight UTC
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Enter access code"
+                        value={accessCode}
+                        onChange={(e) => setAccessCode(e.target.value)}
+                        className="flex-1"
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && accessCode.trim()) {
+                            redeemCodeMutation.mutate(accessCode.trim());
+                          }
+                        }}
+                      />
+                      <Button
+                        onClick={() => redeemCodeMutation.mutate(accessCode.trim())}
+                        disabled={!accessCode.trim() || redeemCodeMutation.isPending}
+                        size="sm"
+                      >
+                        {redeemCodeMutation.isPending ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          "Redeem"
+                        )}
+                      </Button>
+                    </div>
+                  )}
+                </div>
 
                 <Separator />
 

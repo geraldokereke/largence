@@ -26,6 +26,12 @@ export interface OnboardingFormData {
 
   // Integrations
   integrations: string[];
+
+  // Access Code
+  accessCode: string;
+
+  // Data Residency
+  dataRegion: string;
 }
 
 const initialFormData: OnboardingFormData = {
@@ -41,6 +47,8 @@ const initialFormData: OnboardingFormData = {
   billingEmail: "",
   phone: "",
   integrations: [],
+  accessCode: "",
+  dataRegion: "",
 };
 
 export function useOnboarding() {
@@ -67,7 +75,7 @@ export function useOnboarding() {
   };
 
   const nextStep = () => {
-    if (step < 7) {
+    if (step < 9) {
       setStep((prev) => prev + 1);
     }
   };
@@ -149,11 +157,25 @@ export function useOnboarding() {
             logoUrl: uploadedLogoUrl,
             useCase: formData.useCase,
             integrations: formData.integrations,
+            dataRegion: formData.dataRegion,
             onboardedAt: new Date().toISOString(),
           }),
         });
       } catch (metaErr) {
         console.warn("Failed to update metadata:", metaErr);
+      }
+
+      // Redeem access code if provided
+      if (formData.accessCode.trim()) {
+        try {
+          await fetch("/api/billing/access-code", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ code: formData.accessCode.trim() }),
+          });
+        } catch (codeErr) {
+          console.warn("Failed to redeem access code:", codeErr);
+        }
       }
 
       // Redirect to main app domain (not subdomain for now)

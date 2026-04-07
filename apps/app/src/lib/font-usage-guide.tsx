@@ -8,8 +8,8 @@
  *    - Weights: 200 (extralight), 300 (light), 400 (regular), 500 (medium), 600 (semibold), 700 (bold)
  *    - Best for: Large headings, hero sections, marketing content
  *
- * 2. General Sans (--font-general-sans) - For primary headings and UI elements
- *    - Use: font-heading class or font-(family-name:--font-general-sans)
+ * 2. Karla (--font-karla) - For primary headings and UI elements
+ *    - Use: font-heading class or font-(family-name:--font-karla)
  *    - Weights: 300 (light), 400 (regular), 500 (medium), 600 (semibold), 700 (bold)
  *    - Best for: H1-H6 headings, subheadings, important labels
  *
@@ -27,12 +27,12 @@
  * <h1 className="font-display text-6xl font-bold">Welcome to Largence</h1>
  *
  * @example
- * // Primary heading with General Sans
+ * // Primary heading with Karla
  * <h2 className="font-heading text-3xl font-semibold">Our Services</h2>
  *
  * @example
- * // Alternative syntax for General Sans
- * <h2 className="text-3xl font-semibold font-(family-name:--font-general-sans)">
+ * // Alternative syntax for Karla
+ * <h2 className="text-3xl font-semibold font-(family-name:--font-karla)">
  *   Our Services
  * </h2>
  *

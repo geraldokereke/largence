@@ -149,7 +149,6 @@ export function SiteHeader() {
   const { user, isLoaded } = useUser();
   const [commandOpen, setCommandOpen] = React.useState(false);
   const [logoutDialogOpen, setLogoutDialogOpen] = React.useState(false);
-  const [showBanner, setShowBanner] = React.useState(true);
   const [isLoggingOut, setIsLoggingOut] = React.useState(false);
   const [mounted, setMounted] = React.useState(false);
   const [newDocDialogOpen, setNewDocDialogOpen] = React.useState(false);

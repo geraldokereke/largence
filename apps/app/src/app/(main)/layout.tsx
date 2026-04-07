@@ -7,8 +7,6 @@ import { PageTransition } from "@largence/components/page-transition";
 import { SidebarInset, SidebarProvider } from "@largence/components/ui/sidebar";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
-import { X } from "lucide-react";
-import { Button } from "@largence/components/ui/button";
 
 export default function MainLayout({
   children,
@@ -57,19 +55,19 @@ export default function MainLayout({
   // Standard layout with sidebar for all other pages
   return (
     <div className="[--header-height:calc(--spacing(14))] h-screen flex flex-col">
-        <SidebarProvider
-          open={open}
-          onOpenChange={handleOpenChange}
-          className="flex flex-col flex-1 overflow-hidden"
-        >
-          <SiteHeader />
-          <div className="flex flex-1 overflow-hidden">
-            <AppSidebar />
-            <SidebarInset className="overflow-y-auto">
-              <PageTransition>{children}</PageTransition>
-            </SidebarInset>
-          </div>
-        </SidebarProvider>
+      <SidebarProvider
+        open={open}
+        onOpenChange={handleOpenChange}
+        className="flex flex-col flex-1 overflow-hidden"
+      >
+        <SiteHeader />
+        <div className="flex flex-1 overflow-hidden">
+          <AppSidebar />
+          <SidebarInset className="overflow-y-auto">
+            <PageTransition>{children}</PageTransition>
+          </SidebarInset>
+        </div>
+      </SidebarProvider>
     </div>
   );
 }

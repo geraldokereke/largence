@@ -121,7 +121,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { title, content, documentType, jurisdiction, status } = body;
+    const { title, content, documentType, jurisdiction, status, matterId } = body;
 
     const document = await prisma.document.create({
       data: {
@@ -132,6 +132,7 @@ export async function POST(request: Request) {
         status: status || "DRAFT",
         userId,
         organizationId: orgId || userId,
+        ...(matterId ? { matterId } : {}),
       },
     });
 

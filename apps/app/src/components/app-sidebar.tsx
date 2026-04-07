@@ -113,8 +113,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       items: [
         { title: "Home", url: "/", icon: Home },
         { title: "Documents", url: "/documents", icon: FileText, badge: documentCounts?.total ? String(documentCounts.total) : undefined },
+        { title: "Matters", url: "/matters", icon: Briefcase },
         { title: "Messages", url: "/messages", icon: MessageSquare },
-        { title: "Research", url: "/research", icon: FileSearch }
+        { title: "Research", url: "/research", icon: FileSearch },
       ],
     },
     {

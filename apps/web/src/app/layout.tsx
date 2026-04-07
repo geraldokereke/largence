@@ -1,45 +1,13 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
-import { Inter, Geist_Mono } from "next/font/google";
+import { Geist_Mono, Karla } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { ThemeProvider } from "../components/theme-provider";
 import "./globals.css";
 
-const inter = Inter({
+const karla = Karla({
   subsets: ["latin"],
-  variable: "--font-inter",
-  display: "swap",
-});
-
-const generalSans = localFont({
-  src: [
-    {
-      path: "../../../../packages/fonts/GeneralSans-Light.woff2",
-      weight: "300",
-      style: "normal",
-    },
-    {
-      path: "../../../../packages/fonts/GeneralSans-Regular.woff2",
-      weight: "400",
-      style: "normal",
-    },
-    {
-      path: "../../../../packages/fonts/GeneralSans-Medium.woff2",
-      weight: "500",
-      style: "normal",
-    },
-    {
-      path: "../../../../packages/fonts/GeneralSans-Semibold.woff2",
-      weight: "600",
-      style: "normal",
-    },
-    {
-      path: "../../../../packages/fonts/GeneralSans-Bold.woff2",
-      weight: "700",
-      style: "normal",
-    },
-  ],
-  variable: "--font-general-sans",
+  variable: "--font-karla",
   display: "swap",
 });
 
@@ -201,9 +169,9 @@ export default function RootLayout({
           <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
         </head>
         <body
-          className={`${inter.variable} ${generalSans.variable} ${clashDisplay.variable} ${geistMono.variable} font-sans antialiased`}
+          className={`${karla.variable} ${clashDisplay.variable} ${geistMono.variable} font-sans antialiased`}
         >
-            {children}
+          {children}
         </body>
       </html>
     </ClerkProvider>

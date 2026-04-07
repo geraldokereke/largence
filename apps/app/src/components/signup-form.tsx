@@ -9,7 +9,7 @@ import { Input } from "@largence/components/ui/input";
 import { Label } from "@largence/components/ui/label";
 import { Spinner } from "@largence/components/ui/spinner";
 import { Eye, EyeOff, Check, AlertCircle } from "lucide-react";
-import { FaGoogle, FaMicrosoft } from "react-icons/fa";
+import { GoogleIcon, MicrosoftIcon } from "@largence/components/ui/icons";
 import Link from "next/link";
 import {
   InputOTP,
@@ -72,62 +72,63 @@ export function SignupForm({ className }: SignupFormProps) {
     };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-  event.preventDefault();
-  setIsLoading(true);
-  setError(null);
-
-  try {
-    const formData = new FormData(event.currentTarget);
-
-    const raw = {
-      email: String(formData.get("email") ?? ""),
-      password: String(formData.get("password") ?? ""),
-      confirmPassword: String(formData.get("confirmPassword") ?? ""),
-      firstName: String(formData.get("firstName") ?? ""),
-      lastName: String(formData.get("lastName") ?? ""),
-    };
-
-    // Clear previous errors
-    setFieldErrors({});
+    event.preventDefault();
+    setIsLoading(true);
     setError(null);
 
-    const result = signupSchema.safeParse(raw);
+    try {
+      const formData = new FormData(event.currentTarget);
 
-    if (!result.success) {
-      const errors: Record<string, string> = {};
-      result.error.issues.forEach((issue) => {
-        if (issue.path.length > 0) {
-          errors[issue.path[0] as string] = issue.message;
-        }
+      const raw = {
+        email: String(formData.get("email") ?? ""),
+        password: String(formData.get("password") ?? ""),
+        confirmPassword: String(formData.get("confirmPassword") ?? ""),
+        firstName: String(formData.get("firstName") ?? ""),
+        lastName: String(formData.get("lastName") ?? ""),
+      };
+
+      // Clear previous errors
+      setFieldErrors({});
+      setError(null);
+
+      const result = signupSchema.safeParse(raw);
+
+      if (!result.success) {
+        const errors: Record<string, string> = {};
+        result.error.issues.forEach((issue) => {
+          if (issue.path.length > 0) {
+            errors[issue.path[0] as string] = issue.message;
+          }
+        });
+        setFieldErrors(errors);
+        setIsLoading(false);
+        return;
+      }
+
+      const { email, password, firstName, lastName } = result.data;
+
+      if (!signUp) throw new Error("SignUp is not available");
+
+      await signUp.create({
+        emailAddress: email,
+        password,
+        firstName,
+        lastName,
       });
-      setFieldErrors(errors);
+
+      await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
+
+      setPendingVerification(true);
+    } catch (err: any) {
+      console.error("Signup error:", err);
+      setError(
+        err?.errors?.[0]?.message ||
+          "Failed to create account. Please try again.",
+      );
+    } finally {
       setIsLoading(false);
-      return;
     }
-
-    const { email, password, firstName, lastName } = result.data;
-
-    if (!signUp) throw new Error("SignUp is not available");
-
-    await signUp.create({
-      emailAddress: email,
-      password,
-      firstName,
-      lastName,
-    });
-
-    await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
-
-    setPendingVerification(true);
-  } catch (err: any) {
-    console.error("Signup error:", err);
-    setError(
-      err?.errors?.[0]?.message || "Failed to create account. Please try again."
-    );
-  } finally {
-    setIsLoading(false);
-  }
-};
+  };
 
   const handleVerify = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -149,18 +150,24 @@ export function SignupForm({ className }: SignupFormProps) {
       } else {
         setError("Verification incomplete. Please try again.");
       }
-      } catch (err: any) {
+    } catch (err: any) {
       console.error("Verification error:", err);
       const clerkError = err?.errors?.[0];
 
       if (clerkError?.code === "form_code_incorrect") {
-      setError("The OTP entered is invalid. Please check your email and try again.");
+        setError(
+          "The OTP entered is invalid. Please check your email and try again.",
+        );
       } else if (clerkError?.code === "verification_expired") {
-      setError("Your verification code has expired. Please request a new one.");
+        setError(
+          "Your verification code has expired. Please request a new one.",
+        );
       } else {
-      setError(clerkError?.message || "Verification failed. Please try again.");
+        setError(
+          clerkError?.message || "Verification failed. Please try again.",
+        );
       }
-      } finally {
+    } finally {
       setIsLoading(false);
     }
   };
@@ -234,13 +241,17 @@ export function SignupForm({ className }: SignupFormProps) {
         <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold mb-2 font-display">
           Create Your Account
         </h1>
-        <p className="text-sm sm:text-base text-muted-foreground">Get started with Largence today</p>
+        <p className="text-sm sm:text-base text-muted-foreground">
+          Get started with Largence today
+        </p>
       </div>
 
       <form className="space-y-4 sm:space-y-6" onSubmit={handleSubmit}>
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1.5">
-            <Label htmlFor="firstName" className="text-sm">First Name</Label>
+            <Label htmlFor="firstName" className="text-sm">
+              First Name
+            </Label>
             <Input
               id="firstName"
               name="firstName"
@@ -250,19 +261,24 @@ export function SignupForm({ className }: SignupFormProps) {
               autoComplete="given-name"
               className={cn(
                 "h-9 rounded-sm text-sm",
-                fieldErrors.firstName && "border-destructive focus:border-destructive"
+                fieldErrors.firstName &&
+                  "border-destructive focus:border-destructive",
               )}
             />
             {fieldErrors.firstName && (
               <div className="flex items-center gap-1 mt-1">
                 <AlertCircle className="h-3 w-3 text-destructive" />
-                <p className="text-xs text-destructive font-semibold">{fieldErrors.firstName}</p>
+                <p className="text-xs text-destructive font-semibold">
+                  {fieldErrors.firstName}
+                </p>
               </div>
             )}
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="lastName" className="text-sm">Last Name</Label>
+            <Label htmlFor="lastName" className="text-sm">
+              Last Name
+            </Label>
             <Input
               id="lastName"
               name="lastName"
@@ -272,20 +288,25 @@ export function SignupForm({ className }: SignupFormProps) {
               autoComplete="family-name"
               className={cn(
                 "h-9 rounded-sm text-sm",
-                fieldErrors.lastName && "border-destructive focus:border-destructive"
+                fieldErrors.lastName &&
+                  "border-destructive focus:border-destructive",
               )}
             />
             {fieldErrors.lastName && (
               <div className="flex items-center gap-1 mt-1">
                 <AlertCircle className="h-3 w-3 text-destructive" />
-                <p className="text-xs text-destructive font-semibold">{fieldErrors.lastName}</p>
+                <p className="text-xs text-destructive font-semibold">
+                  {fieldErrors.lastName}
+                </p>
               </div>
             )}
           </div>
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="email" className="text-sm">Work Email</Label>
+          <Label htmlFor="email" className="text-sm">
+            Work Email
+          </Label>
           <Input
             id="email"
             name="email"
@@ -295,19 +316,24 @@ export function SignupForm({ className }: SignupFormProps) {
             autoComplete="email"
             className={cn(
               "h-9 rounded-sm text-sm",
-              fieldErrors.email && "border-destructive focus:border-destructive"
+              fieldErrors.email &&
+                "border-destructive focus:border-destructive",
             )}
           />
           {fieldErrors.email && (
             <div className="flex items-center gap-1 mt-1">
               <AlertCircle className="h-3 w-3 text-destructive" />
-              <p className="text-xs text-destructive font-semibold">{fieldErrors.email}</p>
+              <p className="text-xs text-destructive font-semibold">
+                {fieldErrors.email}
+              </p>
             </div>
           )}
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="password" className="text-sm">Password</Label>
+          <Label htmlFor="password" className="text-sm">
+            Password
+          </Label>
           <div className="relative">
             <Input
               id="password"
@@ -393,7 +419,9 @@ export function SignupForm({ className }: SignupFormProps) {
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="confirmPassword" className="text-sm">Confirm Password</Label>
+          <Label htmlFor="confirmPassword" className="text-sm">
+            Confirm Password
+          </Label>
           <div className="relative">
             <Input
               id="confirmPassword"
@@ -404,7 +432,8 @@ export function SignupForm({ className }: SignupFormProps) {
               autoComplete="new-password"
               className={cn(
                 "h-9 rounded-sm text-sm pr-10",
-                fieldErrors.confirmPassword && "border-destructive focus:border-destructive"
+                fieldErrors.confirmPassword &&
+                  "border-destructive focus:border-destructive",
               )}
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
@@ -426,7 +455,9 @@ export function SignupForm({ className }: SignupFormProps) {
           {fieldErrors.confirmPassword && (
             <div className="flex items-center gap-1 mt-1">
               <AlertCircle className="h-3 w-3 text-destructive" />
-              <p className="text-xs text-destructive font-semibold">{fieldErrors.confirmPassword}</p>
+              <p className="text-xs text-destructive font-semibold">
+                {fieldErrors.confirmPassword}
+              </p>
             </div>
           )}
         </div>
@@ -463,7 +494,7 @@ export function SignupForm({ className }: SignupFormProps) {
             type="button"
             onClick={handleOAuthSignUp("oauth_google")}
             disabled={isLoading || oauthLoading !== null}
-            className="w-full h-9 rounded-sm"
+            className="w-full h-9 rounded-sm cursor-pointer"
           >
             {oauthLoading === "google" ? (
               <span className="flex items-center gap-2">
@@ -472,7 +503,7 @@ export function SignupForm({ className }: SignupFormProps) {
               </span>
             ) : (
               <>
-                <FaGoogle className="h-4 w-4" />
+                <GoogleIcon />
                 Continue with Google
               </>
             )}
@@ -483,7 +514,7 @@ export function SignupForm({ className }: SignupFormProps) {
             type="button"
             onClick={handleOAuthSignUp("oauth_microsoft")}
             disabled={isLoading || oauthLoading !== null}
-            className="w-full h-9 rounded-sm"
+            className="w-full h-9 rounded-sm cursor-pointer"
           >
             {oauthLoading === "microsoft" ? (
               <span className="flex items-center gap-2">
@@ -492,7 +523,7 @@ export function SignupForm({ className }: SignupFormProps) {
               </span>
             ) : (
               <>
-                <FaMicrosoft className="h-4 w-4" />
+                <MicrosoftIcon />
                 Continue with Microsoft
               </>
             )}

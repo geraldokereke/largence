@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import { useUser, useOrganization } from "@clerk/nextjs";
+import { useUser, useOrganization, useReverification } from "@clerk/nextjs";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@largence/components/ui/button";
 import { Input } from "@largence/components/ui/input";
@@ -50,7 +50,14 @@ import {
   Calendar,
   X,
   GraduationCap,
+  Shield,
+  Smartphone,
+  KeyRound,
+  Copy,
+  Eye,
+  EyeOff,
 } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 import { toast } from "sonner";
 import {
   CurrencySwitcher,
@@ -60,13 +67,14 @@ import {
   type Currency,
 } from "@largence/components/currency-switcher";
 
-type Tab = "profile" | "organization" | "language" | "billing";
+type Tab = "profile" | "organization" | "language" | "billing" | "security";
 
 const tabs = [
   { id: "profile" as Tab, name: "Profile", icon: User },
   { id: "organization" as Tab, name: "Organization", icon: Building2 },
   { id: "billing" as Tab, name: "Billing", icon: CreditCard },
   { id: "language" as Tab, name: "Language", icon: Languages },
+  { id: "security" as Tab, name: "Security", icon: Shield },
 ];
 
 interface BillingData {
@@ -245,6 +253,26 @@ export default function AccountPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState("English (US)");
   const [accessCode, setAccessCode] = useState("");
+
+  // MFA state
+  type MfaStep = "idle" | "setup" | "verify" | "backup" | "disable-confirm";
+  const [mfaStep, setMfaStep] = useState<MfaStep>("idle");
+  const [totpUri, setTotpUri] = useState("");
+  const [totpSecret, setTotpSecret] = useState("");
+  const [backupCodes, setBackupCodes] = useState<string[]>([]);
+  const [totpCode, setTotpCode] = useState("");
+  const [mfaLoading, setMfaLoading] = useState(false);
+  const [showSecret, setShowSecret] = useState(false);
+  const [showBackupCodes, setShowBackupCodes] = useState(false);
+
+  // Wrap TOTP mutations with reverification so Clerk shows a
+  // password-confirm modal automatically when required.
+  const createTOTPWithReverification = useReverification(
+    async () => user?.createTOTP(),
+  );
+  const disableTOTPWithReverification = useReverification(
+    async () => user?.disableTOTP(),
+  );
   
   // Currency state for billing
   const detectedCurrency = useDetectedCurrency();
@@ -1726,6 +1754,291 @@ export default function AccountPage() {
                 </div>
               </div>
             )}
+            {/* Security Tab */}
+            {activeTab === "security" && (
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-xl font-semibold mb-1 font-heading">Security</h2>
+                  <p className="text-sm text-muted-foreground">
+                    Manage two-factor authentication and account security
+                  </p>
+                </div>
+
+                <Separator />
+
+                {/* MFA section */}
+                <div className="space-y-4">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-start gap-3">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-sm bg-primary/10 shrink-0 mt-0.5">
+                        <Smartphone className="h-4 w-4 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold">Authenticator App (TOTP)</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          Use Google Authenticator, Authy, or any TOTP app to generate login codes.
+                        </p>
+                        <div className="mt-1.5">
+                          {user?.twoFactorEnabled ? (
+                            <span className="inline-flex items-center gap-1 text-[11px] font-medium text-green-700 bg-green-500/10 border border-green-200 rounded-full px-2 py-0.5">
+                              <Check className="h-3 w-3" /> Enabled
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground bg-muted border rounded-full px-2 py-0.5">
+                              Not enabled
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {mfaStep === "idle" && (
+                      user?.twoFactorEnabled ? (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-8 rounded-sm text-xs text-destructive border-destructive/30 hover:bg-destructive/5 shrink-0"
+                          onClick={() => setMfaStep("disable-confirm")}
+                        >
+                          Disable
+                        </Button>
+                      ) : (
+                        <Button
+                          size="sm"
+                          className="h-8 rounded-sm text-xs shrink-0"
+                          onClick={async () => {
+                            if (!user) return;
+                            setMfaLoading(true);
+                            try {
+                              const totp = await createTOTPWithReverification();
+                              if (!totp) return;
+                              setTotpUri(totp.uri ?? "");
+                              setTotpSecret(totp.secret ?? "");
+                              setBackupCodes((totp as any).backupCodes ?? []);
+                              setMfaStep("setup");
+                            } catch {
+                              toast.error("Failed to start MFA setup");
+                            } finally {
+                              setMfaLoading(false);
+                            }
+                          }}
+                          disabled={mfaLoading}
+                        >
+                          {mfaLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Set up"}
+                        </Button>
+                      )
+                    )}
+                  </div>
+
+                  {/* ── Setup: QR code ── */}
+                  {mfaStep === "setup" && (
+                    <div className="rounded-sm border bg-muted/30 p-4 space-y-4">
+                      <p className="text-sm font-medium">Step 1 — Scan this QR code with your authenticator app</p>
+                      <div className="flex flex-col sm:flex-row gap-6 items-start">
+                        <div className="rounded-sm border bg-white p-3 shrink-0">
+                          <QRCodeSVG value={totpUri} size={160} />
+                        </div>
+                        <div className="space-y-3 flex-1">
+                          <div>
+                            <p className="text-xs text-muted-foreground mb-1.5">
+                              Can't scan? Enter this key manually in your app:
+                            </p>
+                            <div className="flex items-center gap-2">
+                              <code className={`flex-1 text-xs bg-background border rounded-sm px-2 py-1.5 font-mono tracking-widest ${showSecret ? "" : "blur-sm select-none"}`}>
+                                {totpSecret}
+                              </code>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 rounded-sm shrink-0"
+                                onClick={() => setShowSecret((p) => !p)}
+                              >
+                                {showSecret ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 rounded-sm shrink-0"
+                                onClick={() => { navigator.clipboard.writeText(totpSecret); toast.success("Key copied"); }}
+                              >
+                                <Copy className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
+                          </div>
+                          <div className="rounded-sm bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 p-3 text-xs text-blue-700 dark:text-blue-400 space-y-1">
+                            <p className="font-medium">Recommended apps:</p>
+                            <ul className="list-disc pl-4 space-y-0.5">
+                              <li>Google Authenticator</li>
+                              <li>Authy</li>
+                              <li>Microsoft Authenticator</li>
+                              <li>1Password / Bitwarden</li>
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="border-t pt-3">
+                        <p className="text-sm font-medium mb-2">Step 2 — Enter the 6-digit code from your app</p>
+                        <div className="flex gap-2 max-w-xs">
+                          <Input
+                            value={totpCode}
+                            onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                            placeholder="000000"
+                            className="h-9 text-center text-lg tracking-[0.5em] font-mono rounded-sm"
+                            maxLength={6}
+                            onKeyDown={(e) => { if (e.key === "Enter" && totpCode.length === 6) document.getElementById("mfa-verify-btn")?.click(); }}
+                          />
+                          <Button
+                            id="mfa-verify-btn"
+                            className="h-9 rounded-sm px-4"
+                            disabled={totpCode.length !== 6 || mfaLoading}
+                            onClick={async () => {
+                              if (!user) return;
+                              setMfaLoading(true);
+                              try {
+                                await user.verifyTOTP({ code: totpCode });
+                                toast.success("Two-factor authentication enabled");
+                                setMfaStep("backup");
+                                setTotpCode("");
+                              } catch {
+                                toast.error("Invalid code — check your authenticator app and try again");
+                              } finally {
+                                setMfaLoading(false);
+                              }
+                            }}
+                          >
+                            {mfaLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Verify"}
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="flex justify-end">
+                        <Button variant="ghost" size="sm" className="h-7 text-xs rounded-sm text-muted-foreground" onClick={() => { setMfaStep("idle"); setTotpCode(""); }}>
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ── Backup codes ── */}
+                  {mfaStep === "backup" && (
+                    <div className="rounded-sm border bg-muted/30 p-4 space-y-4">
+                      <div className="flex items-start gap-3">
+                        <KeyRound className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+                        <div>
+                          <p className="text-sm font-semibold">Save your backup codes</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            If you lose access to your authenticator app, use one of these codes to sign in.
+                            Each code can only be used once. Store them somewhere safe.
+                          </p>
+                        </div>
+                      </div>
+                      {backupCodes.length > 0 && (
+                        <div className="relative">
+                          <div className={`grid grid-cols-2 gap-1.5 ${!showBackupCodes ? "blur-sm select-none" : ""}`}>
+                            {backupCodes.map((code) => (
+                              <code key={code} className="text-xs font-mono bg-background border rounded px-2 py-1 text-center tracking-widest">
+                                {code}
+                              </code>
+                            ))}
+                          </div>
+                          {!showBackupCodes && (
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <Button variant="outline" size="sm" className="h-7 text-xs rounded-sm gap-1.5 bg-background" onClick={() => setShowBackupCodes(true)}>
+                                <Eye className="h-3.5 w-3.5" /> Reveal codes
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      {showBackupCodes && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-7 text-xs rounded-sm gap-1.5 w-full"
+                          onClick={() => {
+                            navigator.clipboard.writeText(backupCodes.join("\n"));
+                            toast.success("Backup codes copied");
+                          }}
+                        >
+                          <Copy className="h-3.5 w-3.5" /> Copy all codes
+                        </Button>
+                      )}
+                      <div className="flex justify-end border-t pt-3">
+                        <Button className="h-8 rounded-sm text-xs gap-1.5" onClick={() => { setMfaStep("idle"); setShowBackupCodes(false); }}>
+                          <Check className="h-3.5 w-3.5" /> Done — I've saved my codes
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ── Disable confirm ── */}
+                  {mfaStep === "disable-confirm" && (
+                    <div className="rounded-sm border border-destructive/30 bg-destructive/5 p-4 space-y-3">
+                      <div className="flex items-start gap-3">
+                        <AlertCircle className="h-4 w-4 text-destructive mt-0.5 shrink-0" />
+                        <div>
+                          <p className="text-sm font-semibold">Disable two-factor authentication?</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            Your account will be less secure. You can re-enable 2FA at any time.
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2 justify-end">
+                        <Button variant="outline" size="sm" className="h-8 text-xs rounded-sm" onClick={() => setMfaStep("idle")}>
+                          Cancel
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          className="h-8 text-xs rounded-sm"
+                          disabled={mfaLoading}
+                          onClick={async () => {
+                            if (!user) return;
+                            setMfaLoading(true);
+                            try {
+                              await disableTOTPWithReverification();
+                              toast.success("Two-factor authentication disabled");
+                              setMfaStep("idle");
+                            } catch {
+                              toast.error("Failed to disable 2FA");
+                            } finally {
+                              setMfaLoading(false);
+                            }
+                          }}
+                        >
+                          {mfaLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Yes, disable 2FA"}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <Separator />
+
+                {/* Password section */}
+                <div className="flex items-start justify-between">
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-sm bg-muted shrink-0 mt-0.5">
+                      <KeyRound className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold">Password</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        Change your password via the Clerk account portal.
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8 rounded-sm text-xs gap-1.5 shrink-0"
+                    onClick={() => window.open("https://accounts.largence.com/user", "_blank")}
+                  >
+                    <ExternalLink className="h-3.5 w-3.5" /> Manage
+                  </Button>
+                </div>
+              </div>
+            )}
+
           </div>
         </div>
       </div>

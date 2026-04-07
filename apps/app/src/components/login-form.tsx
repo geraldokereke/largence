@@ -7,7 +7,7 @@ import { Input } from "@largence/components/ui/input";
 import { Label } from "@largence/components/ui/label";
 import { Spinner } from "@largence/components/ui/spinner";
 import { Eye, EyeOff, AlertCircle } from "lucide-react";
-import { FaGoogle, FaMicrosoft } from "react-icons/fa";
+import { GoogleIcon, MicrosoftIcon } from "@largence/components/ui/icons";
 import { useLoginForm } from "@largence/hooks/use-login-form";
 import { useSignIn } from "@clerk/nextjs";
 import Link from "next/link";
@@ -58,13 +58,22 @@ export function LoginForm({
   return (
     <div className={cn("w-full", className)}>
       <div className="mb-6 sm:mb-8 text-center md:text-left">
-        <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold mb-2 font-display">{title}</h1>
-        <p className="text-sm sm:text-base text-muted-foreground">{description}</p>
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold mb-2 font-display">
+          {title}
+        </h1>
+        <p className="text-sm sm:text-base text-muted-foreground">
+          {description}
+        </p>
       </div>
 
-      <form className="space-y-4 sm:space-y-6" onSubmit={handleSubmit(onSubmit)}>
+      <form
+        className="space-y-4 sm:space-y-6"
+        onSubmit={handleSubmit(onSubmit)}
+      >
         <div className="space-y-1.5">
-          <Label htmlFor="email" className="text-sm">Work Email</Label>
+          <Label htmlFor="email" className="text-sm">
+            Work Email
+          </Label>
           <Input
             id="email"
             name="email"
@@ -74,20 +83,25 @@ export function LoginForm({
             autoComplete="email"
             className={cn(
               "h-9 rounded-sm text-sm",
-              fieldErrors.email && "border-destructive focus:border-destructive"
+              fieldErrors.email &&
+                "border-destructive focus:border-destructive",
             )}
           />
           {fieldErrors.email && (
             <div className="flex items-center gap-1 mt-1">
               <AlertCircle className="h-3 w-3 text-destructive" />
-              <p className="text-xs text-destructive font-semibold">{fieldErrors.email}</p>
+              <p className="text-xs text-destructive font-semibold">
+                {fieldErrors.email}
+              </p>
             </div>
           )}
         </div>
 
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
-            <Label htmlFor="password" className="text-sm">Password</Label>
+            <Label htmlFor="password" className="text-sm">
+              Password
+            </Label>
           </div>
           <div className="relative">
             <Input
@@ -99,7 +113,8 @@ export function LoginForm({
               autoComplete="current-password"
               className={cn(
                 "h-9 rounded-sm text-sm pr-10",
-                fieldErrors.password && "border-destructive focus:border-destructive"
+                fieldErrors.password &&
+                  "border-destructive focus:border-destructive",
               )}
             />
             <button
@@ -127,7 +142,9 @@ export function LoginForm({
           {fieldErrors.password && (
             <div className="flex items-center gap-1 mt-1">
               <AlertCircle className="h-3 w-3 text-destructive" />
-              <p className="text-xs text-destructive font-semibold">{fieldErrors.password}</p>
+              <p className="text-xs text-destructive font-semibold">
+                {fieldErrors.password}
+              </p>
             </div>
           )}
         </div>
@@ -170,7 +187,7 @@ export function LoginForm({
             type="button"
             onClick={handleOAuthSignIn("oauth_google")}
             disabled={isLoading || oauthLoading !== null}
-            className="w-full h-9 rounded-sm"
+            className="w-full h-9 rounded-sm cursor-pointer"
           >
             {oauthLoading === "google" ? (
               <span className="flex items-center gap-2">
@@ -179,7 +196,7 @@ export function LoginForm({
               </span>
             ) : (
               <>
-                <FaGoogle className="h-4 w-4" />
+                <GoogleIcon />
                 Continue with Google
               </>
             )}
@@ -190,7 +207,7 @@ export function LoginForm({
             type="button"
             onClick={handleOAuthSignIn("oauth_microsoft")}
             disabled={isLoading || oauthLoading !== null}
-            className="w-full h-9 rounded-sm"
+            className="w-full h-9 rounded-sm cursor-pointer"
           >
             {oauthLoading === "microsoft" ? (
               <span className="flex items-center gap-2">
@@ -199,7 +216,7 @@ export function LoginForm({
               </span>
             ) : (
               <>
-                <FaMicrosoft className="h-4 w-4" />
+                <MicrosoftIcon />
                 Continue with Microsoft
               </>
             )}

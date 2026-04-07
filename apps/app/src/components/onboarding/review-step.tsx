@@ -90,6 +90,14 @@ export function ReviewStep({ formData }: ReviewStepProps) {
                 : "Not set"}
             </span>
           </div>
+          <div className="flex justify-between">
+            <span className="text-sm text-muted-foreground">Data Region</span>
+            <span className="text-sm font-medium">
+              {formData.dataRegion
+                ? { us: "United States", eu: "European Union", uk: "United Kingdom", ca: "Canada", ap: "Asia Pacific", au: "Australia" }[formData.dataRegion] || formData.dataRegion
+                : "Not set"}
+            </span>
+          </div>
           {formData.integrations.length > 0 && (
             <div className="pt-2 border-t">
               <span className="text-sm text-muted-foreground block mb-2">

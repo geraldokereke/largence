@@ -1,0 +1,18 @@
+-- AlterTable
+ALTER TABLE "Subscription" ADD COLUMN     "hasAgenticCompliance" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN     "hasAiEditing" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN     "hasApiAccess" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN     "hasAuditLogs" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN     "hasClauseLibrary" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN     "hasDocumentExport" BOOLEAN NOT NULL DEFAULT true,
+ADD COLUMN     "hasDocumentSharing" BOOLEAN NOT NULL DEFAULT true,
+ADD COLUMN     "hasDocumentVersioning" BOOLEAN NOT NULL DEFAULT true,
+ADD COLUMN     "hasESignatures" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN     "hasMatters" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN     "hasTeamCollaboration" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN     "maxAiGenerations" INTEGER NOT NULL DEFAULT 10,
+ADD COLUMN     "maxAiTokens" INTEGER NOT NULL DEFAULT 50000,
+ADD COLUMN     "maxComplianceChecks" INTEGER NOT NULL DEFAULT 5,
+ADD COLUMN     "maxESignatures" INTEGER NOT NULL DEFAULT 0,
+ADD COLUMN     "maxTemplates" INTEGER NOT NULL DEFAULT 3,
+ALTER COLUMN "paymentProvider" SET DEFAULT 'POLAR';

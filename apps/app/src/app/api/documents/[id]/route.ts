@@ -61,7 +61,6 @@ export async function PATCH(
     }
 
     const body = await request.json();
-    const { title, content, status, skipVersion } = body;
 
     // Verify ownership or organization access
     const existing = await prisma.document.findFirst({
@@ -90,6 +89,8 @@ export async function PATCH(
     }
 
     // Determine what changed
+    const { title, content, status, matterId, skipVersion } = body;
+
     const changes: string[] = [];
     if (title !== undefined && title !== existing.title) changes.push("title");
     if (content !== undefined && content !== existing.content) changes.push("content");
@@ -146,6 +147,7 @@ export async function PATCH(
         ...(title !== undefined && { title }),
         ...(content !== undefined && { content }),
         ...(status !== undefined && { status }),
+        ...(matterId !== undefined && { matterId: matterId || null }),
       },
     });
 

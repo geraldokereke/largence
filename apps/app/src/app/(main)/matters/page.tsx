@@ -38,7 +38,6 @@ import {
   Search,
   MoreVertical,
   FileText,
-  User,
   DollarSign,
   Edit,
   Trash2,
@@ -48,6 +47,10 @@ import {
   ChevronRight,
   Loader2,
 } from "lucide-react";
+import { CountryCombobox, countries } from "@largence/components/ui/country-combobox";
+
+// Derive jurisdiction display label from country combobox value
+const getJurisdictionLabel = (value: string) => countries.find((c) => c.value === value)?.label ?? value;
 import { formatDistanceToNow } from "date-fns";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -62,6 +65,7 @@ interface Matter {
   clientCompany: string | null;
   matterType: string | null;
   practiceArea: string | null;
+  jurisdiction: string | null;
   openDate: string;
   dueDate: string | null;
   billingType: string;
@@ -92,7 +96,7 @@ const PRACTICE_AREAS = ["Commercial", "Civil Rights", "Contract", "Personal Inju
 
 const emptyForm = {
   name: "", description: "", matterNumber: "", clientName: "", clientEmail: "",
-  clientPhone: "", clientCompany: "", matterType: "", practiceArea: "",
+  clientPhone: "", clientCompany: "", matterType: "", practiceArea: "", jurisdiction: "",
   dueDate: "", billingType: "HOURLY", hourlyRate: "", flatFee: "", retainerAmount: "", notes: "",
 };
 
@@ -166,7 +170,7 @@ export default function MattersPage() {
     setForm({
       name: m.name, description: m.description ?? "", matterNumber: m.matterNumber ?? "",
       clientName: m.clientName ?? "", clientEmail: "", clientPhone: "", clientCompany: m.clientCompany ?? "",
-      matterType: m.matterType ?? "", practiceArea: m.practiceArea ?? "",
+      matterType: m.matterType ?? "", practiceArea: m.practiceArea ?? "", jurisdiction: m.jurisdiction ?? "",
       dueDate: m.dueDate ? m.dueDate.split("T")[0] : "",
       billingType: m.billingType, hourlyRate: m.hourlyRate?.toString() ?? "",
       flatFee: m.flatFee?.toString() ?? "", retainerAmount: m.retainerAmount?.toString() ?? "",
@@ -227,10 +231,19 @@ export default function MattersPage() {
             <SelectTrigger className="h-8 text-sm rounded-sm"><SelectValue placeholder="Select" /></SelectTrigger>
             <SelectContent>{PRACTICE_AREAS.map((a) => <SelectItem key={a} value={a} className="text-sm">{a}</SelectItem>)}</SelectContent>
           </Select></div>
+        <div className="col-span-2 space-y-1">
+          <Label className="text-xs">Jurisdiction</Label>
+          <CountryCombobox
+            value={form.jurisdiction}
+            onValueChange={(v) => f("jurisdiction", v)}
+            placeholder="Select country / jurisdiction..."
+          />
+          <p className="text-[11px] text-muted-foreground">Governing law for AI analysis. State-level laws are inferred from the selected country and practice area.</p>
+        </div>
       </div>
 
       <div className="border-t pt-3">
-        <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide mb-2 flex items-center gap-1.5"><User className="h-3 w-3" />Client</p>
+        <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide mb-2">Client</p>
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1"><Label className="text-xs">Client Name</Label>
             <Input value={form.clientName} onChange={(e) => f("clientName", e.target.value)} placeholder="Jane Smith" className="h-8 text-sm rounded-sm" /></div>
@@ -360,13 +373,13 @@ export default function MattersPage() {
                 <div className="flex flex-wrap gap-1.5 mb-3">
                   <span className={`inline-flex items-center rounded-sm border px-1.5 py-0.5 text-[10px] font-medium ${sc.color}`}>{sc.label}</span>
                   {m.matterType && <span className="inline-flex items-center rounded-sm border px-1.5 py-0.5 text-[10px] font-medium bg-muted text-muted-foreground">{m.matterType}</span>}
+                  {m.jurisdiction && <span className="inline-flex items-center rounded-sm border px-1.5 py-0.5 text-[10px] font-medium bg-muted text-muted-foreground">{getJurisdictionLabel(m.jurisdiction)}</span>}
                 </div>
 
                 {/* Client */}
                 {m.clientName && (
-                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1.5">
-                    <User className="h-3 w-3 shrink-0" />
-                    <span className="truncate">{m.clientName}{m.clientCompany ? ` · ${m.clientCompany}` : ""}</span>
+                  <div className="text-xs text-muted-foreground mb-1.5 truncate">
+                    {m.clientName}{m.clientCompany ? ` · ${m.clientCompany}` : ""}
                   </div>
                 )}
 

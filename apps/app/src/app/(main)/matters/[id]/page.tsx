@@ -32,21 +32,23 @@ import {
   ArrowLeft,
   Briefcase,
   FileText,
-  Calendar,
   User,
   Building,
   Phone,
   Mail,
   Receipt,
-  Edit,
   Trash2,
   Loader2,
   Plus,
   MoreHorizontal,
   ExternalLink,
   Clock,
-  Sparkles,
+  Brain,
+  Import,
+  Search,
+  Check,
 } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { format, formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 import { MatterAnalysisPanel } from "@largence/components/matter-analysis-panel";
@@ -71,6 +73,7 @@ interface Matter {
   clientCompany: string | null;
   matterType: string | null;
   practiceArea: string | null;
+  jurisdiction: string | null;
   openDate: string;
   closeDate: string | null;
   dueDate: string | null;
@@ -116,6 +119,14 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
   const [newStatus, setNewStatus] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
+  // Import existing documents
+  const [importOpen, setImportOpen] = useState(false);
+  const [importDocs, setImportDocs] = useState<{ id: string; title: string; status: string; updatedAt: string }[]>([]);
+  const [importSearch, setImportSearch] = useState("");
+  const [importSelected, setImportSelected] = useState<Set<string>>(new Set());
+  const [importLoading, setImportLoading] = useState(false);
+  const [importSubmitting, setImportSubmitting] = useState(false);
+
   useEffect(() => { fetchMatter(); }, [id]);
 
   const fetchMatter = async () => {
@@ -158,6 +169,49 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
       if (res.ok) { toast.success("Matter deleted"); router.push("/matters"); }
       else { const e = await res.json(); toast.error(e.error || "Failed to delete"); }
     } catch { toast.error("Failed to delete matter"); }
+  };
+
+  const openImportDialog = async () => {
+    setImportOpen(true);
+    setImportSearch("");
+    setImportSelected(new Set());
+    setImportLoading(true);
+    try {
+      const res = await fetch("/api/documents?filter=my");
+      if (res.ok) {
+        const data = await res.json();
+        // Exclude docs already linked to this matter
+        const linked = new Set(matter?.documents.map((d) => d.id) ?? []);
+        setImportDocs(data.documents.filter((d: { id: string }) => !linked.has(d.id)));
+      }
+    } catch {
+      toast.error("Failed to load documents");
+    } finally {
+      setImportLoading(false);
+    }
+  };
+
+  const handleImport = async () => {
+    if (importSelected.size === 0) return;
+    setImportSubmitting(true);
+    try {
+      await Promise.all(
+        [...importSelected].map((docId) =>
+          fetch(`/api/documents/${docId}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ matterId: id }),
+          })
+        )
+      );
+      toast.success(`${importSelected.size} document${importSelected.size > 1 ? "s" : ""} added to matter`);
+      setImportOpen(false);
+      fetchMatter();
+    } catch {
+      toast.error("Failed to link documents");
+    } finally {
+      setImportSubmitting(false);
+    }
   };
 
   // ── Loading ──────────────────────────────────────────────────────────────
@@ -204,10 +258,21 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
-          <Button variant="outline" size="sm" className="h-8 rounded-sm gap-1.5 text-xs"
-            onClick={() => router.push(`/documents/new?matterId=${id}`)}>
-            <Plus className="h-3.5 w-3.5" /> Add Document
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="h-8 rounded-sm gap-1.5 text-xs">
+                <Plus className="h-3.5 w-3.5" /> Add Document
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="rounded-sm w-44">
+              <DropdownMenuItem className="text-xs" onClick={() => router.push(`/documents/new?matterId=${id}`)}>
+                <FileText className="h-3.5 w-3.5 mr-2" /> New Document
+              </DropdownMenuItem>
+              <DropdownMenuItem className="text-xs" onClick={openImportDialog}>
+                <Import className="h-3.5 w-3.5 mr-2" /> Import Existing
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="icon" className="h-8 w-8 rounded-sm">
@@ -242,7 +307,7 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
             </span>
           </TabsTrigger>
           <TabsTrigger value="analysis"  className="h-7 text-xs rounded-sm px-3 gap-1.5">
-            <Sparkles className="h-3 w-3" /> AI Analysis
+            <Brain className="h-3 w-3" /> AI Analysis
           </TabsTrigger>
         </TabsList>
 
@@ -292,6 +357,7 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
                 {[
                   { label: "Type",         value: matter.matterType },
                   { label: "Practice",     value: matter.practiceArea },
+                  { label: "Jurisdiction", value: matter.jurisdiction },
                   { label: "Billing",      value: BILLING_LABEL[matter.billingType] },
                   { label: "Rate",         value: matter.hourlyRate ? `$${matter.hourlyRate}/hr` : matter.flatFee ? `$${matter.flatFee.toLocaleString()}` : matter.retainerAmount ? `$${matter.retainerAmount.toLocaleString()} retainer` : null },
                   { label: "Opened",       value: format(new Date(matter.openDate), "dd MMM yyyy") },
@@ -359,10 +425,16 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
                 <p className="text-sm font-medium">No documents yet</p>
                 <p className="text-xs text-muted-foreground">Add documents to this matter to get started</p>
               </div>
-              <Button size="sm" className="h-8 rounded-sm gap-1.5 text-xs mt-1"
-                onClick={() => router.push(`/documents/new?matterId=${id}`)}>
-                <Plus className="h-3.5 w-3.5" /> New Document
-              </Button>
+              <div className="flex gap-2 mt-1">
+                <Button size="sm" className="h-8 rounded-sm gap-1.5 text-xs"
+                  onClick={() => router.push(`/documents/new?matterId=${id}`)}>
+                  <Plus className="h-3.5 w-3.5" /> New Document
+                </Button>
+                <Button size="sm" variant="outline" className="h-8 rounded-sm gap-1.5 text-xs"
+                  onClick={openImportDialog}>
+                  <Import className="h-3.5 w-3.5" /> Import Existing
+                </Button>
+              </div>
             </div>
           ) : (
             <div className="space-y-2">
@@ -388,10 +460,16 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
                 </div>
               ))}
 
-              <Button variant="outline" size="sm" className="w-full h-8 rounded-sm gap-1.5 text-xs mt-1 border-dashed"
-                onClick={() => router.push(`/documents/new?matterId=${id}`)}>
-                <Plus className="h-3.5 w-3.5" /> Add Document
-              </Button>
+              <div className="flex gap-2 mt-1">
+                <Button variant="outline" size="sm" className="h-8 rounded-sm gap-1.5 text-xs border-dashed flex-1"
+                  onClick={() => router.push(`/documents/new?matterId=${id}`)}>
+                  <Plus className="h-3.5 w-3.5" /> New Document
+                </Button>
+                <Button variant="outline" size="sm" className="h-8 rounded-sm gap-1.5 text-xs border-dashed flex-1"
+                  onClick={openImportDialog}>
+                  <Import className="h-3.5 w-3.5" /> Import Existing
+                </Button>
+              </div>
             </div>
           )}
         </TabsContent>
@@ -407,10 +485,95 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
               clientName: matter.clientName ?? undefined,
               matterType: matter.matterType ?? undefined,
               practiceArea: matter.practiceArea ?? undefined,
+              jurisdiction: matter.jurisdiction ?? undefined,
             }}
           />
         </TabsContent>
       </Tabs>
+
+      {/* Import existing documents dialog */}
+      <Dialog open={importOpen} onOpenChange={setImportOpen}>
+        <DialogContent className="sm:max-w-md rounded-sm">
+          <DialogHeader>
+            <DialogTitle className="text-base">Import Existing Documents</DialogTitle>
+            <DialogDescription className="text-sm">
+              Select documents to add to this matter. They will remain accessible from your Documents library.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="relative">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+            <Input
+              placeholder="Search documents..."
+              value={importSearch}
+              onChange={(e) => setImportSearch(e.target.value)}
+              className="h-8 pl-8 text-sm rounded-sm"
+            />
+          </div>
+
+          <div className="max-h-64 overflow-y-auto space-y-1 -mx-1 px-1">
+            {importLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+              </div>
+            ) : importDocs.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-8">
+                No unlinked documents found
+              </p>
+            ) : (
+              importDocs
+                .filter((d) => d.title.toLowerCase().includes(importSearch.toLowerCase()))
+                .map((doc) => {
+                  const selected = importSelected.has(doc.id);
+                  return (
+                    <button
+                      key={doc.id}
+                      type="button"
+                      onClick={() => {
+                        const next = new Set(importSelected);
+                        selected ? next.delete(doc.id) : next.add(doc.id);
+                        setImportSelected(next);
+                      }}
+                      className={`w-full flex items-center gap-3 rounded-sm px-2.5 py-2 text-left transition-colors ${
+                        selected ? "bg-primary/10 border border-primary/30" : "hover:bg-muted border border-transparent"
+                      }`}
+                    >
+                      <div className={`flex h-7 w-7 items-center justify-center rounded-sm shrink-0 ${selected ? "bg-primary/20" : "bg-muted"}`}>
+                        <FileText className={`h-3.5 w-3.5 ${selected ? "text-primary" : "text-muted-foreground"}`} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{doc.title}</p>
+                        <p className="text-[11px] text-muted-foreground">
+                          Updated {formatDistanceToNow(new Date(doc.updatedAt), { addSuffix: true })}
+                        </p>
+                      </div>
+                      <span className={`inline-flex items-center rounded-sm border px-1.5 py-0.5 text-[10px] font-medium ${DOC_STATUS_COLOR[doc.status] ?? "bg-muted text-muted-foreground border-border"}`}>
+                        {doc.status}
+                      </span>
+                      {selected && <Check className="h-3.5 w-3.5 text-primary shrink-0" />}
+                    </button>
+                  );
+                })
+            )}
+          </div>
+
+          <DialogFooter className="gap-2">
+            <Button variant="outline" className="h-8 text-sm rounded-sm" onClick={() => setImportOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              className="h-8 text-sm rounded-sm gap-1.5"
+              onClick={handleImport}
+              disabled={importSelected.size === 0 || importSubmitting}
+            >
+              {importSubmitting
+                ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                : <Import className="h-3.5 w-3.5" />}
+              Add {importSelected.size > 0 ? `${importSelected.size} ` : ""}Document{importSelected.size !== 1 ? "s" : ""}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Status dialog */}
       <Dialog open={statusDialogOpen} onOpenChange={setStatusDialogOpen}>

@@ -36,6 +36,7 @@ interface MatterContext {
   clientName?: string;
   matterType?: string;
   practiceArea?: string;
+  jurisdiction?: string;
 }
 
 interface Defect {
@@ -188,6 +189,7 @@ export function MatterAnalysisPanel({
           clientName: matterContext.clientName,
           matterType: matterContext.matterType,
           practiceArea: matterContext.practiceArea,
+          jurisdiction: matterContext.jurisdiction,
         }),
       });
       const data = await res.json();

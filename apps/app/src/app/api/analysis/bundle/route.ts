@@ -29,6 +29,7 @@ export async function POST(request: NextRequest) {
         clientName?: string;
         matterType?: string;
         practiceArea?: string;
+        jurisdiction?: string;
       };
     };
 
@@ -55,15 +56,33 @@ export async function POST(request: NextRequest) {
       })
       .join("\n\n");
 
+    // Country combobox stores values like "nigeria", "united-kingdom" — convert to readable label
+    const jurisdictionRaw = matterContext?.jurisdiction || "";
+    const jurisdictionLabelMap: Record<string, string> = {
+      "nigeria": "Nigeria", "ghana": "Ghana", "kenya": "Kenya", "south-africa": "South Africa",
+      "egypt": "Egypt", "tanzania": "Tanzania", "uganda": "Uganda", "rwanda": "Rwanda",
+      "ethiopia": "Ethiopia", "cote-divoire": "Côte d'Ivoire", "senegal": "Senegal",
+      "cameroon": "Cameroon", "morocco": "Morocco", "zimbabwe": "Zimbabwe",
+      "botswana": "Botswana", "namibia": "Namibia",
+      "united-kingdom": "England & Wales", "united-states": "United States",
+      "canada": "Canada", "germany": "Germany", "france": "France",
+      "netherlands": "Netherlands", "uae": "United Arab Emirates",
+      "india": "India", "singapore": "Singapore", "australia": "Australia",
+    };
+    const jurisdiction = jurisdictionLabelMap[jurisdictionRaw] || jurisdictionRaw || "General";
     const contextLine = matterContext
-      ? `Matter: ${matterContext.matterName || "Unnamed"} | Client: ${matterContext.clientName || "Unknown"} | Type: ${matterContext.matterType || "General"} | Practice Area: ${matterContext.practiceArea || "General"}`
+      ? `Matter: ${matterContext.matterName || "Unnamed"} | Client: ${matterContext.clientName || "Unknown"} | Type: ${matterContext.matterType || "General"} | Practice Area: ${matterContext.practiceArea || "General"} | Jurisdiction: ${jurisdiction}`
       : "";
+
+    const jurisdictionInstruction = jurisdiction && jurisdiction !== "General"
+      ? `JURISDICTION: All legal analysis must be grounded in the law of ${jurisdiction}. Cite specific statutes, regulations, and case law applicable in ${jurisdiction}. Where principles differ from other jurisdictions, explicitly note this. Where the applicable law is uncertain, flag it.`
+      : "JURISDICTION: Apply general legal principles. Note where jurisdiction-specific law would materially affect the analysis.";
 
     const systemPrompt = `You are an expert legal analyst at a leading law firm. Analyse this document bundle and produce a decision-ready, structured analysis for senior lawyer review.
 
 Your analysis must be:
 - Specific and actionable — reference exact clauses, dates, and terms from the source documents
-- Legally grounded — apply relevant legal principles to the specific facts presented
+- Jurisdiction-specific — ${jurisdictionInstruction}
 - Risk-prioritised — surface the most legally significant risks, not surface-level observations
 - Senior-ready — the output should reduce senior review time, not add to it
 

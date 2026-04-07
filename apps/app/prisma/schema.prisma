@@ -620,6 +620,7 @@ model Matter {
   // Matter type and categorization
   matterType       String?  // Litigation, Corporate, Real Estate, etc.
   practiceArea     String?
+  jurisdiction     String?  // e.g. England & Wales, Nigeria (Federal), New York, etc.
   
   // Important dates
   openDate         DateTime @default(now())

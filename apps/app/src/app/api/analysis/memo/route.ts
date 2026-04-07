@@ -12,12 +12,13 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { analysis, matterName, clientName, matterType, practiceArea } = body as {
+    const { analysis, matterName, clientName, matterType, practiceArea, jurisdiction } = body as {
       analysis: Record<string, unknown>;
       matterName?: string;
       clientName?: string;
       matterType?: string;
       practiceArea?: string;
+      jurisdiction?: string;
     };
 
     if (!analysis) {
@@ -30,6 +31,22 @@ export async function POST(request: NextRequest) {
       year: "numeric",
     });
 
+    const jurisdictionLabelMap: Record<string, string> = {
+      "nigeria": "Nigeria", "ghana": "Ghana", "kenya": "Kenya", "south-africa": "South Africa",
+      "egypt": "Egypt", "tanzania": "Tanzania", "uganda": "Uganda", "rwanda": "Rwanda",
+      "ethiopia": "Ethiopia", "cote-divoire": "Côte d'Ivoire", "senegal": "Senegal",
+      "cameroon": "Cameroon", "morocco": "Morocco", "zimbabwe": "Zimbabwe",
+      "botswana": "Botswana", "namibia": "Namibia",
+      "united-kingdom": "England & Wales", "united-states": "United States",
+      "canada": "Canada", "germany": "Germany", "france": "France",
+      "netherlands": "Netherlands", "uae": "United Arab Emirates",
+      "india": "India", "singapore": "Singapore", "australia": "Australia",
+    };
+    const jurisdictionLabel = jurisdiction ? (jurisdictionLabelMap[jurisdiction] || jurisdiction) : null;
+    const jurisdictionClause = jurisdictionLabel
+      ? `- Jurisdiction-specific: all statutory references, case citations, and legal principles must be drawn from the law of ${jurisdictionLabel}. Explicitly state the governing law in the memo header.`
+      : `- Note the governing jurisdiction if determinable from the documents, or flag it as requiring clarification.`;
+
     const systemPrompt = `You are a senior legal associate at a leading law firm drafting an internal briefing memo for partner review. The memo must be structured, concise, and decision-ready — enabling the supervising partner to validate the analysis efficiently and decide how to proceed.
 
 Requirements:
@@ -37,6 +54,7 @@ Requirements:
 - Specific and evidence-based — reference exact documents, dates, and clause numbers
 - Risk-rated: assign HIGH / MEDIUM / LOW to each identified issue
 - Reduce senior rewrite time: the memo should be largely usable as-is after review
+${jurisdictionClause}
 
 Output clean HTML using: <h2> for section headings, <h3> for sub-headings, <p> for paragraphs, <ul>/<li> for bullet lists, <ol>/<li> for numbered lists, <strong> for emphasis, <table>/<tr>/<th>/<td> for structured tables. Do not use markdown.
 
@@ -58,6 +76,7 @@ MATTER: ${matterName || "Unnamed Matter"}
 CLIENT: ${clientName || "Unknown Client"}
 MATTER TYPE: ${matterType || "General"}
 PRACTICE AREA: ${practiceArea || "General"}
+JURISDICTION: ${jurisdictionLabel || "General / Not specified"}
 
 BUNDLE ANALYSIS FINDINGS:
 ${JSON.stringify(analysis, null, 2)}

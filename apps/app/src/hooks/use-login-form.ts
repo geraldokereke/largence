@@ -68,6 +68,31 @@ export function useLoginForm() {
           if (result.status === "complete") {
             await setActive({ session: result.createdSessionId });
             router.push("/onboarding");
+          } else {
+            console.log("Sign in incomplete:", result);
+            
+            // Handle SSO fallback
+            if (result.status === "needs_first_factor") {
+              const ssoFactor = result.supportedFirstFactors?.find(
+                (f) => f.strategy === "saml" || f.strategy === "enterprise_sso" || f.strategy.startsWith("oauth_")
+              );
+              
+              if (ssoFactor) {
+                await signIn.authenticateWithRedirect({
+                  strategy: ssoFactor.strategy as any,
+                  redirectUrl: "/sso-callback",
+                  redirectUrlComplete: "/onboarding",
+                });
+                return;
+              }
+              
+              setError("Please sign in with your provider (e.g. Google/Microsoft).");
+            } else if (result.status === "needs_second_factor") {
+              setError("Two-factor authentication is required but not supported here yet.");
+            } else {
+              setError("Sign in requires further action.");
+            }
+            setIsLoading(false);
           }
         }
       } catch (err: any) {

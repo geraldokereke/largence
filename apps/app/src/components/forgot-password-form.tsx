@@ -46,6 +46,7 @@ export function ForgotPasswordForm({ className }: ForgotPasswordFormProps) {
       setSuccess("We've sent a verification code to your email");
     } catch (err: any) {
       console.error("Reset password error:", err);
+      if (!signIn) return;
       const clerkError = err?.errors?.[0];
 
       if (clerkError?.code === "strategy_for_user_invalid") {
@@ -167,7 +168,9 @@ export function ForgotPasswordForm({ className }: ForgotPasswordFormProps) {
           )}
 
           <div className="space-y-1.5">
-            <Label htmlFor="code" className="text-sm">Verification Code</Label>
+            <Label htmlFor="code" className="text-sm">
+              Verification Code
+            </Label>
             <Input
               id="code"
               name="code"
@@ -183,7 +186,9 @@ export function ForgotPasswordForm({ className }: ForgotPasswordFormProps) {
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="password" className="text-sm">New Password</Label>
+            <Label htmlFor="password" className="text-sm">
+              New Password
+            </Label>
             <div className="relative">
               <Input
                 id="password"
@@ -264,7 +269,9 @@ export function ForgotPasswordForm({ className }: ForgotPasswordFormProps) {
         )}
 
         <div className="space-y-1.5">
-          <Label htmlFor="email" className="text-sm">Email Address</Label>
+          <Label htmlFor="email" className="text-sm">
+            Email Address
+          </Label>
           <Input
             id="email"
             name="email"

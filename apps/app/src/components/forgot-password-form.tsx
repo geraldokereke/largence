@@ -46,10 +46,38 @@ export function ForgotPasswordForm({ className }: ForgotPasswordFormProps) {
       setSuccess("We've sent a verification code to your email");
     } catch (err: any) {
       console.error("Reset password error:", err);
-      setError(
-        err?.errors?.[0]?.message ||
-          "Failed to send reset code. Please try again.",
-      );
+      const clerkError = err?.errors?.[0];
+
+      if (clerkError?.code === "strategy_for_user_invalid") {
+        // Attempt SSO redirect for users who don't have passwords
+        try {
+          const result = await signIn.create({ identifier: email });
+          const ssoFactor = result.supportedFirstFactors?.find(
+            (f) =>
+              f.strategy === "saml" ||
+              f.strategy === "enterprise_sso" ||
+              f.strategy.startsWith("oauth_"),
+          );
+
+          if (ssoFactor) {
+            await signIn.authenticateWithRedirect({
+              strategy: ssoFactor.strategy as any,
+              redirectUrl: "/sso-callback",
+              redirectUrlComplete: "/onboarding",
+            });
+            return;
+          }
+        } catch (fallbackErr) {
+          console.error("SSO fallback error:", fallbackErr);
+        }
+        setError(
+          "Your account is managed by an external provider (e.g., Enterprise SSO or Google). Please return to login.",
+        );
+      } else {
+        setError(
+          clerkError?.message || "Failed to send reset code. Please try again.",
+        );
+      }
     } finally {
       setIsLoading(false);
     }

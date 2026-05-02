@@ -17,7 +17,7 @@ export default function Error({
   }, [error]);
 
   return (
-    <div className="flex min-h-[400px] flex-col items-center justify-center space-y-4 animate-in fade-in-50 duration-300">
+    <div className="flex min-h-100 flex-col items-center justify-center space-y-4 animate-in fade-in-50 duration-300">
       <div className="flex items-center justify-center rounded-full bg-destructive/10 p-4">
         <AlertCircle className="h-10 w-10 text-destructive" />
       </div>

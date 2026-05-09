@@ -1,0 +1,243 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "./client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum OrgType {
+  LAW_FIRM
+  CORPORATE
+  GOVERNMENT
+  SOLO
+  ACADEMIC
+}
+
+enum OrgTier {
+  FREE
+  EDGE
+  VERTEX
+  ZENITH
+}
+
+enum OnboardingMode {
+  SELF_SERVE
+  INVITE_ONLY
+  ENTERPRISE_SSO
+}
+
+enum AuthProvider {
+  LOCAL
+  GOOGLE
+  MICROSOFT
+  SAML
+  OIDC
+  SCIM
+}
+
+enum SSOProtocol {
+  SAML
+  OIDC
+}
+
+enum UserTier {
+  LEARN
+  EDGE
+  VERTEX
+  ZENITH
+}
+
+enum Role {
+  ORG_ADMIN
+  WORKSPACE_ADMIN
+  PARTNER
+  FEE_EARNER
+  PARALEGAL
+  CLIENT
+  EXTERNAL_REVIEWER
+  BILLING_MANAGER
+  READ_ONLY
+  API_CONSUMER
+}
+
+model Organisation {
+  id             String         @id @default(uuid())
+  name           String
+  slug           String         @unique
+  type           OrgType
+  tier           OrgTier
+  onboardingMode OnboardingMode
+  mfaRequired    Boolean        @default(false)
+  trialEndsAt    DateTime?
+  isSandbox      Boolean        @default(false)
+  scimEnabled    Boolean        @default(false)
+  scimApiKey     String?
+  dataResidency  String         @default("eu-west-2")
+  isActive       Boolean        @default(true)
+  metadata       Json?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  users         User[]
+  invites       Invite[]
+  ssoConfigs    SSOConfig[]
+  refreshTokens RefreshToken[]
+}
+
+model User {
+  id                  String       @id @default(uuid())
+  email               String       @unique
+  emailVerified       Boolean      @default(false)
+  emailVerifiedAt     DateTime?
+  passwordHash        String?
+  firstName           String
+  lastName            String
+  orgId               String
+  roles               Role[]
+  tier                UserTier
+  mfaEnabled          Boolean      @default(false)
+  mfaSecret           String?
+  mfaEnabledAt        DateTime?
+  lastLoginAt         DateTime?
+  lastLoginIp         String?
+  failedLoginAttempts Int          @default(0)
+  lockedUntil         DateTime?
+  provider            AuthProvider @default(LOCAL)
+  providerId          String?
+  externalId          String?
+  isActive            Boolean      @default(true)
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+
+  org                     Organisation             @relation(fields: [orgId], references: [id])
+  refreshTokens           RefreshToken[]
+  mfaBackupCodes          MFABackupCode[]
+  emailVerificationTokens EmailVerificationToken[]
+  passwordResetTokens     PasswordResetToken[]
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid())
+  tokenHash String    @unique
+  family    String
+  userId    String
+  orgId     String
+  deviceId  String?
+  userAgent String?
+  ipAddress String?
+  expiresAt DateTime
+  revokedAt DateTime?
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User         @relation(fields: [userId], references: [id])
+  org  Organisation @relation(fields: [orgId], references: [id])
+}
+
+model EmailVerificationToken {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  tokenHash String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(uuid())
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model MFABackupCode {
+  id        String    @id @default(uuid())
+  userId    String
+  codeHash  String
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Invite {
+  id         String    @id @default(uuid())
+  orgId      String
+  email      String
+  role       String
+  invitedBy  String
+  tokenHash  String    @unique
+  expiresAt  DateTime
+  acceptedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  org Organisation @relation(fields: [orgId], references: [id])
+}
+
+model SSOConfig {
+  id           String      @id @default(uuid())
+  orgId        String      @unique
+  protocol     SSOProtocol
+  entryPoint   String?
+  cert         String?
+  issuer       String?
+  discoveryUrl String?
+  clientId     String?
+  clientSecret String?
+  scopes       String[]
+  attributeMap Json?
+  isActive     Boolean     @default(true)
+  createdAt    DateTime    @default(now())
+
+  org Organisation @relation(fields: [orgId], references: [id])
+}
+
+model AuditEvent {
+  id        String   @id @default(uuid())
+  userId    String?
+  orgId     String?
+  orgSlug   String?
+  action    String
+  ipAddress String?
+  userAgent String?
+  deviceId  String?
+  result    String
+  metadata  Json?
+  createdAt DateTime @default(now())
+}
+
+model Department {
+  id                 String  @id @default(uuid())
+  orgId              String
+  name               String
+  code               String
+  headOfDepartment   String?
+  parentDepartmentId String?
+}
+
+model Workspace {
+  id                  String  @id @default(uuid())
+  orgId               String
+  departmentId        String?
+  name                String
+  jurisdictionProfile Json
+}
+
+model Permission {
+  id         String    @id @default(uuid())
+  userId     String
+  orgId      String
+  resource   String
+  action     String
+  conditions Json?
+  grantedBy  String
+  expiresAt  DateTime?
+}

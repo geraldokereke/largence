@@ -5,12 +5,15 @@
     "dev": "turbo run dev",
     "dev:web": "turbo run dev --filter=@largence/web",
     "dev:app": "turbo run dev --filter=@largence/app",
+    "dev:api": "turbo run dev --filter=@largence/api",
     "build": "turbo run build",
     "build:web": "turbo run build --filter=@largence/web",
     "build:app": "turbo run build --filter=@largence/app",
+    "build:api": "turbo run build --filter=@largence/api",
     "start": "turbo run start",
     "start:web": "turbo run start --filter=@largence/web",
     "start:app": "turbo run start --filter=@largence/app",
+    "start:api": "turbo run start --filter=@largence/api",
     "lint": "turbo run lint",
     "lint:fix": "turbo run lint -- --fix",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,mdx,css,yml,yaml}\"",
@@ -25,6 +28,7 @@
     "db:studio": "turbo run db:studio",
     "app": "pnpm --filter @largence/app",
     "web": "pnpm --filter @largence/web",
+    "api": "pnpm --filter @largence/api",
     "ui": "pnpm --filter @largence/ui"
   },
   "devDependencies": {

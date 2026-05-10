@@ -75,7 +75,7 @@ export async function GET(request: Request) {
           },
           orderBy: { createdAt: "desc" },
         });
-        
+
         documents = collaborations.map((c) => ({
           ...c.document,
           collaboratorPermission: c.permission,
@@ -137,7 +137,7 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json({ document }, { status: 201 });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Create document error:", error);
     return NextResponse.json(
       { error: "Failed to create document" },

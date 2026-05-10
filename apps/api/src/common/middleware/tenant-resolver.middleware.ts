@@ -1,8 +1,9 @@
-import { Injectable, NestMiddleware, NotFoundException, ForbiddenException } from '@nestjs/common';
-import { Request, Response, NextFunction } from 'express';
+import { ForbiddenException, Injectable, NestMiddleware, NotFoundException } from '@nestjs/common';
+import { Organisation } from '@prisma/client';
+import { NextFunction, Response } from 'express';
+import { RequestWithUser } from '../../auth/decorators/current-user.decorator';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RedisService } from '../../redis/redis.service';
-import { Organisation } from '@prisma/client';
 
 @Injectable()
 export class TenantResolverMiddleware implements NestMiddleware {
@@ -11,10 +12,10 @@ export class TenantResolverMiddleware implements NestMiddleware {
     private redis: RedisService,
   ) {}
 
-  async use(req: Request, res: Response, next: NextFunction) {
+  async use(req: RequestWithUser, res: Response, next: NextFunction) {
     const host = req.headers.host || '';
     const baseDomain = process.env.BASE_DOMAIN || 'largence.com';
-    
+
     // Parse subdomain
     let subdomain = '';
     if (host.includes(baseDomain)) {
@@ -23,7 +24,7 @@ export class TenantResolverMiddleware implements NestMiddleware {
 
     // Handle public/self-serve subdomains
     if (!subdomain || subdomain === 'app' || subdomain === 'www') {
-      (req as any).isPublicTenant = true;
+      req.isPublicTenant = true;
       return next();
     }
 
@@ -50,7 +51,7 @@ export class TenantResolverMiddleware implements NestMiddleware {
       throw new ForbiddenException('ORGANISATION_SUSPENDED');
     }
 
-    (req as any).org = org;
+    req.org = org;
     next();
   }
 }

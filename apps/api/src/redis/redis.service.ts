@@ -1,5 +1,5 @@
 import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
-import Redis from 'ioredis';
+import { Redis } from 'ioredis';
 
 @Injectable()
 export class RedisService implements OnModuleInit, OnModuleDestroy {
@@ -7,6 +7,7 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
 
   async onModuleInit() {
     this.client = new Redis(process.env.REDIS_URL || 'redis://localhost:6379');
+    await this.client.ping();
   }
 
   async onModuleDestroy() {
@@ -41,7 +42,6 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     return this.client.pipeline();
   }
 
-  // Helper for JSON
   async getJson<T>(key: string): Promise<T | null> {
     const data = await this.get(key);
     if (!data) return null;

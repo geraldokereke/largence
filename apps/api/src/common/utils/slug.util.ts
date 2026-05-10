@@ -12,7 +12,7 @@ export class SlugUtil {
       .replace(/[^a-z0-9]+/g, '-') // Replace non-alphanumeric with hyphens
       .replace(/^-+|-+$/g, '') // Strip leading/trailing hyphens
       .substring(0, 63);
-    
+
     return slug || 'org'; // Fallback if name was only special chars
   }
 

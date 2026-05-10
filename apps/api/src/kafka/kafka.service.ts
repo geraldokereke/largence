@@ -1,6 +1,19 @@
-import { Injectable, OnModuleDestroy, OnModuleInit, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { Kafka, Producer } from 'kafkajs';
 import { PrismaService } from '../prisma/prisma.service';
+
+export interface AuditEventPayload {
+  userId?: string;
+  orgId?: string;
+  orgSlug?: string;
+  action: string;
+  ip?: string;
+  userAgent?: string;
+  deviceId?: string;
+  result: string;
+  metadata?: Prisma.JsonValue;
+}
 
 @Injectable()
 export class KafkaService implements OnModuleInit, OnModuleDestroy {
@@ -29,30 +42,43 @@ export class KafkaService implements OnModuleInit, OnModuleDestroy {
     await this.producer.disconnect();
   }
 
-  async publishEvent(topic: string, payload: any) {
+  async publishEvent(topic: string, payload: AuditEventPayload) {
     try {
       await this.producer.send({
         topic,
         messages: [{ value: JSON.stringify(payload) }],
       });
     } catch (error) {
-      this.logger.warn(`Kafka failed, falling back to DB for audit: ${topic}`);
-      
-      // Fallback to DB if topic is audit related
+      this.logger.error({
+        type: 'KAFKA_FAILURE',
+        message: 'Kafka producer failed, attempting database fallback',
+        topic,
+        error: (error as Error).message,
+      });
+
       if (topic.includes('audit')) {
-        await this.prisma.auditEvent.create({
-          data: {
-            userId: payload.userId,
-            orgId: payload.orgId,
-            orgSlug: payload.orgSlug,
-            action: payload.action,
-            ipAddress: payload.ip,
-            userAgent: payload.userAgent,
-            deviceId: payload.deviceId,
-            result: payload.result,
-            metadata: payload.metadata,
-          },
-        });
+        try {
+          await this.prisma.auditEvent.create({
+            data: {
+              userId: payload.userId,
+              orgId: payload.orgId,
+              orgSlug: payload.orgSlug,
+              action: payload.action,
+              ipAddress: payload.ip,
+              userAgent: payload.userAgent,
+              deviceId: payload.deviceId,
+              result: payload.result,
+              metadata: payload.metadata ?? Prisma.JsonNull,
+            },
+          });
+        } catch (dbError) {
+          this.logger.error({
+            type: 'CRITICAL_AUDIT_FAILURE',
+            message: 'Both Kafka and Database fallback failed for audit logging',
+            error: (dbError as Error).message,
+            payload,
+          });
+        }
       }
     }
   }

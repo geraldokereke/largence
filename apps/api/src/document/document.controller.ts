@@ -101,4 +101,10 @@ export class DocumentController {
   async remove(@Param('id') id: string, @CurrentUser() user: User) {
     return this.documentService.remove(id, user.id);
   }
+
+  @Get(':id/audit')
+  @ApiOperation({ summary: 'Get document audit trail' })
+  async getAudit(@Param('id') id: string) {
+    return this.documentService.getAudits(id);
+  }
 }

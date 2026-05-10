@@ -170,6 +170,18 @@ export class DocumentService {
     return await this.searchService.search(query, filters);
   }
 
+  async getAudits(documentId: string) {
+    return this.prisma.documentAudit.findMany({
+      where: { documentId },
+      include: {
+        user: {
+          select: { id: true, firstName: true, lastName: true, email: true },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
   async update(id: string, dto: UpdateDocumentDto, userId: string) {
     const updated = await this.prisma.document.update({
       where: { id },

@@ -68,6 +68,11 @@ services:
       - apps/api/.env
     ports:
       - "3001:3001"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/apps/api/node_modules
+    command: npm run start:dev --prefix apps/api
 
   minio:
     image: minio/minio:latest

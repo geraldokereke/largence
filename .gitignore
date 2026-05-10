@@ -1,18 +1,24 @@
+# Dependencies
 node_modules/
+**/node_modules/
 .pnp/
 .pnpm/
-.zed/
-.env
 
-.vscode/
-
-**/node_modules/
-**/.pnp/
-**/.pnpm/
-
-**/pnpm-lock.yaml
-**/pnpmfile.cjs
-**/.envrc
-
-.DS_Store
+# Build artifacts
+dist/
+**/dist/
+build/
+**/build/
 .turbo/
+
+# Environment / Local config
+.env
+.env.*
+.envrc
+**/.envrc
+.vscode/
+.zed/
+
+# OS specific
+.DS_Store
+Thumbs.db

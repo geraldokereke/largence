@@ -24,7 +24,7 @@ export class SsoService {
       entryPoint: config.entryPoint,
       issuer: config.issuer || `https://${orgSlug}.${process.env.BASE_DOMAIN}`,
       cert: config.cert,
-      callbackUrl: `https://api.${process.env.BASE_DOMAIN}/auth/sso/saml/callback`,
+      callbackUrl: `https://auth.${process.env.BASE_DOMAIN}/auth/sso/saml/callback`,
     };
   }
 }

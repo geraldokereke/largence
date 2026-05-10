@@ -12,7 +12,10 @@ import { InvitesService } from './invites.service';
 
 @ApiTags('auth')
 @ApiBearerAuth()
-@Controller('auth/invites')
+@Controller({
+  path: 'auth/invites',
+  host: `auth.${process.env.BASE_DOMAIN || 'localhost'}`,
+})
 export class InvitesController {
   constructor(private invitesService: InvitesService) {}
 

@@ -40,24 +40,15 @@ export class MicrosoftStrategy extends PassportStrategy(Strategy, 'microsoft') {
     // passport-microsoft profile normalization
     const socialProfile = {
       id: profile.id,
-      emails: profile.emails || [
-        { value: profile.userPrincipalName || 'no-email' },
-      ],
+      emails: profile.emails || [{ value: profile.userPrincipalName || 'no-email' }],
       name: {
-        givenName:
-          profile.name?.givenName || profile.displayName?.split(' ')[0] || '',
+        givenName: profile.name?.givenName || profile.displayName?.split(' ')[0] || '',
         familyName:
-          profile.name?.familyName ||
-          profile.displayName?.split(' ').slice(1).join(' ') ||
-          '',
+          profile.name?.familyName || profile.displayName?.split(' ').slice(1).join(' ') || '',
       },
     };
 
-    const user = await this.authService.validateSocialLogin(
-      socialProfile,
-      'microsoft',
-      orgSlug,
-    );
+    const user = await this.authService.validateSocialLogin(socialProfile, 'microsoft', orgSlug);
     return user;
   }
 }

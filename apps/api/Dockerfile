@@ -1,13 +1,14 @@
-# Builder stage
-FROM node:20-alpine AS builder
+# --- Build Stage ---
+FROM node:24-slim AS builder
 
 WORKDIR /app
 
-# Install pnpm
+# Install pnpm and openssl
+RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 RUN npm install -g pnpm
 
-# Copy package files
-COPY package.json pnpm-lock.yaml ./
+# Copy root lockfile and package.json
+COPY pnpm-lock.yaml package.json pnpm-workspace.yaml ./
 COPY apps/api/package.json ./apps/api/
 
 # Install dependencies
@@ -15,32 +16,33 @@ RUN pnpm install --frozen-lockfile
 
 # Copy source code
 COPY apps/api ./apps/api
-COPY .prettierrc .editorconfig ./
 
-# Generate Prisma client
+# Generate Prisma Client (Explicitly point to the schema location)
 WORKDIR /app/apps/api
 RUN npx prisma generate --schema=src/prisma/schema.prisma
 
 # Build the app
-RUN pnpm run build
+RUN npm run build
 
-# Production stage
-FROM node:20-alpine AS production
+# --- Production Stage ---
+FROM node:24-slim
+
+# Install openssl for Prisma
+RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Create non-root user
-RUN addgroup -S largence && adduser -S largence -G largence
-USER largence
+# Copy built artifacts and dependencies
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/apps/api/node_modules ./apps/api/node_modules
+COPY --from=builder /app/apps/api/dist ./apps/api/dist
+COPY --from=builder /app/apps/api/package.json ./apps/api/
+COPY --from=builder /app/apps/api/src/prisma ./apps/api/src/prisma
 
-# Copy built assets and production dependencies
-COPY --from=builder /app/apps/api/dist ./dist
-COPY --from=builder /app/apps/api/node_modules ./node_modules
-COPY --from=builder /app/apps/api/package.json ./
+# Set working directory to the API app
+WORKDIR /app/apps/api
 
 EXPOSE 3001
 
-HEALTHCHECK --interval=30s --timeout=3s \
-  CMD curl -f http://localhost:3001/auth/health || exit 1
-
-CMD ["node", "dist/main"]
+# Run the app
+CMD ["node", "dist/src/main"]

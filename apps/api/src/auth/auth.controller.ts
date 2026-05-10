@@ -20,20 +20,25 @@ import { LoginDto } from './dto/login.dto';
 import { MfaEnableDto, MfaVerifyDto } from './dto/mfa.dto';
 import { RegisterDto } from './dto/register.dto';
 import { GoogleAuthGuard } from './guards/google.guard';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { MicrosoftAuthGuard } from './guards/microsoft.guard';
 import { SamlAuthGuard } from './guards/saml.guard';
 
 @ApiTags('auth')
 @ApiBearerAuth()
-@Controller('auth')
+@Controller({
+  path: 'auth',
+  host: `auth.${process.env.BASE_DOMAIN || 'localhost'}`,
+})
 export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Public()
   @UseGuards(SamlAuthGuard)
   @Get('sso/saml')
-  @ApiOperation({ summary: 'Initiate SAML SSO flow', description: 'Redirects the user to the configured identity provider.' })
+  @ApiOperation({
+    summary: 'Initiate SAML SSO flow',
+    description: 'Redirects the user to the configured identity provider.',
+  })
   async samlAuth() {}
 
   @Public()
@@ -69,7 +74,10 @@ export class AuthController {
   @Public()
   @UseGuards(MicrosoftAuthGuard)
   @Get('social/microsoft')
-  @ApiOperation({ summary: 'Initiate Microsoft Social flow', description: 'Supports personal (Hotmail/Outlook) and Business accounts.' })
+  @ApiOperation({
+    summary: 'Initiate Microsoft Social flow',
+    description: 'Supports personal (Hotmail/Outlook) and Business accounts.',
+  })
   async microsoftAuth(): Promise<void> {}
 
   @Public()
@@ -86,7 +94,10 @@ export class AuthController {
 
   @Public()
   @Post('register')
-  @ApiOperation({ summary: 'Register a new law firm organisation', description: 'Creates the organisation and the first admin user.' })
+  @ApiOperation({
+    summary: 'Register a new law firm organisation',
+    description: 'Creates the organisation and the first admin user.',
+  })
   @ApiResponse({ status: 201, description: 'Organisation and user successfully created.' })
   async register(@Body() dto: RegisterDto) {
     return this.authService.register(dto);
@@ -95,7 +106,10 @@ export class AuthController {
   @Public()
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'User login', description: 'Returns access tokens or an mfaToken if 2FA is required.' })
+  @ApiOperation({
+    summary: 'User login',
+    description: 'Returns access tokens or an mfaToken if 2FA is required.',
+  })
   @ApiResponse({ status: 200, description: 'Login successful.' })
   async login(
     @Body() dto: LoginDto,
@@ -109,7 +123,10 @@ export class AuthController {
   @Public()
   @Post('mfa/verify')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Verify MFA code', description: 'Completes the login process using the mfaToken and TOTP code.' })
+  @ApiOperation({
+    summary: 'Verify MFA code',
+    description: 'Completes the login process using the mfaToken and TOTP code.',
+  })
   async verifyMfa(
     @Body() dto: MfaVerifyDto,
     @Ip() ip: string,
@@ -120,14 +137,20 @@ export class AuthController {
 
   @Post('mfa/setup')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Setup MFA', description: 'Generates a new TOTP secret and QR code for the user.' })
+  @ApiOperation({
+    summary: 'Setup MFA',
+    description: 'Generates a new TOTP secret and QR code for the user.',
+  })
   async mfaSetup(@CurrentUser() user: User) {
     return this.authService.setupMfa(user);
   }
 
   @Post('mfa/enable')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Enable MFA', description: 'Finalizes MFA enrollment after verifying a code.' })
+  @ApiOperation({
+    summary: 'Enable MFA',
+    description: 'Finalizes MFA enrollment after verifying a code.',
+  })
   async mfaEnable(@CurrentUser() user: User, @Body() dto: MfaEnableDto) {
     return this.authService.enableMfa(user, dto.token, dto.secret);
   }
@@ -135,7 +158,10 @@ export class AuthController {
   @Public()
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Rotate access tokens', description: 'Uses a valid refresh token to obtain a new access token.' })
+  @ApiOperation({
+    summary: 'Rotate access tokens',
+    description: 'Uses a valid refresh token to obtain a new access token.',
+  })
   async refresh(
     @Body('refreshToken') refreshToken: string,
     @Ip() ip: string,
@@ -146,7 +172,10 @@ export class AuthController {
 
   @Post('logout')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Logout user', description: 'Invalidates the refresh token and clears the session.' })
+  @ApiOperation({
+    summary: 'Logout user',
+    description: 'Invalidates the refresh token and clears the session.',
+  })
   async logout(@Body('refreshToken') refreshToken: string) {
     await this.authService.logout(refreshToken);
   }
@@ -159,7 +188,10 @@ export class AuthController {
   }
 
   @Get('me')
-  @ApiOperation({ summary: 'Get current session context', description: 'Returns the current user and organisation details.' })
+  @ApiOperation({
+    summary: 'Get current session context',
+    description: 'Returns the current user and organisation details.',
+  })
   me(@CurrentUser() user: User, @CurrentOrg() org: Organisation | null) {
     return {
       user: {

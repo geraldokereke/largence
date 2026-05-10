@@ -44,19 +44,14 @@ async function bootstrap() {
       callback: (err: Error | null, allow?: boolean) => void,
     ) => {
       const allowedOrigins = [
-        /^https:\/\/[a-z0-9-]+\.largence\.com$/,
-        process.env.FRONTEND_URL,
-      ].filter(Boolean);
+        /^https?:\/\/[a-z0-9-]+\.largence\.com$/,
+        /^https?:\/\/localhost(:\d+)?$/,
+      ];
 
-      if (
-        !origin ||
-        allowedOrigins.some(regex =>
-          regex instanceof RegExp ? regex.test(origin) : regex === origin,
-        )
-      ) {
+      if (!origin || allowedOrigins.some(regex => regex.test(origin))) {
         callback(null, true);
       } else {
-        callback(new Error('This origin is restricted by CORS.'));
+        callback(new Error('Origin not allowed by CORS'));
       }
     },
     credentials: true,

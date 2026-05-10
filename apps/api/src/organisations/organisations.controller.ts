@@ -60,11 +60,7 @@ export class OrganisationsController {
   @Post(':id/members/invite')
   @Roles(Role.ORG_ADMIN)
   async inviteMember(@Param('id') id: string, @Body() dto: { email: string; role: Role }) {
-    return this.invitesService.createInvite(
-      { email: dto.email, role: dto.role },
-      id,
-      'SYSTEM', 
-    );
+    return this.invitesService.createInvite({ email: dto.email, role: dto.role }, id, 'SYSTEM');
   }
 
   @Delete(':id/members/:userId')

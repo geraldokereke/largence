@@ -9,7 +9,7 @@ import {
   StreamableFile,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Role } from '@prisma/client';
 import { CryptoService } from '../auth/crypto.service';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -29,7 +29,10 @@ export class AuditController {
 
   @Get('events')
   @Roles(Role.PLATFORM_ADMIN)
-  @ApiOperation({ summary: 'List global audit events', description: 'Restricted to platform administrators. Shows events across all organisations.' })
+  @ApiOperation({
+    summary: 'List global audit events',
+    description: 'Restricted to platform administrators. Shows events across all organisations.',
+  })
   async getGlobalEvents() {
     return this.prisma.auditEvent.findMany({
       take: 50,
@@ -75,7 +78,11 @@ export class AuditController {
 
   @Post('certificates/generate')
   @Roles(Role.ORG_ADMIN)
-  @ApiOperation({ summary: 'Generate a signed audit certificate', description: 'Creates a cryptographically hashed proof of a sequence of events for regulatory compliance.' })
+  @ApiOperation({
+    summary: 'Generate a signed audit certificate',
+    description:
+      'Creates a cryptographically hashed proof of a sequence of events for regulatory compliance.',
+  })
   async generateAuditCertificate(
     @Body() body: { orgId: string; startTime: string; endTime: string },
   ) {
@@ -114,7 +121,10 @@ export class AuditController {
   @Roles(Role.ORG_ADMIN)
   @Header('Content-Type', 'text/csv')
   @Header('Content-Disposition', 'attachment; filename="audit_log.csv"')
-  @ApiOperation({ summary: 'Export audit logs to CSV', description: 'Generates a downloadable CSV file of all events for an organisation.' })
+  @ApiOperation({
+    summary: 'Export audit logs to CSV',
+    description: 'Generates a downloadable CSV file of all events for an organisation.',
+  })
   async exportAuditLog(@Query('orgId') orgId: string) {
     const events = await this.prisma.auditEvent.findMany({
       where: { orgId },

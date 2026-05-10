@@ -12,7 +12,10 @@ export class UsersController {
   constructor(private prisma: PrismaService) {}
 
   @Get(':id')
-  @ApiOperation({ summary: 'Get user profile', description: 'Returns public and private profile data for a specific user.' })
+  @ApiOperation({
+    summary: 'Get user profile',
+    description: 'Returns public and private profile data for a specific user.',
+  })
   @ApiResponse({ status: 200, description: 'User found.' })
   @ApiResponse({ status: 404, description: 'User not found.' })
   async getUser(@Param('id') id: string) {
@@ -41,7 +44,10 @@ export class UsersController {
   }
 
   @Get(':id/preferences')
-  @ApiOperation({ summary: 'Get user preferences', description: 'Fetches custom user settings like notification status and UI themes.' })
+  @ApiOperation({
+    summary: 'Get user preferences',
+    description: 'Fetches custom user settings like notification status and UI themes.',
+  })
   async getPreferences(@Param('id') id: string) {
     const user = await this.prisma.user.findUniqueOrThrow({
       where: { id },

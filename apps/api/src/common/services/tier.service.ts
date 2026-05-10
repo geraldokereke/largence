@@ -57,14 +57,16 @@ export class TierService {
 
   async canCreateActiveWorkspaces(orgId: string, tier: OrgTier): Promise<boolean> {
     const limits = this.getLimits(tier);
-    console.log(`[TierService] Checking workspace limit for org ${orgId}. Tier: ${tier}, Limit: ${limits.activeWorkspaces}`);
-    
+    console.log(
+      `[TierService] Checking workspace limit for org ${orgId}. Tier: ${tier}, Limit: ${limits.activeWorkspaces}`,
+    );
+
     if (limits.activeWorkspaces === Infinity) return true;
 
     const count = await this.prisma.workspace.count({
       where: { orgId, status: { not: 'ARCHIVED' } },
     });
-    
+
     console.log(`[TierService] Current active workspaces: ${count}`);
     return count < limits.activeWorkspaces;
   }

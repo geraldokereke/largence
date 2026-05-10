@@ -7,10 +7,13 @@ export class MfaVerifyDto {
   @IsNotEmpty()
   token!: string;
 
-  @ApiProperty({ example: 'eyJhbGci...', description: 'The short-lived token returned from the login step' })
+  @ApiProperty({
+    example: 'eyJhbGci...',
+    description: 'The short-lived token returned from the login step',
+  })
   @IsString()
   @IsNotEmpty()
-  mfaToken!: string; 
+  mfaToken!: string;
 }
 
 export class MfaEnableDto {
@@ -19,7 +22,10 @@ export class MfaEnableDto {
   @IsNotEmpty()
   token!: string;
 
-  @ApiProperty({ example: 'JBSWY3DPEHPK3PXP', description: 'The base32 secret generated during setup' })
+  @ApiProperty({
+    example: 'JBSWY3DPEHPK3PXP',
+    description: 'The base32 secret generated during setup',
+  })
   @IsString()
   @IsNotEmpty()
   secret!: string;

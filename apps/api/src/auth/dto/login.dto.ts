@@ -11,7 +11,10 @@ export class LoginDto {
   @IsNotEmpty()
   password!: string;
 
-  @ApiPropertyOptional({ example: 'dev-iphone-12', description: 'Used for device fingerprinting and session management' })
+  @ApiPropertyOptional({
+    example: 'dev-iphone-12',
+    description: 'Used for device fingerprinting and session management',
+  })
   @IsOptional()
   @IsString()
   deviceId?: string;

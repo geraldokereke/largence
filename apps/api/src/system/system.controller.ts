@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { OnboardingMode, OrgTier, OrgType, Role, SSOProtocol } from '@prisma/client';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -16,7 +16,10 @@ export class SystemController {
   constructor(private prisma: PrismaService) {}
 
   @Get('organisations')
-  @ApiOperation({ summary: 'List all organisations on the platform', description: 'Administrative view of all registered law firms.' })
+  @ApiOperation({
+    summary: 'List all organisations on the platform',
+    description: 'Administrative view of all registered law firms.',
+  })
   async listOrganisations() {
     return this.prisma.organisation.findMany({
       include: {
@@ -29,7 +32,10 @@ export class SystemController {
   }
 
   @Post('organisations')
-  @ApiOperation({ summary: 'Manually create an organisation', description: 'Platform-level bypass for creating firms without the public registration flow.' })
+  @ApiOperation({
+    summary: 'Manually create an organisation',
+    description: 'Platform-level bypass for creating firms without the public registration flow.',
+  })
   async createOrganisation(
     @Body()
     dto: {
@@ -68,7 +74,10 @@ export class SystemController {
   }
 
   @Patch('organisations/:id/tier')
-  @ApiOperation({ summary: 'Update organisation tier', description: 'Upgrades or downgrades a firm (e.g., from EDGE to ZENITH).' })
+  @ApiOperation({
+    summary: 'Update organisation tier',
+    description: 'Upgrades or downgrades a firm (e.g., from EDGE to ZENITH).',
+  })
   async updateTier(@Param('id') id: string, @Body('tier') tier: OrgTier) {
     return this.prisma.organisation.update({
       where: { id },
@@ -77,7 +86,10 @@ export class SystemController {
   }
 
   @Post('organisations/:id/sso')
-  @ApiOperation({ summary: 'Configure SSO for an organisation', description: 'Sets up SAML or OpenID Connect parameters for enterprise firms.' })
+  @ApiOperation({
+    summary: 'Configure SSO for an organisation',
+    description: 'Sets up SAML or OpenID Connect parameters for enterprise firms.',
+  })
   async configureSSO(
     @Param('id') id: string,
     @Body()

@@ -1,0 +1,13 @@
+# Build artifacts
+dist
+.next
+.turbo
+node_modules
+coverage
+*.tsbuildinfo
+
+# Env files
+.env*
+
+# Lockfiles
+pnpm-lock.yaml

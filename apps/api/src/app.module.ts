@@ -5,6 +5,7 @@ import { AuditModule } from './audit/audit.module';
 import { AuthModule } from './auth/auth.module';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { TenantResolverMiddleware } from './common/middleware/tenant-resolver.middleware';
+import { DocumentModule } from './document/document.module';
 import { MattersModule } from './matters/matters.module';
 import { OrganisationsModule } from './organisations/organisations.module';
 import { PrismaService } from './prisma/prisma.service';
@@ -33,6 +34,7 @@ import { WorkspacesModule } from './workspaces/workspaces.module';
     }),
     AuthModule,
     SystemModule,
+    DocumentModule,
     OrganisationsModule,
     UsersModule,
     AuditModule,

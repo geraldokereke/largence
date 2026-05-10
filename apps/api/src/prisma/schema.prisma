@@ -4,6 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 enum OrgType {
@@ -88,6 +89,7 @@ model Organisation {
   auditCertificates AuditCertificate[]
   workspaces        Workspace[]
   matters           Matter[]
+  documents         Document[]
 }
 
 model User {
@@ -245,6 +247,7 @@ model Workspace {
   updatedAt           DateTime          @updatedAt
   members             WorkspaceMember[]
   matters             Matter[]
+  documents           Document[]
 
   @@unique([orgId, slug])
 }
@@ -290,6 +293,7 @@ model Matter {
   updatedAt       DateTime       @updatedAt
   tasks           MatterTask[]
   timeEntries     TimeEntry[]
+  documents       Document[]
 }
 
 model MatterTask {
@@ -400,4 +404,97 @@ enum TaskStatus {
   IN_PROGRESS
   BLOCKED
   DONE
+}
+enum DocumentStatus {
+  DRAFT
+  UNDER_REVIEW
+  PENDING_SIGNATURE
+  EXECUTED
+  ARCHIVED
+}
+
+enum DocumentPermission {
+  READ
+  WRITE
+  ADMIN
+}
+
+enum DocumentAction {
+  CREATE
+  UPDATE
+  STATE_CHANGE
+  VERSION_CREATE
+  ACCESS_GRANT
+  ACCESS_REVOKE
+  DELETE
+}
+
+model Document {
+  id             String         @id @default(uuid())
+  title          String
+  fileName       String
+  mimeType       String
+  size           Int
+  status         DocumentStatus @default(DRAFT)
+  isConfidential Boolean        @default(false)
+  orgId          String
+  org            Organisation   @relation(fields: [orgId], references: [id])
+  workspaceId    String
+  workspace      Workspace      @relation(fields: [workspaceId], references: [id])
+  matterId       String?
+  matter         Matter?        @relation(fields: [matterId], references: [id])
+  metadata       Json?
+  currentVersion Int            @default(1)
+  createdBy      String
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  versions DocumentVersion[]
+  access   DocumentAccess[]
+  audit    DocumentAudit[]
+
+  @@index([orgId, workspaceId])
+  @@index([matterId])
+}
+
+model DocumentVersion {
+  id             String   @id @default(uuid())
+  documentId     String
+  document       Document @relation(fields: [documentId], references: [id])
+  versionNumber  Int
+  fileKey        String // S3/Storage pointer
+  size           Int
+  changeLog      String?
+  metadata       Json?
+  isMajor        Boolean  @default(false)
+  isCurrent      Boolean  @default(false)
+  createdBy      String
+  createdAt      DateTime @default(now())
+
+  @@unique([documentId, versionNumber])
+}
+
+model DocumentAccess {
+  id         String             @id @default(uuid())
+  documentId String
+  document   Document           @relation(fields: [documentId], references: [id])
+  userId     String
+  permission DocumentPermission @default(READ)
+  grantedBy  String
+  grantedAt  DateTime           @default(now())
+
+  @@unique([documentId, userId])
+}
+
+model DocumentAudit {
+  id         String         @id @default(uuid())
+  documentId String
+  document   Document       @relation(fields: [documentId], references: [id])
+  userId     String
+  action     DocumentAction
+  details    Json?
+  ipAddress  String?
+  createdAt  DateTime       @default(now())
+
+  @@index([documentId])
 }

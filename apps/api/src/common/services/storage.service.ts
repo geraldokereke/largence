@@ -1,4 +1,5 @@
 import {
+  CreateBucketCommand,
   DeleteObjectCommand,
   GetObjectCommand,
   HeadObjectCommand,
@@ -6,10 +7,10 @@ import {
   S3Client,
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 
 @Injectable()
-export class StorageService {
+export class StorageService implements OnModuleInit {
   private readonly client: S3Client;
   private readonly bucket: string;
   private readonly logger = new Logger(StorageService.name);
@@ -25,6 +26,23 @@ export class StorageService {
       forcePathStyle: !!process.env.AWS_S3_ENDPOINT,
     });
     this.bucket = process.env.AWS_S3_BUCKET || 'largence-documents';
+  }
+
+  async onModuleInit() {
+    await this.ensureBucket();
+  }
+
+  private async ensureBucket() {
+    try {
+      await this.client.send(new HeadObjectCommand({ Bucket: this.bucket }));
+    } catch {
+      this.logger.log(`Bucket ${this.bucket} not found. Creating...`);
+      try {
+        await this.client.send(new CreateBucketCommand({ Bucket: this.bucket }));
+      } catch (createError) {
+        this.logger.error(`Failed to create bucket ${this.bucket}`, (createError as Error).stack);
+      }
+    }
   }
 
   async upload(
@@ -65,7 +83,7 @@ export class StorageService {
         }),
       );
     } catch (error) {
-      this.logger.error(`Failed to delete file from S3: ${key}`, (error as Error).stack);
+      this.logger.error(`Failed to delete file from S3: ${key}`);
       throw error;
     }
   }

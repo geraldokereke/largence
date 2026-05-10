@@ -1,9 +1,12 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { WorkspaceType, WorkspaceMemberRole } from '@prisma/client';
+import { WorkspaceMemberRole, WorkspaceType } from '@prisma/client';
 import { IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
 
 export class CreateWorkspaceDto {
-  @ApiProperty({ example: 'Litigation Department', description: 'The display name of the workspace' })
+  @ApiProperty({
+    example: 'Litigation Department',
+    description: 'The display name of the workspace',
+  })
   @IsString()
   @IsNotEmpty()
   name!: string;
@@ -17,7 +20,10 @@ export class CreateWorkspaceDto {
   @IsUUID()
   departmentId?: string;
 
-  @ApiPropertyOptional({ example: { jurisdiction: 'Nigeria' }, description: 'Specific rules for this workspace' })
+  @ApiPropertyOptional({
+    example: { jurisdiction: 'Nigeria' },
+    description: 'Specific rules for this workspace',
+  })
   @IsOptional()
   jurisdictionProfile?: any;
 }

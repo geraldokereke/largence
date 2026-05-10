@@ -21,6 +21,7 @@ import { MfaEnableDto, MfaVerifyDto } from './dto/mfa.dto';
 import { RegisterDto } from './dto/register.dto';
 import { GoogleAuthGuard } from './guards/google.guard';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { MicrosoftAuthGuard } from './guards/microsoft.guard';
 import { SamlAuthGuard } from './guards/saml.guard';
 
 @ApiTags('auth')
@@ -58,6 +59,24 @@ export class AuthController {
   @Get('social/google/callback')
   @ApiOperation({ summary: 'Google OAuth Callback handler' })
   async googleAuthCallback(
+    @CurrentUser() user: User & { org: Organisation },
+    @Ip() ip: string,
+    @Headers('user-agent') userAgent: string,
+  ): Promise<{ accessToken: string; refreshToken: string }> {
+    return this.authService.loginSocial(user, ip, userAgent || '');
+  }
+
+  @Public()
+  @UseGuards(MicrosoftAuthGuard)
+  @Get('social/microsoft')
+  @ApiOperation({ summary: 'Initiate Microsoft Social flow', description: 'Supports personal (Hotmail/Outlook) and Business accounts.' })
+  async microsoftAuth(): Promise<void> {}
+
+  @Public()
+  @UseGuards(MicrosoftAuthGuard)
+  @Get('social/microsoft/callback')
+  @ApiOperation({ summary: 'Microsoft OAuth Callback handler' })
+  async microsoftAuthCallback(
     @CurrentUser() user: User & { org: Organisation },
     @Ip() ip: string,
     @Headers('user-agent') userAgent: string,

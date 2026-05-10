@@ -15,6 +15,7 @@ import { PasswordService } from './password.service';
 import { SsoService } from './sso.service';
 import { GoogleStrategy } from './strategies/google.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
+import { MicrosoftStrategy } from './strategies/microsoft.strategy';
 import { SamlStrategy } from './strategies/saml.strategy';
 import { TokenService } from './token.service';
 
@@ -44,6 +45,7 @@ import { InvitesService } from './invites.service';
     OnboardingService,
     JwtStrategy,
     GoogleStrategy,
+    MicrosoftStrategy,
     SamlStrategy,
     PrismaService,
     RedisService,

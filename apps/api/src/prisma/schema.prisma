@@ -123,6 +123,7 @@ model User {
   mfaBackupCodes          MFABackupCode[]
   emailVerificationTokens EmailVerificationToken[]
   passwordResetTokens     PasswordResetToken[]
+  documentAudits          DocumentAudit[]
 }
 
 model RefreshToken {
@@ -491,6 +492,7 @@ model DocumentAudit {
   documentId String
   document   Document       @relation(fields: [documentId], references: [id])
   userId     String
+  user       User           @relation(fields: [userId], references: [id])
   action     DocumentAction
   details    Json?
   ipAddress  String?

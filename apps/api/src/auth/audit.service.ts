@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { KafkaService } from '../kafka/kafka.service';
 import { randomUUID } from 'crypto';
+import { KafkaService } from '../kafka/kafka.service';
 
 @Injectable()
 export class AuditService {
@@ -20,6 +20,7 @@ export class AuditService {
     const payload = {
       ...event,
       timestamp: Date.now() * 1000000,
+      eventId: randomUUID(),
     };
 
     await this.kafka.publishEvent('auth.audit.events', payload);

@@ -1,9 +1,9 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { Test, TestingModule } from '@nestjs/testing';
+import { OrgType } from '@prisma/client';
 import * as request from 'supertest';
 import { AppModule } from '../app.module';
 import { PrismaService } from '../prisma/prisma.service';
-import { OrgType } from '@prisma/client';
 
 describe('Auth (Integration)', () => {
   let app: INestApplication;
@@ -42,9 +42,10 @@ describe('Auth (Integration)', () => {
         .send(dto);
 
       expect(response.status).toBe(201);
-      expect(response.body).toHaveProperty('userId');
-      expect(response.body).toHaveProperty('orgSlug');
-      expect(response.body.orgSlug).toContain('test-law-firm');
+      const body = response.body as { userId: string; orgSlug: string };
+      expect(body).toHaveProperty('userId');
+      expect(body).toHaveProperty('orgSlug');
+      expect(body.orgSlug).toContain('test-law-firm');
     });
   });
 
@@ -56,7 +57,8 @@ describe('Auth (Integration)', () => {
         .send({ email: 'test@test.com', password: 'password' });
 
       expect(response.status).toBe(404);
-      expect(response.body.message).toBe('ORGANISATION_NOT_FOUND');
+      const body = response.body as { message: string };
+      expect(body.message).toBe('ORGANISATION_NOT_FOUND');
     });
   });
 });

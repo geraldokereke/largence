@@ -1,20 +1,25 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
-import { AuthController } from './auth.controller';
-import { AuthService } from './auth.service';
-import { TokenService } from './token.service';
-import { PasswordService } from './password.service';
-import { MfaService } from './mfa.service';
-import { EmailService } from './email.service';
-import { AuditService } from './audit.service';
-import { CryptoService } from './crypto.service';
-import { OnboardingService } from './onboarding.service';
-import { JwtStrategy } from './strategies/jwt.strategy';
-import { GoogleStrategy } from './strategies/google.strategy';
+import { KafkaService } from '../kafka/kafka.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { RedisService } from '../redis/redis.service';
-import { KafkaService } from '../kafka/kafka.service';
+import { AuditService } from './audit.service';
+import { AuthController } from './auth.controller';
+import { AuthService } from './auth.service';
+import { CryptoService } from './crypto.service';
+import { EmailService } from './email.service';
+import { MfaService } from './mfa.service';
+import { OnboardingService } from './onboarding.service';
+import { PasswordService } from './password.service';
+import { SsoService } from './sso.service';
+import { GoogleStrategy } from './strategies/google.strategy';
+import { JwtStrategy } from './strategies/jwt.strategy';
+import { SamlStrategy } from './strategies/saml.strategy';
+import { TokenService } from './token.service';
+
+import { InvitesController } from './invites.controller';
+import { InvitesService } from './invites.service';
 
 @Module({
   imports: [
@@ -25,9 +30,11 @@ import { KafkaService } from '../kafka/kafka.service';
       signOptions: { algorithm: 'RS256' },
     }),
   ],
-  controllers: [AuthController],
+  controllers: [AuthController, InvitesController],
   providers: [
     AuthService,
+    InvitesService,
+    SsoService,
     TokenService,
     PasswordService,
     MfaService,
@@ -37,10 +44,11 @@ import { KafkaService } from '../kafka/kafka.service';
     OnboardingService,
     JwtStrategy,
     GoogleStrategy,
+    SamlStrategy,
     PrismaService,
     RedisService,
     KafkaService,
   ],
-  exports: [AuthService, TokenService, JwtStrategy, PassportModule],
+  exports: [AuthService, InvitesService, CryptoService, TokenService, JwtStrategy, PassportModule],
 })
 export class AuthModule {}

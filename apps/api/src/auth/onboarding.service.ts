@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { OnboardingMode, OrgTier, OrgType } from '@prisma/client';
 import { SlugUtil } from '../common/utils/slug.util';
-import { OrgType, OrgTier, OnboardingMode } from '@prisma/client';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class OnboardingService {

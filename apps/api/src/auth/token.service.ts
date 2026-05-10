@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { Role, UserTier } from '@prisma/client';
+import { PrismaService } from '../prisma/prisma.service';
 import { RedisService } from '../redis/redis.service';
 import { CryptoService } from './crypto.service';
-import { PrismaService } from '../prisma/prisma.service';
-import { Role, UserTier } from '@prisma/client';
 
 export interface AccessTokenPayload {
   sub: string;
@@ -14,6 +14,7 @@ export interface AccessTokenPayload {
   jti: string;
   dfp: string; // Device Fingerprint
   mfa_verified: boolean;
+  mfa_pending?: boolean;
 }
 
 @Injectable()
@@ -27,19 +28,30 @@ export class TokenService {
 
   async issueAccessToken(payload: Omit<AccessTokenPayload, 'jti'>): Promise<string> {
     const jti = this.crypto.generateSecureToken(16);
-    return this.jwtService.signAsync({ ...payload, jti }, {
-      expiresIn: (process.env.JWT_ACCESS_TTL as any) || '15m',
-      algorithm: 'RS256',
-    });
+    return this.jwtService.signAsync(
+      { ...payload, jti },
+      {
+        expiresIn: (payload.mfa_pending
+          ? '5m'
+          : process.env.JWT_ACCESS_TTL || '15m') as unknown as number,
+        algorithm: 'RS256',
+      },
+    );
   }
 
-  async issueRefreshToken(userId: string, orgId: string, deviceId?: string, userAgent?: string, ipAddress?: string): Promise<string> {
-    const rawToken = this.crypto.generateSecureToken(64); // 512-bit
+  async issueRefreshToken(
+    userId: string,
+    orgId: string,
+    deviceId?: string,
+    userAgent?: string,
+    ipAddress?: string,
+  ): Promise<string> {
+    const rawToken = this.crypto.generateSecureToken(64);
     const tokenHash = this.crypto.hashSha256(rawToken);
     const family = this.crypto.generateSecureToken(16);
-    
+
     const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + 7); // Default 7 days
+    expiresAt.setDate(expiresAt.getDate() + 7);
 
     await this.prisma.refreshToken.create({
       data: {
@@ -57,6 +69,12 @@ export class TokenService {
     return rawToken;
   }
 
+  async verifyToken(token: string): Promise<AccessTokenPayload> {
+    return this.jwtService.verifyAsync(token, {
+      algorithms: ['RS256'],
+    });
+  }
+
   async blacklistJti(jti: string, ttlSeconds: number): Promise<void> {
     await this.redis.set(`blacklist:jti:${jti}`, '1', ttlSeconds);
   }
@@ -67,7 +85,6 @@ export class TokenService {
   }
 
   generateDeviceFingerprint(userAgent: string, ip: string): string {
-    // dfp (SHA-256 of user-agent + IP /24 subnet)
     const ipSubnet = ip.split('.').slice(0, 3).join('.');
     return this.crypto.hashSha256(`${userAgent}:${ipSubnet}`);
   }

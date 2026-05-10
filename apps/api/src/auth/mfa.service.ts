@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { authenticator } from '@otplib/preset-default';
-import * as QRCode from 'qrcode';
-import { CryptoService } from './crypto.service';
-import { PrismaService } from '../prisma/prisma.service';
-import { randomBytes } from 'crypto';
 import * as bcrypt from 'bcrypt';
+import { randomBytes } from 'crypto';
+import * as QRCode from 'qrcode';
+import { PrismaService } from '../prisma/prisma.service';
+import { CryptoService } from './crypto.service';
 
 @Injectable()
 export class MfaService {

@@ -1,8 +1,8 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
-import * as argon2 from 'argon2';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { zxcvbn, zxcvbnOptions } from '@zxcvbn-ts/core';
 import { adjacencyGraphs, dictionary } from '@zxcvbn-ts/language-common';
 import { translations } from '@zxcvbn-ts/language-en';
+import * as argon2 from 'argon2';
 
 @Injectable()
 export class PasswordService {
@@ -28,7 +28,7 @@ export class PasswordService {
   async verify(hash: string, password: string): Promise<boolean> {
     try {
       return await argon2.verify(hash, password);
-    } catch (error) {
+    } catch {
       return false;
     }
   }

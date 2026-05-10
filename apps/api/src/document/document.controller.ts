@@ -13,9 +13,11 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { Organisation, User } from '@prisma/client';
+import { Organisation, Role, User } from '@prisma/client';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { Roles } from '../auth/decorators/roles.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
 import { CurrentOrg } from '../common/decorators/current-org.decorator';
 import { DocumentService } from './document.service';
 import {
@@ -27,7 +29,7 @@ import {
 
 @ApiTags('documents')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('documents')
 export class DocumentController {
   constructor(private documentService: DocumentService) {}
@@ -103,6 +105,7 @@ export class DocumentController {
   }
 
   @Get(':id/audit')
+  @Roles(Role.PLATFORM_ADMIN, Role.ORG_ADMIN)
   @ApiOperation({ summary: 'Get document audit trail' })
   async getAudit(@Param('id') id: string) {
     return this.documentService.getAudits(id);

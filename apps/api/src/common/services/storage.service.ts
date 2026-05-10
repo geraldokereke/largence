@@ -2,6 +2,7 @@ import {
   CreateBucketCommand,
   DeleteObjectCommand,
   GetObjectCommand,
+  HeadBucketCommand,
   HeadObjectCommand,
   PutObjectCommand,
   S3Client,
@@ -34,7 +35,7 @@ export class StorageService implements OnModuleInit {
 
   private async ensureBucket() {
     try {
-      await this.client.send(new HeadObjectCommand({ Bucket: this.bucket }));
+      await this.client.send(new HeadBucketCommand({ Bucket: this.bucket }));
     } catch {
       this.logger.log(`Bucket ${this.bucket} not found. Creating...`);
       try {

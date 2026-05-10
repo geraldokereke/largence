@@ -16,7 +16,10 @@ export class CreateMatterDto {
   @IsEnum(PracticeArea)
   practiceArea!: PracticeArea;
 
-  @ApiProperty({ example: 'uuid-of-workspace', description: 'The ID of the workspace this matter belongs to' })
+  @ApiProperty({
+    example: 'uuid-of-workspace',
+    description: 'The ID of the workspace this matter belongs to',
+  })
   @IsString()
   @IsNotEmpty()
   workspaceId!: string;
@@ -26,9 +29,9 @@ export class CreateMatterDto {
   @IsEnum(MatterPriority)
   priority?: MatterPriority;
 
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     example: [{ name: 'Global Corp', role: 'DEFENDANT' }],
-    description: 'List of counterparties for conflict checking'
+    description: 'List of counterparties for conflict checking',
   })
   @IsOptional()
   @IsArray()
@@ -40,7 +43,10 @@ export class CreateMatterDto {
   @IsString({ each: true })
   jurisdictions?: string[];
 
-  @ApiPropertyOptional({ example: { courtCode: 'HC/123' }, description: 'Additional custom metadata' })
+  @ApiPropertyOptional({
+    example: { courtCode: 'HC/123' },
+    description: 'Additional custom metadata',
+  })
   @IsOptional()
   metadata?: any;
 }

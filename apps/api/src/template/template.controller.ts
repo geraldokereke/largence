@@ -43,6 +43,16 @@ export class TemplateController {
     return this.templateService.create(dto, user.id, org.id);
   }
 
+  @Post('from-document/:documentId')
+  @ApiOperation({ summary: 'Create template from an existing document' })
+  async createFromDocument(
+    @Param('documentId') documentId: string,
+    @CurrentUser() user: User,
+    @CurrentOrg() org: Organisation,
+  ): Promise<any> {
+    return this.templateService.createFromDocument(documentId, user.id, org.id);
+  }
+
   @Get()
   @ApiOperation({ summary: 'List templates with filtering' })
   async findAll(

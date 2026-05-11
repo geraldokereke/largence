@@ -47,6 +47,62 @@ export class TemplateService {
     return template;
   }
 
+  async createFromDocument(documentId: string, userId: string, orgId: string): Promise<Template> {
+    const document = await this.prisma.document.findUnique({
+      where: { id: documentId },
+      include: { versions: { where: { isCurrent: true } } },
+    });
+
+    if (!document || !document.versions[0]) {
+      throw new NotFoundException('Document or current version not found');
+    }
+
+    const currentVersion = document.versions[0];
+
+    // Create the template
+    const template = await this.prisma.template.create({
+      data: {
+        title: `Template from: ${document.title}`,
+        description: `Automatically created from document ${document.id}`,
+        tier: TemplateTier.CURATED, // Default to firm-curated
+        orgId,
+        categoryId: (document.metadata['categoryId'] as string) || 'default-category-uuid',
+        jurisdiction: document.metadata['jurisdiction'] as string,
+        tags: (document.metadata['tags'] as string[]) || [],
+        createdBy: userId,
+        status: TemplateStatus.DRAFT,
+      },
+    });
+
+    // Copy the file
+    const templateFileKey = `templates/${template.id}/v1.0.0_template.docx`;
+    const documentFile = await this.storage.download(currentVersion.fileKey);
+    await this.storage.upload(
+      templateFileKey,
+      documentFile,
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    );
+
+    // Create template version
+    await this.prisma.templateVersion.create({
+      data: {
+        templateId: template.id,
+        version: '1.0.0',
+        fileKey: templateFileKey,
+        changeLog: 'Initial version from document capture',
+        createdBy: userId,
+      },
+    });
+
+    await this.prisma.template.update({
+      where: { id: template.id },
+      data: { currentVersion: '1.0.0' },
+    });
+
+    await this.searchService.indexTemplate(template);
+    return template;
+  }
+
   async findAll(query: {
     tier?: TemplateTier;
     categoryId?: string;

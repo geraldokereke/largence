@@ -12,6 +12,7 @@ import { OrganisationsModule } from './organisations/organisations.module';
 import { PrismaService } from './prisma/prisma.service';
 import { RedisService } from './redis/redis.service';
 import { SystemModule } from './system/system.module';
+import { TemplateModule } from './template/template.module';
 import { UsersModule } from './users/users.module';
 import { WorkspacesModule } from './workspaces/workspaces.module';
 
@@ -38,6 +39,7 @@ import { WorkspacesModule } from './workspaces/workspaces.module';
     SystemModule,
     DocumentModule,
     OrganisationsModule,
+    TemplateModule,
     UsersModule,
     AuditModule,
     WorkspacesModule,

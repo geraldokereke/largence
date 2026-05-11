@@ -58,7 +58,13 @@ export class DocumentController {
     if (!file) {
       throw new BadRequestException('File is required in the "file" field');
     }
-    return this.documentService.uploadVersion(id, file.buffer, user.id, changeLog);
+    return this.documentService.uploadVersion(
+      id,
+      file.buffer,
+      file.originalname,
+      user.id,
+      changeLog,
+    );
   }
 
   @Post(':id/state-transition')

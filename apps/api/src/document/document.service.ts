@@ -42,7 +42,13 @@ export class DocumentService {
     return document;
   }
 
-  async uploadVersion(documentId: string, file: Buffer, userId: string, changeLog?: string) {
+  async uploadVersion(
+    documentId: string,
+    file: Buffer,
+    fileName: string,
+    userId: string,
+    changeLog?: string,
+  ) {
     const document = await this.prisma.document.findUnique({
       where: { id: documentId },
     });
@@ -50,7 +56,7 @@ export class DocumentService {
     if (!document) throw new NotFoundException('Document not found');
 
     const versionNumber = document.currentVersion + 1;
-    const fileKey = `orgs/${document.orgId}/docs/${document.id}/v${versionNumber}_${document.fileName}`;
+    const fileKey = `orgs/${document.orgId}/docs/${document.id}/v${versionNumber}_${fileName}`;
 
     await this.storage.upload(fileKey, file, document.mimeType);
 
@@ -66,9 +72,14 @@ export class DocumentService {
       },
     });
 
-    await this.prisma.document.update({
+    // Update parent document with latest metadata
+    const updatedDocument = await this.prisma.document.update({
       where: { id: documentId },
-      data: { currentVersion: versionNumber },
+      data: {
+        currentVersion: versionNumber,
+        title: fileName, // Auto-update title to match latest file
+        fileName,
+      },
     });
 
     await this.prisma.documentVersion.updateMany({
@@ -77,9 +88,12 @@ export class DocumentService {
     });
 
     // 5. Async OCR & Search Indexing (background)
-    void this.processIntelligence(document, version, file);
+    void this.processIntelligence(updatedDocument, version, file);
 
-    await this.logAudit(documentId, userId, DocumentAction.VERSION_CREATE, { versionNumber });
+    await this.logAudit(documentId, userId, DocumentAction.VERSION_CREATE, {
+      versionNumber,
+      fileName,
+    });
 
     return version;
   }

@@ -30,10 +30,22 @@ export class CreateTemplateDto {
   @IsNotEmpty()
   categoryId!: string;
 
-  @ApiPropertyOptional({ example: 'United Kingdom' })
+  @ApiPropertyOptional({ example: ['United Kingdom', 'Nigeria'] })
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  jurisdictions?: string[];
+
+  @ApiPropertyOptional({ example: 'Employment Law' })
   @IsString()
   @IsOptional()
-  jurisdiction?: string;
+  practiceArea?: string;
+
+  @ApiPropertyOptional({ example: ['Employment Rights Act 1996'] })
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  linkedStatutes?: string[];
 
   @ApiPropertyOptional({ example: ['HR', 'Employment', 'Standard'] })
   @IsArray()
@@ -74,9 +86,21 @@ export class UpdateTemplateDto {
   categoryId?: string;
 
   @ApiPropertyOptional()
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  jurisdictions?: string[];
+
+  @ApiPropertyOptional()
   @IsString()
   @IsOptional()
-  jurisdiction?: string;
+  practiceArea?: string;
+
+  @ApiPropertyOptional()
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  linkedStatutes?: string[];
 
   @ApiPropertyOptional()
   @IsArray()

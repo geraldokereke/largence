@@ -536,23 +536,25 @@ model TemplateCategory {
 }
 
 model Template {
-  id             String           @id @default(uuid())
-  title          String
-  description    String?
-  tier           TemplateTier     @default(COMMUNITY)
-  status         TemplateStatus   @default(DRAFT)
-  categoryId     String
-  category       TemplateCategory @relation(fields: [categoryId], references: [id])
-  orgId          String? // Nullable if marketplace/global template
-  org            Organisation?    @relation(fields: [orgId], references: [id])
-  currentVersion String           @default("1.0.0")
-  price          Decimal?         @default(0.00) @db.Decimal(10, 2)
-  jurisdiction   String?
-  tags           String[]
-  kgNodeLink     String? // Stub for Knowledge Graph linkage
-  createdBy      String
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
+  id                   String           @id @default(uuid())
+  title                String
+  description          String?
+  tier                 TemplateTier     @default(COMMUNITY)
+  status               TemplateStatus   @default(DRAFT)
+  categoryId           String
+  category             TemplateCategory @relation(fields: [categoryId], references: [id])
+  orgId                String? // Nullable if marketplace/global template
+  org                  Organisation?    @relation(fields: [orgId], references: [id])
+  currentVersion       String           @default("1.0.0")
+  price                Decimal?         @default(0.00) @db.Decimal(10, 2)
+  jurisdictions        String[]
+  practiceArea         String?
+  linkedStatutes       Json?            @default("[]")
+  knowledgeGraphNodeId String? // Stub for Knowledge Graph linkage
+  tags                 String[]
+  createdBy            String
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
 
   versions TemplateVersion[]
   reviews  TemplateReview[]

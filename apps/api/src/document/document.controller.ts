@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -54,6 +55,9 @@ export class DocumentController {
     @CurrentUser() user: User,
     @Body('changeLog') changeLog?: string,
   ) {
+    if (!file) {
+      throw new BadRequestException('File is required in the "file" field');
+    }
     return this.documentService.uploadVersion(id, file.buffer, user.id, changeLog);
   }
 

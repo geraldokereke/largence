@@ -89,17 +89,30 @@ export class DocumentService {
       this.logger.debug(
         `Starting intelligence processing for ${document.id} (Size: ${file.length} bytes)`,
       );
-      const text = await this.ocr.extractText(
-        process.env.AWS_S3_BUCKET || 'largence-documents',
-        version.fileKey,
-      );
 
+      // 1. Attempt OCR (Optional)
+      let text = '';
+      try {
+        text = await this.ocr.extractText(
+          process.env.AWS_S3_BUCKET || 'largence-documents',
+          version.fileKey,
+        );
+      } catch (ocrError) {
+        this.logger.warn(
+          `OCR failed for ${document.id}: ${ocrError.message}. Proceeding with metadata indexing.`,
+        );
+      }
+
+      // 2. Always index in OpenSearch (Metadata + whatever text we got)
       await this.searchService.indexDocument(document, text);
 
-      await this.prisma.documentVersion.update({
-        where: { id: version.id },
-        data: { metadata: { extractedText: text } },
-      });
+      // 3. Store extracted text in DB if available
+      if (text) {
+        await this.prisma.documentVersion.update({
+          where: { id: version.id },
+          data: { metadata: { extractedText: text } },
+        });
+      }
     } catch (error) {
       this.logger.error(
         `Intelligence processing failed for doc ${document.id}`,

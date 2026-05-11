@@ -39,7 +39,7 @@ export class TemplateController {
     @Body() dto: CreateTemplateDto,
     @CurrentUser() user: User,
     @CurrentOrg() org: Organisation,
-  ) {
+  ): Promise<any> {
     return this.templateService.create(dto, user.id, org.id);
   }
 
@@ -49,31 +49,31 @@ export class TemplateController {
     @Query('tier') tier: TemplateTier,
     @Query('categoryId') categoryId: string,
     @CurrentOrg() org: Organisation,
-  ) {
+  ): Promise<any> {
     return this.templateService.findAll({ tier, categoryId, orgId: org.id });
   }
 
   @Get('search')
   @ApiOperation({ summary: 'Search templates' })
-  async search(@Query('q') q: string) {
-    return this.templateService.search(q);
+  async search(@Query('q') q: string, @CurrentOrg() org: Organisation): Promise<any> {
+    return this.templateService.search(q, org.id);
   }
 
   @Get('marketplace')
   @ApiOperation({ summary: 'List marketplace templates' })
-  async findMarketplace(@Query('categoryId') categoryId: string) {
+  async findMarketplace(@Query('categoryId') categoryId: string): Promise<any> {
     return this.templateService.findAll({ tier: TemplateTier.PROFESSIONAL, categoryId });
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Get template details' })
-  async findOne(@Param('id') id: string) {
+  async findOne(@Param('id') id: string): Promise<any> {
     return this.templateService.findOne(id);
   }
 
   @Patch(':id')
   @ApiOperation({ summary: 'Update template' })
-  async update(@Param('id') id: string, @Body() dto: UpdateTemplateDto) {
+  async update(@Param('id') id: string, @Body() dto: UpdateTemplateDto): Promise<any> {
     return this.templateService.update(id, dto);
   }
 
@@ -86,9 +86,35 @@ export class TemplateController {
     @UploadedFile() file: Express.Multer.File,
     @Body() dto: CreateTemplateVersionDto,
     @CurrentUser() user: User,
-  ) {
+  ): Promise<any> {
     if (!file) throw new BadRequestException('File is required');
     return this.templateService.createVersion(id, dto, file.buffer, user.id);
+  }
+
+  @Post(':id/review/submit')
+  @ApiOperation({ summary: 'Submit template for review' })
+  async submitForReview(@Param('id') id: string): Promise<any> {
+    return this.templateService.submitForReview(id);
+  }
+
+  @Patch(':id/review/approve')
+  @ApiOperation({ summary: 'Approve template and publish' })
+  async approveReview(
+    @Param('id') id: string,
+    @CurrentUser() user: User,
+    @Body('comments') comments?: string,
+  ): Promise<any> {
+    return this.templateService.approveReview(id, user.id, comments);
+  }
+
+  @Patch(':id/review/reject')
+  @ApiOperation({ summary: 'Reject template review' })
+  async rejectReview(
+    @Param('id') id: string,
+    @CurrentUser() user: User,
+    @Body('comments') comments: string,
+  ): Promise<any> {
+    return this.templateService.rejectReview(id, user.id, comments);
   }
 
   @Post(':id/instantiate')
@@ -98,7 +124,7 @@ export class TemplateController {
     @Body() dto: InstantiateTemplateDto,
     @CurrentUser() user: User,
     @CurrentOrg() org: Organisation,
-  ) {
+  ): Promise<any> {
     return this.templateService.instantiate(id, dto, user.id, org.id);
   }
 }

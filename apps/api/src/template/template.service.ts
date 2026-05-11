@@ -1,5 +1,12 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { Prisma, TemplateStatus, TemplateTier } from '@prisma/client';
+import {
+  Prisma,
+  Document as PrismaDocument,
+  Template,
+  TemplateStatus,
+  TemplateTier,
+  TemplateVersion,
+} from '@prisma/client';
 import * as semver from 'semver';
 import { SearchService } from '../common/services/search.service';
 import { StorageService } from '../common/services/storage.service';
@@ -21,8 +28,8 @@ export class TemplateService {
     private searchService: SearchService,
   ) {}
 
-  async create(dto: CreateTemplateDto, userId: string, orgId?: string) {
-    return this.prisma.template.create({
+  async create(dto: CreateTemplateDto, userId: string, orgId?: string): Promise<Template> {
+    const template = await this.prisma.template.create({
       data: {
         title: dto.title,
         description: dto.description,
@@ -35,9 +42,16 @@ export class TemplateService {
         createdBy: userId,
       },
     });
+
+    await this.searchService.indexTemplate(template);
+    return template;
   }
 
-  async findAll(query: { tier?: TemplateTier; categoryId?: string; orgId?: string }) {
+  async findAll(query: {
+    tier?: TemplateTier;
+    categoryId?: string;
+    orgId?: string;
+  }): Promise<Template[]> {
     return this.prisma.template.findMany({
       where: {
         tier: query.tier,
@@ -53,7 +67,7 @@ export class TemplateService {
     });
   }
 
-  async findOne(id: string) {
+  async findOne(id: string): Promise<Template & { versions: any[]; category: any }> {
     const template = await this.prisma.template.findUnique({
       where: { id },
       include: { category: true, versions: { orderBy: { createdAt: 'desc' } } },
@@ -62,15 +76,16 @@ export class TemplateService {
     return template;
   }
 
-  async update(id: string, dto: UpdateTemplateDto) {
-    // Logic to verify ownership/admin
-    return this.prisma.template.update({
+  async update(id: string, dto: UpdateTemplateDto): Promise<Template> {
+    const updated = await this.prisma.template.update({
       where: { id },
       data: {
         ...dto,
         updatedAt: new Date(),
       },
     });
+    await this.searchService.indexTemplate(updated);
+    return updated;
   }
 
   async createVersion(
@@ -78,7 +93,7 @@ export class TemplateService {
     dto: CreateTemplateVersionDto,
     file: Buffer,
     userId: string,
-  ) {
+  ): Promise<any> {
     const template = await this.findOne(templateId);
 
     if (!semver.valid(dto.version)) {
@@ -115,24 +130,66 @@ export class TemplateService {
     return version;
   }
 
+  async submitForReview(id: string): Promise<any> {
+    const updated = await this.prisma.template.update({
+      where: { id },
+      data: { status: TemplateStatus.PENDING_REVIEW },
+    });
+    await this.searchService.indexTemplate(updated);
+    return updated;
+  }
+
+  async approveReview(id: string, reviewerId: string, comments?: string): Promise<any> {
+    await this.prisma.templateReview.create({
+      data: {
+        templateId: id,
+        reviewerId,
+        status: TemplateStatus.PUBLISHED,
+        comments,
+      },
+    });
+
+    const updated = await this.prisma.template.update({
+      where: { id },
+      data: { status: TemplateStatus.PUBLISHED },
+    });
+
+    await this.searchService.indexTemplate(updated);
+    return updated;
+  }
+
+  async rejectReview(id: string, reviewerId: string, comments: string): Promise<any> {
+    await this.prisma.templateReview.create({
+      data: {
+        templateId: id,
+        reviewerId,
+        status: TemplateStatus.REJECTED,
+        comments,
+      },
+    });
+
+    const updated = await this.prisma.template.update({
+      where: { id },
+      data: { status: TemplateStatus.REJECTED },
+    });
+
+    await this.searchService.indexTemplate(updated);
+    return updated;
+  }
+
   async instantiate(
     templateId: string,
     dto: InstantiateTemplateDto,
     userId: string,
     orgId: string,
-  ) {
+  ): Promise<PrismaDocument> {
     const template = await this.findOne(templateId);
-    const latestVersion = template.versions[0];
+    const latestVersion = template.versions[0] as TemplateVersion;
 
     if (!latestVersion) throw new BadRequestException('Template has no versions');
 
-    // Logic for Template -> Document instantiation
-    // In a real scenario, this would trigger the Generation Engine
-    // For now, we create a Document pointing to the same file or a copy
-
     const newFileKey = `orgs/${orgId}/docs/instantiated_${templateId}_${Date.now()}.docx`;
 
-    // Copy template file to document location
     const templateFile = await this.storage.download(latestVersion.fileKey);
     await this.storage.upload(
       newFileKey,
@@ -172,16 +229,8 @@ export class TemplateService {
     return document;
   }
 
-  async search(q: string) {
-    // This should extend OpenSearch
-    // Stub for now
-    return this.prisma.template.findMany({
-      where: {
-        OR: [
-          { title: { contains: q, mode: 'insensitive' } },
-          { description: { contains: q, mode: 'insensitive' } },
-        ],
-      },
-    });
+  async search(q: string, orgId?: string): Promise<Template[]> {
+    const results = await this.searchService.searchTemplates(q, orgId);
+    return results as unknown as Template[];
   }
 }

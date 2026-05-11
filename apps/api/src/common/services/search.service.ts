@@ -1,5 +1,6 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { Client } from '@opensearch-project/opensearch';
+import { Template } from '@prisma/client';
 
 interface SearchFilters {
   orgId?: string;
@@ -11,7 +12,7 @@ interface SearchFilters {
 export class SearchService implements OnModuleInit {
   private readonly client: Client;
   private readonly logger = new Logger(SearchService.name);
-  private readonly index = 'documents';
+  private readonly indices = ['documents', 'templates'];
 
   constructor() {
     this.client = new Client({
@@ -27,44 +28,57 @@ export class SearchService implements OnModuleInit {
   }
 
   async onModuleInit() {
-    await this.ensureIndex();
+    await this.ensureIndices();
   }
 
-  private async ensureIndex() {
-    try {
-      const exists = (await this.client.indices.exists({
-        index: this.index,
-      })) as { body: boolean };
-      if (!exists.body) {
-        await this.client.indices.create({
-          index: this.index,
-          body: {
-            settings: {
-              index: {
-                number_of_shards: 1,
-                number_of_replicas: 0,
+  private async ensureIndices() {
+    for (const index of this.indices) {
+      try {
+        const exists = (await this.client.indices.exists({ index })) as { body: boolean };
+        if (!exists.body) {
+          const properties =
+            index === 'documents'
+              ? {
+                  id: { type: 'keyword' },
+                  title: { type: 'text', analyzer: 'english' },
+                  fileName: { type: 'text', analyzer: 'english' },
+                  content: { type: 'text', analyzer: 'english' },
+                  orgId: { type: 'keyword' },
+                  workspaceId: { type: 'keyword' },
+                  matterId: { type: 'keyword' },
+                  status: { type: 'keyword' },
+                  tags: { type: 'keyword' },
+                  createdAt: { type: 'date' },
+                }
+              : {
+                  id: { type: 'keyword' },
+                  title: { type: 'text', analyzer: 'english' },
+                  description: { type: 'text', analyzer: 'english' },
+                  tier: { type: 'keyword' },
+                  status: { type: 'keyword' },
+                  jurisdiction: { type: 'keyword' },
+                  tags: { type: 'keyword' },
+                  orgId: { type: 'keyword' },
+                  createdAt: { type: 'date' },
+                };
+
+          await this.client.indices.create({
+            index,
+            body: {
+              settings: {
+                index: { number_of_shards: 1, number_of_replicas: 0 },
               },
+              mappings: { properties },
             },
-            mappings: {
-              properties: {
-                id: { type: 'keyword' },
-                title: { type: 'text', analyzer: 'english' },
-                fileName: { type: 'text', analyzer: 'english' },
-                content: { type: 'text', analyzer: 'english' },
-                orgId: { type: 'keyword' },
-                workspaceId: { type: 'keyword' },
-                matterId: { type: 'keyword' },
-                status: { type: 'keyword' },
-                tags: { type: 'keyword' },
-                createdAt: { type: 'date' },
-              },
-            },
-          },
-        });
-        this.logger.log(`Created OpenSearch index: ${this.index}`);
+          });
+          this.logger.log(`Created OpenSearch index: ${index}`);
+        }
+      } catch (error) {
+        this.logger.error(
+          `Failed to ensure OpenSearch index ${index} exists`,
+          (error as Error).stack,
+        );
       }
-    } catch (error) {
-      this.logger.error('Failed to ensure OpenSearch index exists', (error as Error).stack);
     }
   }
 
@@ -84,7 +98,7 @@ export class SearchService implements OnModuleInit {
   ) {
     try {
       await this.client.index({
-        index: this.index,
+        index: 'documents',
         id: document.id,
         body: {
           id: document.id,
@@ -105,7 +119,66 @@ export class SearchService implements OnModuleInit {
     }
   }
 
-  async search(query: string, filters: SearchFilters = {}) {
+  async indexTemplate(template: Template) {
+    try {
+      await this.client.index({
+        index: 'templates',
+        id: template.id,
+        body: {
+          id: template.id,
+          title: template.title,
+          description: template.description,
+          tier: template.tier,
+          status: template.status,
+          jurisdiction: template.jurisdiction,
+          tags: template.tags || [],
+          orgId: template.orgId,
+          createdAt: template.createdAt,
+        },
+        refresh: true,
+      });
+    } catch (error) {
+      this.logger.error(`Failed to index template: ${template.id}`, (error as Error).stack);
+    }
+  }
+
+  async searchTemplates(query: string, orgId?: string): Promise<Record<string, any>[]> {
+    const must: any[] = [
+      {
+        multi_match: {
+          query,
+          fields: ['title^3', 'description^2'],
+          fuzziness: 'AUTO',
+        },
+      },
+    ];
+
+    if (orgId) {
+      must.push({
+        bool: {
+          should: [
+            { term: { orgId } },
+            { term: { tier: 'PROFESSIONAL' } },
+            { term: { tier: 'COMMUNITY' } },
+          ],
+        },
+      });
+    }
+
+    try {
+      const result = await this.client.search({
+        index: 'templates',
+        body: { query: { bool: { must } } },
+      });
+      const body = result.body as { hits: { hits: Array<{ _source: Record<string, any> }> } };
+      return body.hits.hits.map(hit => hit._source);
+    } catch (error) {
+      this.logger.error('Template search failed', (error as Error).stack);
+      return [];
+    }
+  }
+
+  async search(query: string, filters: SearchFilters = {}): Promise<Record<string, any>[]> {
     const must: any[] = [
       {
         multi_match: {
@@ -121,17 +194,16 @@ export class SearchService implements OnModuleInit {
     if (filters.matterId) must.push({ term: { matterId: filters.matterId } });
 
     try {
-      const result = (await this.client.search({
-        index: this.index,
+      const result = await this.client.search({
+        index: 'documents',
         body: {
           query: {
             bool: { must },
           },
         },
-      })) as {
-        body: { hits: { hits: Array<{ _source: Record<string, unknown> }> } };
-      };
-      return result.body.hits.hits.map(hit => hit._source);
+      });
+      const body = result.body as { hits: { hits: Array<{ _source: Record<string, any> }> } };
+      return body.hits.hits.map(hit => hit._source);
     } catch (error) {
       this.logger.error('Search failed', (error as Error).stack);
       return [];
@@ -141,7 +213,7 @@ export class SearchService implements OnModuleInit {
   async remove(id: string) {
     try {
       await this.client.delete({
-        index: this.index,
+        index: 'documents',
         id,
       });
     } catch (error) {

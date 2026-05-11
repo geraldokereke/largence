@@ -22,8 +22,8 @@ export class TenantResolverMiddleware implements NestMiddleware {
       subdomain = host.split(`.${baseDomain}`)[0];
     }
 
-    // Handle public/self-serve subdomains
-    if (!subdomain || subdomain === 'app' || subdomain === 'www') {
+    // Handle public/self-serve subdomains (central hub)
+    if (!subdomain || ['app', 'www', 'auth', 'api'].includes(subdomain)) {
       req.isPublicTenant = true;
       return next();
     }

@@ -4,6 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 enum OrgType {
@@ -88,6 +89,8 @@ model Organisation {
   auditCertificates AuditCertificate[]
   workspaces        Workspace[]
   matters           Matter[]
+  documents         Document[]
+  templates         Template[]
 }
 
 model User {
@@ -121,6 +124,7 @@ model User {
   mfaBackupCodes          MFABackupCode[]
   emailVerificationTokens EmailVerificationToken[]
   passwordResetTokens     PasswordResetToken[]
+  documentAudits          DocumentAudit[]
 }
 
 model RefreshToken {
@@ -245,6 +249,7 @@ model Workspace {
   updatedAt           DateTime          @updatedAt
   members             WorkspaceMember[]
   matters             Matter[]
+  documents           Document[]
 
   @@unique([orgId, slug])
 }
@@ -290,6 +295,7 @@ model Matter {
   updatedAt       DateTime       @updatedAt
   tasks           MatterTask[]
   timeEntries     TimeEntry[]
+  documents       Document[]
 }
 
 model MatterTask {
@@ -400,4 +406,179 @@ enum TaskStatus {
   IN_PROGRESS
   BLOCKED
   DONE
+}
+enum DocumentStatus {
+  DRAFT
+  UNDER_REVIEW
+  PENDING_SIGNATURE
+  EXECUTED
+  ARCHIVED
+}
+
+enum DocumentPermission {
+  READ
+  WRITE
+  ADMIN
+}
+
+enum DocumentAction {
+  CREATE
+  UPDATE
+  STATE_CHANGE
+  VERSION_CREATE
+  ACCESS_GRANT
+  ACCESS_REVOKE
+  DELETE
+}
+
+enum DocumentRetentionAction {
+  ARCHIVE
+  DELETE
+}
+
+model Document {
+  id              String                  @id @default(uuid())
+  title           String
+  fileName        String
+  mimeType        String
+  size            Int
+  status          DocumentStatus          @default(DRAFT)
+  isConfidential  Boolean                 @default(false)
+  orgId           String
+  org             Organisation            @relation(fields: [orgId], references: [id])
+  workspaceId     String
+  workspace       Workspace               @relation(fields: [workspaceId], references: [id])
+  matterId        String?
+  matter          Matter?                 @relation(fields: [matterId], references: [id])
+  metadata        Json?
+  currentVersion   Int                     @default(1)
+  retentionDate    DateTime?
+  retentionAction  DocumentRetentionAction @default(ARCHIVE)
+  parentDocumentId String?
+  parentDocument   Document?               @relation("DocumentBranches", fields: [parentDocumentId], references: [id])
+  createdBy        String
+  createdAt        DateTime                @default(now())
+  updatedAt        DateTime                @updatedAt
+
+  versions DocumentVersion[]
+  branches Document[]        @relation("DocumentBranches")
+  access   DocumentAccess[]
+  audit    DocumentAudit[]
+
+  @@index([orgId, workspaceId])
+  @@index([matterId])
+}
+
+model DocumentVersion {
+  id             String   @id @default(uuid())
+  documentId     String
+  document       Document @relation(fields: [documentId], references: [id])
+  versionNumber  Int
+  fileKey        String // S3/Storage pointer
+  size           Int
+  changeLog      String?
+  metadata       Json?
+  isMajor        Boolean  @default(false)
+  isCurrent      Boolean  @default(false)
+  createdBy      String
+  createdAt      DateTime @default(now())
+
+  @@unique([documentId, versionNumber])
+}
+
+model DocumentAccess {
+  id         String             @id @default(uuid())
+  documentId String
+  document   Document           @relation(fields: [documentId], references: [id])
+  userId     String
+  permission DocumentPermission @default(READ)
+  grantedBy  String
+  grantedAt  DateTime           @default(now())
+
+  @@unique([documentId, userId])
+}
+
+model DocumentAudit {
+  id         String         @id @default(uuid())
+  documentId String
+  document   Document       @relation(fields: [documentId], references: [id])
+  userId     String
+  user       User           @relation(fields: [userId], references: [id])
+  action     DocumentAction
+  details    Json?
+  ipAddress  String?
+  createdAt  DateTime       @default(now())
+
+  @@index([documentId])
+}
+
+enum TemplateTier {
+  CURATED
+  PROFESSIONAL
+  COMMUNITY
+}
+
+enum TemplateStatus {
+  DRAFT
+  PENDING_REVIEW
+  PUBLISHED
+  REJECTED
+  DEPRECATED
+}
+
+model TemplateCategory {
+  id          String     @id @default(uuid())
+  name        String     @unique
+  description String?
+  templates   Template[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model Template {
+  id                   String           @id @default(uuid())
+  title                String
+  description          String?
+  tier                 TemplateTier     @default(COMMUNITY)
+  status               TemplateStatus   @default(DRAFT)
+  categoryId           String
+  category             TemplateCategory @relation(fields: [categoryId], references: [id])
+  orgId                String? // Nullable if marketplace/global template
+  org                  Organisation?    @relation(fields: [orgId], references: [id])
+  currentVersion       String           @default("1.0.0")
+  price                Decimal?         @default(0.00) @db.Decimal(10, 2)
+  jurisdictions        String[]
+  practiceArea         String?
+  linkedStatutes       Json?            @default("[]")
+  knowledgeGraphNodeId String? // Stub for Knowledge Graph linkage
+  tags                 String[]
+  createdBy            String
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+
+  versions TemplateVersion[]
+  reviews  TemplateReview[]
+}
+
+model TemplateVersion {
+  id         String   @id @default(uuid())
+  templateId String
+  template   Template @relation(fields: [templateId], references: [id])
+  version    String // Semver: 1.0.0
+  fileKey    String // S3 key for the template file
+  changeLog  String?
+  metadata   Json? // Stores variable placeholders, etc.
+  createdBy  String
+  createdAt  DateTime @default(now())
+}
+
+model TemplateReview {
+  id         String         @id @default(uuid())
+  templateId String
+  template   Template       @relation(fields: [templateId], references: [id])
+  reviewerId String
+  status     TemplateStatus @default(PENDING_REVIEW)
+  comments   String?
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
 }

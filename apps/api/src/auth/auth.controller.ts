@@ -25,10 +25,7 @@ import { SamlAuthGuard } from './guards/saml.guard';
 
 @ApiTags('auth')
 @ApiBearerAuth()
-@Controller({
-  path: 'auth',
-  host: `auth.${process.env.BASE_DOMAIN || 'localhost'}`,
-})
+@Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 

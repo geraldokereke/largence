@@ -42,8 +42,11 @@ export class MattersController {
   @Get('workspace/:workspaceId')
   @UseGuards(WorkspaceGuard)
   @ApiOperation({ summary: 'List all matters in a workspace' })
-  async getMatters(@Param('workspaceId') workspaceId: string): Promise<any[]> {
-    return this.mattersService.getWorkspaceMatters(workspaceId);
+  async getMatters(
+    @Param('workspaceId') workspaceId: string,
+    @Request() req: AuthenticatedRequest,
+  ): Promise<any[]> {
+    return this.mattersService.getWorkspaceMatters(workspaceId, req.user.id, req.user.roles);
   }
 
   @Get(':id')

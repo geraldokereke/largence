@@ -1,5 +1,6 @@
 import { MiddlewareConsumer, Module, RequestMethod } from '@nestjs/common';
 import { APP_FILTER } from '@nestjs/core';
+import { ScheduleModule } from '@nestjs/schedule';
 import { LoggerModule } from 'nestjs-pino';
 import { AuditModule } from './audit/audit.module';
 import { AuthModule } from './auth/auth.module';
@@ -32,6 +33,7 @@ import { WorkspacesModule } from './workspaces/workspaces.module';
         },
       },
     }),
+    ScheduleModule.forRoot(),
     AuthModule,
     SystemModule,
     DocumentModule,

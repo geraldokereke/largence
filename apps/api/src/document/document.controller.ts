@@ -67,6 +67,12 @@ export class DocumentController {
     );
   }
 
+  @Get(':id/diff/:v1/:v2')
+  @ApiOperation({ summary: 'Compare text between two versions' })
+  async diff(@Param('id') id: string, @Param('v1') v1: number, @Param('v2') v2: number) {
+    return this.documentService.diff(id, v1, v2);
+  }
+
   @Post(':id/state-transition')
   @ApiOperation({ summary: 'Transition document status' })
   async transitionState(

@@ -1,5 +1,12 @@
-import { ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { Document, DocumentAction, DocumentStatus, DocumentVersion, Prisma } from '@prisma/client';
+import { diffWordsWithSpace } from 'diff';
 import { OcrService } from '../common/services/ocr.service';
 import { SearchService } from '../common/services/search.service';
 import { StorageService } from '../common/services/storage.service';
@@ -10,6 +17,7 @@ import {
   StateTransitionDto,
   UpdateDocumentDto,
 } from './dto/document.dto';
+import { RetentionService } from './retention.service';
 
 @Injectable()
 export class DocumentService {
@@ -21,6 +29,33 @@ export class DocumentService {
     private searchService: SearchService,
     private ocr: OcrService,
   ) {}
+
+  async diff(id: string, v1Number: number, v2Number: number) {
+    const [v1, v2] = await Promise.all([
+      this.prisma.documentVersion.findUnique({
+        where: { documentId_versionNumber: { documentId: id, versionNumber: Number(v1Number) } },
+      }),
+      this.prisma.documentVersion.findUnique({
+        where: { documentId_versionNumber: { documentId: id, versionNumber: Number(v2Number) } },
+      }),
+    ]);
+
+    if (!v1 || !v2) throw new NotFoundException('One or both versions not found');
+
+    const meta1 = v1.metadata as Prisma.JsonObject;
+    const meta2 = v2.metadata as Prisma.JsonObject;
+
+    const text1 = (meta1?.extractedText as string) || '';
+    const text2 = (meta2?.extractedText as string) || '';
+
+    if (!text1 && !text2) {
+      throw new BadRequestException(
+        'No text available for diffing (OCR might have failed or still running)',
+      );
+    }
+
+    return diffWordsWithSpace(text1, text2);
+  }
 
   async create(dto: CreateDocumentDto, userId: string, orgId: string) {
     const document = await this.prisma.document.create({
@@ -35,6 +70,7 @@ export class DocumentService {
         isConfidential: dto.isConfidential || false,
         createdBy: userId,
         metadata: dto.metadata as Prisma.InputJsonValue,
+        retentionDate: RetentionService.getDefaultRetentionDate(),
       },
     });
 

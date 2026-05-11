@@ -430,25 +430,32 @@ enum DocumentAction {
   DELETE
 }
 
+enum DocumentRetentionAction {
+  ARCHIVE
+  DELETE
+}
+
 model Document {
-  id             String         @id @default(uuid())
-  title          String
-  fileName       String
-  mimeType       String
-  size           Int
-  status         DocumentStatus @default(DRAFT)
-  isConfidential Boolean        @default(false)
-  orgId          String
-  org            Organisation   @relation(fields: [orgId], references: [id])
-  workspaceId    String
-  workspace      Workspace      @relation(fields: [workspaceId], references: [id])
-  matterId       String?
-  matter         Matter?        @relation(fields: [matterId], references: [id])
-  metadata       Json?
-  currentVersion Int            @default(1)
-  createdBy      String
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
+  id              String                  @id @default(uuid())
+  title           String
+  fileName        String
+  mimeType        String
+  size            Int
+  status          DocumentStatus          @default(DRAFT)
+  isConfidential  Boolean                 @default(false)
+  orgId           String
+  org             Organisation            @relation(fields: [orgId], references: [id])
+  workspaceId     String
+  workspace       Workspace               @relation(fields: [workspaceId], references: [id])
+  matterId        String?
+  matter          Matter?                 @relation(fields: [matterId], references: [id])
+  metadata        Json?
+  currentVersion  Int                     @default(1)
+  retentionDate   DateTime?
+  retentionAction DocumentRetentionAction @default(ARCHIVE)
+  createdBy       String
+  createdAt       DateTime                @default(now())
+  updatedAt       DateTime                @updatedAt
 
   versions DocumentVersion[]
   access   DocumentAccess[]

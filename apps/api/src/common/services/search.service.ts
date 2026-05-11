@@ -68,7 +68,7 @@ export class SearchService implements OnModuleInit {
               settings: {
                 index: { number_of_shards: 1, number_of_replicas: 0 },
               },
-              mappings: { properties },
+              mappings: { properties: properties as Record<string, any> },
             },
           });
           this.logger.log(`Created OpenSearch index: ${index}`);

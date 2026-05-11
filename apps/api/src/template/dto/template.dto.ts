@@ -14,7 +14,7 @@ export class CreateTemplateDto {
   @ApiProperty({ example: 'Employment Contract' })
   @IsString()
   @IsNotEmpty()
-  title: string;
+  title!: string;
 
   @ApiPropertyOptional({ example: 'Standard employment agreement for new hires' })
   @IsString()
@@ -23,12 +23,12 @@ export class CreateTemplateDto {
 
   @ApiProperty({ enum: TemplateTier })
   @IsEnum(TemplateTier)
-  tier: TemplateTier;
+  tier!: TemplateTier;
 
   @ApiProperty({ example: 'uuid-of-category' })
   @IsUUID()
   @IsNotEmpty()
-  categoryId: string;
+  categoryId!: string;
 
   @ApiPropertyOptional({ example: 'United Kingdom' })
   @IsString()
@@ -94,7 +94,7 @@ export class CreateTemplateVersionDto {
   @ApiProperty({ example: '1.1.0' })
   @IsString()
   @IsNotEmpty()
-  version: string;
+  version!: string;
 
   @ApiPropertyOptional({ example: 'Added intellectual property clauses' })
   @IsString()
@@ -110,7 +110,7 @@ export class InstantiateTemplateDto {
   @ApiProperty()
   @IsUUID()
   @IsNotEmpty()
-  workspaceId: string;
+  workspaceId!: string;
 
   @ApiPropertyOptional()
   @IsUUID()
@@ -119,5 +119,5 @@ export class InstantiateTemplateDto {
 
   @ApiProperty({ example: { employee_name: 'John Doe', salary: 50000 } })
   @IsOptional()
-  variables: Record<string, any>;
+  variables!: Record<string, any>;
 }

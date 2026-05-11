@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { SearchService } from '../common/services/search.service';
 
 export interface Counterparty {
   name: string;
@@ -9,7 +9,7 @@ export interface Counterparty {
 
 @Injectable()
 export class ConflictCheckService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private searchService: SearchService) {}
 
   async check(orgId: string, counterparties: unknown) {
     if (!counterparties || !Array.isArray(counterparties)) {
@@ -17,31 +17,27 @@ export class ConflictCheckService {
     }
 
     const castedCounterparties = counterparties as Counterparty[];
-    // This is a simplified check. In production, this would use Elasticsearch
-    // to search across the 'counterparties' Json field in the Matter table.
-    // For now, we'll do a basic search for name matches if they exist
     const names = castedCounterparties.map(cp => cp.name).filter(Boolean);
     if (names.length === 0) return { hasConflict: false, conflicts: [] };
 
-    // Find other matters in the same org that mention these counterparties
-    // Note: This is an expensive query in Prisma without Full Text Search
-    const conflicts = await this.prisma.matter.findMany({
-      where: {
-        orgId,
-        status: { in: ['OPEN', 'ACTIVE', 'PENDING'] },
-        OR: names.map(name => ({
-          counterparties: {
-            path: ['$'],
-            array_contains: { name },
-          },
-        })),
-      },
-      select: { id: true, title: true, reference: true },
-    });
+    const query = names.join(' ');
+
+    // Use OpenSearch for robust conflict check across all matter counterparties
+    const conflicts = await this.searchService.searchMatters(query, orgId);
+
+    interface MatterHit {
+      id: string;
+      title: string;
+      reference: string;
+    }
 
     return {
       hasConflict: conflicts.length > 0,
-      conflicts,
+      conflicts: (conflicts as unknown as MatterHit[]).map(c => ({
+        id: c.id,
+        title: c.title,
+        reference: c.reference,
+      })),
     };
   }
 }

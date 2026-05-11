@@ -12,7 +12,7 @@ interface SearchFilters {
 export class SearchService implements OnModuleInit {
   private readonly client: Client;
   private readonly logger = new Logger(SearchService.name);
-  private readonly indices = ['documents', 'templates'];
+  private readonly indices = ['documents', 'templates', 'matters'];
 
   constructor() {
     this.client = new Client({
@@ -36,31 +36,43 @@ export class SearchService implements OnModuleInit {
       try {
         const exists = (await this.client.indices.exists({ index })) as { body: boolean };
         if (!exists.body) {
-          const properties =
-            index === 'documents'
-              ? {
-                  id: { type: 'keyword' },
-                  title: { type: 'text', analyzer: 'english' },
-                  fileName: { type: 'text', analyzer: 'english' },
-                  content: { type: 'text', analyzer: 'english' },
-                  orgId: { type: 'keyword' },
-                  workspaceId: { type: 'keyword' },
-                  matterId: { type: 'keyword' },
-                  status: { type: 'keyword' },
-                  tags: { type: 'keyword' },
-                  createdAt: { type: 'date' },
-                }
-              : {
-                  id: { type: 'keyword' },
-                  title: { type: 'text', analyzer: 'english' },
-                  description: { type: 'text', analyzer: 'english' },
-                  tier: { type: 'keyword' },
-                  status: { type: 'keyword' },
-                  jurisdiction: { type: 'keyword' },
-                  tags: { type: 'keyword' },
-                  orgId: { type: 'keyword' },
-                  createdAt: { type: 'date' },
-                };
+          let properties = {};
+          if (index === 'documents') {
+            properties = {
+              id: { type: 'keyword' },
+              title: { type: 'text', analyzer: 'english' },
+              fileName: { type: 'text', analyzer: 'english' },
+              content: { type: 'text', analyzer: 'english' },
+              orgId: { type: 'keyword' },
+              workspaceId: { type: 'keyword' },
+              matterId: { type: 'keyword' },
+              status: { type: 'keyword' },
+              tags: { type: 'keyword' },
+              createdAt: { type: 'date' },
+            };
+          } else if (index === 'templates') {
+            properties = {
+              id: { type: 'keyword' },
+              title: { type: 'text', analyzer: 'english' },
+              description: { type: 'text', analyzer: 'english' },
+              tier: { type: 'keyword' },
+              status: { type: 'keyword' },
+              jurisdiction: { type: 'keyword' },
+              tags: { type: 'keyword' },
+              orgId: { type: 'keyword' },
+              createdAt: { type: 'date' },
+            };
+          } else if (index === 'matters') {
+            properties = {
+              id: { type: 'keyword' },
+              reference: { type: 'keyword' },
+              title: { type: 'text', analyzer: 'english' },
+              orgId: { type: 'keyword' },
+              counterparties: { type: 'text', analyzer: 'english' },
+              status: { type: 'keyword' },
+              createdAt: { type: 'date' },
+            };
+          }
 
           await this.client.indices.create({
             index,
@@ -68,7 +80,7 @@ export class SearchService implements OnModuleInit {
               settings: {
                 index: { number_of_shards: 1, number_of_replicas: 0 },
               },
-              mappings: { properties: properties as Record<string, any> },
+              mappings: { properties: properties },
             },
           });
           this.logger.log(`Created OpenSearch index: ${index}`);
@@ -79,6 +91,66 @@ export class SearchService implements OnModuleInit {
           (error as Error).stack,
         );
       }
+    }
+  }
+
+  async indexMatter(matter: {
+    id: string;
+    reference: string;
+    title: string;
+    orgId: string;
+    counterparties?: any;
+    status: string;
+    createdAt: Date;
+  }) {
+    try {
+      interface MatterCounterparty {
+        name: string;
+      }
+      const counterparties = (matter.counterparties as MatterCounterparty[]) || [];
+      const cpString = counterparties.map(cp => cp.name).join(' ');
+
+      await this.client.index({
+        index: 'matters',
+        id: matter.id,
+        body: {
+          id: matter.id,
+          reference: matter.reference,
+          title: matter.title,
+          orgId: matter.orgId,
+          counterparties: cpString,
+          status: matter.status,
+          createdAt: matter.createdAt,
+        },
+        refresh: true,
+      });
+    } catch (error) {
+      this.logger.error(`Failed to index matter: ${matter.id}`, (error as Error).stack);
+    }
+  }
+
+  async searchMatters(query: string, orgId: string): Promise<Record<string, any>[]> {
+    const must: any[] = [
+      {
+        multi_match: {
+          query,
+          fields: ['title^2', 'counterparties^3'],
+          fuzziness: 'AUTO',
+        },
+      },
+      { term: { orgId } },
+    ];
+
+    try {
+      const result = await this.client.search({
+        index: 'matters',
+        body: { query: { bool: { must } } },
+      });
+      const body = result.body as { hits: { hits: Array<{ _source: Record<string, any> }> } };
+      return body.hits.hits.map(hit => hit._source);
+    } catch (error) {
+      this.logger.error('Matter search failed', (error as Error).stack);
+      return [];
     }
   }
 

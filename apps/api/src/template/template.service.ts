@@ -59,6 +59,8 @@ export class TemplateService {
 
     const currentVersion = document.versions[0];
 
+    const metadata = (document.metadata as Prisma.JsonObject) || {};
+
     // Create the template
     const template = await this.prisma.template.create({
       data: {
@@ -66,9 +68,9 @@ export class TemplateService {
         description: `Automatically created from document ${document.id}`,
         tier: TemplateTier.CURATED, // Default to firm-curated
         orgId,
-        categoryId: (document.metadata['categoryId'] as string) || 'default-category-uuid',
-        jurisdiction: document.metadata['jurisdiction'] as string,
-        tags: (document.metadata['tags'] as string[]) || [],
+        categoryId: (metadata['categoryId'] as string) || 'default-category-uuid',
+        jurisdiction: metadata['jurisdiction'] as string,
+        tags: (metadata['tags'] as string[]) || [],
         createdBy: userId,
         status: TemplateStatus.DRAFT,
       },

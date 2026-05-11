@@ -49,6 +49,7 @@ export class SearchService implements OnModuleInit {
               properties: {
                 id: { type: 'keyword' },
                 title: { type: 'text', analyzer: 'english' },
+                fileName: { type: 'text', analyzer: 'english' },
                 content: { type: 'text', analyzer: 'english' },
                 orgId: { type: 'keyword' },
                 workspaceId: { type: 'keyword' },
@@ -71,6 +72,7 @@ export class SearchService implements OnModuleInit {
     document: {
       id: string;
       title: string;
+      fileName: string;
       orgId: string;
       workspaceId: string;
       matterId: string | null;
@@ -87,6 +89,7 @@ export class SearchService implements OnModuleInit {
         body: {
           id: document.id,
           title: document.title,
+          fileName: document.fileName,
           content: content || '',
           orgId: document.orgId,
           workspaceId: document.workspaceId,
@@ -107,7 +110,7 @@ export class SearchService implements OnModuleInit {
       {
         multi_match: {
           query,
-          fields: ['title^3', 'content'],
+          fields: ['title^3', 'fileName^2', 'content'],
           fuzziness: 'AUTO',
         },
       },

@@ -134,6 +134,108 @@ export class DocumentService {
     return version;
   }
 
+  async restoreVersion(id: string, versionNumber: number, userId: string) {
+    const document = await this.prisma.document.findUnique({
+      where: { id },
+      include: { versions: true },
+    });
+
+    if (!document) throw new NotFoundException('Document not found');
+
+    const targetVersion = document.versions.find(v => v.versionNumber === Number(versionNumber));
+    if (!targetVersion) throw new NotFoundException(`Version ${versionNumber} not found`);
+
+    const newVersionNumber = document.currentVersion + 1;
+
+    // Create a NEW version that points to the OLD fileKey
+    const restoredVersion = await this.prisma.documentVersion.create({
+      data: {
+        documentId: id,
+        versionNumber: newVersionNumber,
+        fileKey: targetVersion.fileKey,
+        size: targetVersion.size,
+        changeLog: `Restored from version ${versionNumber}`,
+        createdBy: userId,
+        isCurrent: true,
+      },
+    });
+
+    // Update parent
+    await this.prisma.document.update({
+      where: { id },
+      data: { currentVersion: newVersionNumber },
+    });
+
+    // Unset current on others
+    await this.prisma.documentVersion.updateMany({
+      where: { documentId: id, versionNumber: { lt: newVersionNumber } },
+      data: { isCurrent: false },
+    });
+
+    await this.logAudit(id, userId, DocumentAction.VERSION_CREATE, {
+      restoredFrom: versionNumber,
+      newVersion: newVersionNumber,
+    });
+
+    return restoredVersion;
+  }
+
+  async bulkUpload(
+    files: Express.Multer.File[],
+    workspaceId: string,
+    userId: string,
+    orgId: string,
+    matterId?: string,
+  ) {
+    const results = [];
+
+    for (const file of files) {
+      try {
+        // 1. Create Document Metadata
+        const document = await this.prisma.document.create({
+          data: {
+            title: file.originalname,
+            fileName: file.originalname,
+            mimeType: file.mimetype,
+            size: file.size,
+            workspaceId,
+            matterId,
+            orgId,
+            createdBy: userId,
+            retentionDate: RetentionService.getDefaultRetentionDate(),
+          },
+        });
+
+        // 2. Upload and Create Version (v1)
+        const fileKey = `orgs/${orgId}/docs/${document.id}/v1_${file.originalname}`;
+        await this.storage.upload(fileKey, file.buffer, file.mimetype);
+
+        const version = await this.prisma.documentVersion.create({
+          data: {
+            documentId: document.id,
+            versionNumber: 1,
+            fileKey,
+            size: file.size,
+            createdBy: userId,
+            isCurrent: true,
+          },
+        });
+
+        // 3. Trigger Intelligence
+        void this.processIntelligence(document, version, file.buffer);
+
+        await this.logAudit(document.id, userId, DocumentAction.CREATE);
+        results.push({ id: document.id, fileName: file.originalname, success: true });
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        this.logger.error(`Bulk upload failed for ${file.originalname}: ${errorMessage}`);
+        results.push({ fileName: file.originalname, success: false, error: errorMessage });
+      }
+    }
+
+    return results;
+  }
+
   private async processIntelligence(document: Document, version: DocumentVersion, file: Buffer) {
     try {
       this.logger.debug(

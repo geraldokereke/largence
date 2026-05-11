@@ -9,10 +9,11 @@ import {
   Post,
   Query,
   UploadedFile,
+  UploadedFiles,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Organisation, Role, User } from '@prisma/client';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
@@ -45,6 +46,20 @@ export class DocumentController {
     return this.documentService.create(dto, user.id, org.id);
   }
 
+  @Post('bulk-upload')
+  @ApiConsumes('multipart/form-data')
+  @ApiOperation({ summary: 'Bulk upload multiple documents' })
+  @UseInterceptors(FilesInterceptor('files'))
+  async bulkUpload(
+    @UploadedFiles() files: Express.Multer.File[],
+    @Body('workspaceId') workspaceId: string,
+    @Body('matterId') matterId: string,
+    @CurrentUser() user: User,
+    @CurrentOrg() org: Organisation,
+  ) {
+    return this.documentService.bulkUpload(files, workspaceId, user.id, org.id, matterId);
+  }
+
   @Post(':id/upload')
   @ApiConsumes('multipart/form-data')
   @ApiOperation({ summary: 'Upload a new version of a document' })
@@ -65,6 +80,16 @@ export class DocumentController {
       user.id,
       changeLog,
     );
+  }
+
+  @Post(':id/restore/:versionNumber')
+  @ApiOperation({ summary: 'Restore a previous version' })
+  async restore(
+    @Param('id') id: string,
+    @Param('versionNumber') versionNumber: number,
+    @CurrentUser() user: User,
+  ) {
+    return this.documentService.restoreVersion(id, versionNumber, user.id);
   }
 
   @Get(':id/diff/:v1/:v2')

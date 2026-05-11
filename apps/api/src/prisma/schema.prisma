@@ -17,9 +17,16 @@ enum OrgType {
 
 enum OrgTier {
   FREE
+  LEARN
   EDGE
   VERTEX
   ZENITH
+}
+
+model GlobalSetting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt
 }
 
 enum OnboardingMode {
@@ -232,6 +239,11 @@ model Department {
   workspaces         Workspace[]
 }
 
+model MatterCounter {
+  year  Int @id
+  count Int @default(0)
+}
+
 model Workspace {
   id                  String            @id @default(uuid())
   name                String
@@ -287,6 +299,7 @@ model Matter {
   timeRecorded    Decimal        @default(0) @db.Decimal(10, 2)
   riskScore       Int            @default(0)
   confidential    Boolean        @default(false)
+  allowedUsers    String[]       @default([]) // For confidential matters
   tags            String[]
   metadata        Json? // CAC checklist, jurisdiction-specific fields
   openDate        DateTime       @default(now())

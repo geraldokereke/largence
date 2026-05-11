@@ -11,15 +11,21 @@ export interface FeatureLimits {
 
 export const TIER_LIMITS: Record<OrgTier, FeatureLimits> = {
   [OrgTier.FREE]: {
-    activeWorkspaces: 0, // Solo/Single org level
+    activeWorkspaces: 0,
     activeMatters: 1,
     timeTracking: false,
+    billing: false,
+  },
+  [OrgTier.LEARN]: {
+    activeWorkspaces: 1,
+    activeMatters: 5,
+    timeTracking: true,
     billing: false,
   },
   [OrgTier.EDGE]: {
     activeWorkspaces: 1,
     activeMatters: 25,
-    timeTracking: false,
+    timeTracking: true,
     billing: true,
   },
   [OrgTier.VERTEX]: {

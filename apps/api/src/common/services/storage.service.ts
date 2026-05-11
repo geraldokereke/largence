@@ -9,6 +9,7 @@ import {
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Readable } from 'stream';
 
 @Injectable()
 export class StorageService implements OnModuleInit {
@@ -100,6 +101,27 @@ export class StorageService implements OnModuleInit {
       return true;
     } catch {
       return false;
+    }
+  }
+
+  async download(key: string): Promise<Buffer> {
+    try {
+      const response = await this.client.send(
+        new GetObjectCommand({
+          Bucket: this.bucket,
+          Key: key,
+        }),
+      );
+      const stream = response.Body as Readable;
+      return new Promise((resolve, reject) => {
+        const chunks: Buffer[] = [];
+        stream.on('data', (chunk: Buffer) => chunks.push(chunk));
+        stream.on('error', reject);
+        stream.on('end', () => resolve(Buffer.concat(chunks)));
+      });
+    } catch (error) {
+      this.logger.error(`Failed to download file from S3: ${key}`, (error as Error).stack);
+      throw error;
     }
   }
 }

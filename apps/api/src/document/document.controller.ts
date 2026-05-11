@@ -98,6 +98,22 @@ export class DocumentController {
     return this.documentService.diff(id, v1, v2);
   }
 
+  @Post(':id/branch/:versionNumber')
+  @ApiOperation({ summary: 'Branch a document from a specific version' })
+  async branch(
+    @Param('id') id: string,
+    @Param('versionNumber') versionNumber: number,
+    @CurrentUser() user: User,
+  ) {
+    return this.documentService.branch(id, versionNumber, user.id);
+  }
+
+  @Get(':id/clauses')
+  @ApiOperation({ summary: 'Extract key clauses from document (stub)' })
+  extractClauses() {
+    return this.documentService.extractClauses();
+  }
+
   @Post(':id/state-transition')
   @ApiOperation({ summary: 'Transition document status' })
   async transitionState(

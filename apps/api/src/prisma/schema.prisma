@@ -450,14 +450,17 @@ model Document {
   matterId        String?
   matter          Matter?                 @relation(fields: [matterId], references: [id])
   metadata        Json?
-  currentVersion  Int                     @default(1)
-  retentionDate   DateTime?
-  retentionAction DocumentRetentionAction @default(ARCHIVE)
-  createdBy       String
-  createdAt       DateTime                @default(now())
-  updatedAt       DateTime                @updatedAt
+  currentVersion   Int                     @default(1)
+  retentionDate    DateTime?
+  retentionAction  DocumentRetentionAction @default(ARCHIVE)
+  parentDocumentId String?
+  parentDocument   Document?               @relation("DocumentBranches", fields: [parentDocumentId], references: [id])
+  createdBy        String
+  createdAt        DateTime                @default(now())
+  updatedAt        DateTime                @updatedAt
 
   versions DocumentVersion[]
+  branches Document[]        @relation("DocumentBranches")
   access   DocumentAccess[]
   audit    DocumentAudit[]
 

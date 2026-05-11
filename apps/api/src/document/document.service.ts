@@ -6,6 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Document, DocumentAction, DocumentStatus, DocumentVersion, Prisma } from '@prisma/client';
+import * as crypto from 'crypto';
 import { diffWordsWithSpace } from 'diff';
 import { OcrService } from '../common/services/ocr.service';
 import { SearchService } from '../common/services/search.service';
@@ -29,6 +30,74 @@ export class DocumentService {
     private searchService: SearchService,
     private ocr: OcrService,
   ) {}
+
+  async branch(id: string, versionNumber: number, userId: string) {
+    const document = await this.prisma.document.findUnique({
+      where: { id },
+      include: { versions: true },
+    });
+
+    if (!document) throw new NotFoundException('Document not found');
+
+    const sourceVersion = document.versions.find(v => v.versionNumber === Number(versionNumber));
+    if (!sourceVersion) throw new NotFoundException(`Version ${versionNumber} not found`);
+
+    const branchedDoc = await this.prisma.document.create({
+      data: {
+        title: `${document.title} (Branch)`,
+        fileName: document.fileName,
+        mimeType: document.mimeType,
+        size: document.size,
+        workspaceId: document.workspaceId,
+        matterId: document.matterId,
+        orgId: document.orgId,
+        createdBy: userId,
+        parentDocumentId: id,
+        retentionDate: RetentionService.getDefaultRetentionDate(),
+      },
+    });
+
+    const newFileKey = `orgs/${document.orgId}/docs/${branchedDoc.id}/v1_${document.fileName}`;
+    const fileBuffer = await this.storage.download(sourceVersion.fileKey);
+    await this.storage.upload(newFileKey, fileBuffer, document.mimeType);
+
+    await this.prisma.documentVersion.create({
+      data: {
+        documentId: branchedDoc.id,
+        versionNumber: 1,
+        fileKey: newFileKey,
+        size: sourceVersion.size,
+        createdBy: userId,
+        isCurrent: true,
+      },
+    });
+
+    await this.logAudit(id, userId, DocumentAction.UPDATE, { branchedTo: branchedDoc.id });
+    return branchedDoc;
+  }
+
+  extractClauses() {
+    return [
+      {
+        id: 'cl_1',
+        type: 'LIABILITY',
+        text: 'Limitation of liability is capped at $1M.',
+        confidence: 0.98,
+      },
+      {
+        id: 'cl_2',
+        type: 'TERMINATION',
+        text: '30 days notice required for termination.',
+        confidence: 0.95,
+      },
+      {
+        id: 'cl_3',
+        type: 'GOVERNING_LAW',
+        text: 'Laws of England and Wales apply.',
+        confidence: 0.99,
+      },
+    ];
+  }
 
   async diff(id: string, v1Number: number, v2Number: number) {
     const [v1, v2] = await Promise.all([
@@ -275,14 +344,40 @@ export class DocumentService {
   }
 
   async transitionState(id: string, dto: StateTransitionDto, userId: string) {
-    const document = await this.prisma.document.findUnique({ where: { id } });
+    const document = await this.prisma.document.findUnique({
+      where: { id },
+      include: { versions: { where: { isCurrent: true } } },
+    });
     if (!document) throw new NotFoundException('Document not found');
 
     this.validateTransition(document.status, dto.status);
 
+    let metadataUpdate: Record<string, any> = {};
+
+    // Special Logic for EXECUTED state
+    if (dto.status === DocumentStatus.EXECUTED) {
+      const currentVersion = document.versions[0];
+      if (currentVersion) {
+        const fileBuffer = await this.storage.download(currentVersion.fileKey);
+        const hash = crypto.createHash('sha256').update(fileBuffer).digest('hex');
+        metadataUpdate = {
+          executedHash: hash,
+          executedAt: new Date(),
+        };
+      }
+    }
+
+    const currentMetadata = (document.metadata as Record<string, any>) || {};
+
     const updated = await this.prisma.document.update({
       where: { id },
-      data: { status: dto.status },
+      data: {
+        status: dto.status,
+        metadata: {
+          ...currentMetadata,
+          ...metadataUpdate,
+        },
+      },
     });
 
     await this.logAudit(id, userId, DocumentAction.STATE_CHANGE, {

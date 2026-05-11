@@ -7,12 +7,10 @@ export class MatterAutomationService {
   constructor(private prisma: PrismaService) {}
 
   async processNewMatter(matter: Matter) {
-    const org = await this.prisma.organisation.findUnique({
-      where: { id: matter.orgId },
-    });
-
+    // 9. CAC Filing Checklist Trigger
+    // Check if it's a Corporate Transaction in Nigeria (NG)
     if (
-      org?.dataResidency === 'eu-west-2' &&
+      matter.jurisdictions.includes('NG') &&
       matter.type === MatterType.TRANSACTION &&
       matter.practiceArea === PracticeArea.CORPORATE
     ) {
@@ -22,18 +20,18 @@ export class MatterAutomationService {
 
   private async createCacChecklist(matterId: string, creatorId: string) {
     const tasks = [
-      'Reserve company name via CAC portal',
-      'Collect directors IDs and signatures',
+      'Conduct name availability search (CAC)',
+      'Reserve company name (CAC portal)',
       'Prepare Memorandum and Articles of Association',
-      'Payment of Stamp Duties (FIRS)',
-      'Upload signed documents to CAC',
-      'Payment of registration fees',
-      'Respond to queries (if any)',
-      'Download Certificate of Incorporation',
-      'Obtain Certified True Copies (CTC)',
-      'Apply for TIN (Tax Identification Number)',
-      'Open Corporate Bank Account',
-      'Initial Board Meeting minutes',
+      'Obtain CAC Form CAC 1.1 (Application for Registration)',
+      'Stamp duty payment on share capital',
+      'Notarise founding documents',
+      'File incorporation documents with CAC',
+      'Pay CAC registration fees',
+      'Obtain Certificate of Incorporation',
+      'Register for Tax Identification Number (FIRS)',
+      'Register for VAT (if applicable)',
+      'Open corporate bank account',
     ];
 
     await this.prisma.matterTask.createMany({

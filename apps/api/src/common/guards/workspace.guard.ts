@@ -36,6 +36,26 @@ export class WorkspaceGuard implements CanActivate {
     // Attach workspace role to request for later use in controllers
     request.workspaceRole = membership.role;
 
+    // 15. Confidential Matter Enforcement
+    const matterId = request.params.id;
+    if (matterId && request.url.includes('/matters/')) {
+      const matter = await this.prisma.matter.findUnique({
+        where: { id: matterId },
+        select: { confidential: true, allowedUsers: true, leadSolicitorId: true },
+      });
+
+      if (matter?.confidential) {
+        const isAllowed =
+          matter.leadSolicitorId === user.id ||
+          matter.allowedUsers.includes(user.id) ||
+          user.roles.includes(Role.ORG_ADMIN);
+
+        if (!isAllowed) {
+          throw new ForbiddenException('CONFIDENTIAL_MATTER_ACCESS_DENIED');
+        }
+      }
+    }
+
     return true;
   }
 }

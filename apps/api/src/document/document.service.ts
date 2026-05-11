@@ -98,8 +98,9 @@ export class DocumentService {
           version.fileKey,
         );
       } catch (ocrError) {
+        const errorMessage = ocrError instanceof Error ? ocrError.message : String(ocrError);
         this.logger.warn(
-          `OCR failed for ${document.id}: ${ocrError.message}. Proceeding with metadata indexing.`,
+          `OCR failed for ${document.id}: ${errorMessage}. Proceeding with metadata indexing.`,
         );
       }
 
